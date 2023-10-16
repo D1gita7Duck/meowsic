@@ -17,46 +17,82 @@ app.iconbitmap("H:\Arnav\Python\Python Workspace\meowsic\\assets\icons\\app_icon
 
 
 playing = 0
+now_playing=0
+master_playing=False
 
+def load_music(path):
+    global master_playing
+    global now_playing
 
-def load_music():
-    song_path = "H:\Arnav\Python\Python Workspace\meowsic\Audio\song1.mp3"
-    pygame.mixer.music.load(song_path)
+    if master_playing==True:
+        for i in path:
+            pygame.mixer.music.queue(i)
+    else:
+        pygame.mixer.music.load(path[0])
+        for i in path[1::]:
+            pygame.mixer.music.queue(i)
+        now_playing=0
 
 
 def add_songs():
-    song = ctk.filedialog.askopenfilenames(
+    # songs_paths will be a tuple of filepaths (str)
+    global songs_paths
+    songs_paths = ctk.filedialog.askopenfilenames(
         initialdir="H:\Arnav\Python\Python Workspace\meowsic\\Audio",
         title="Choose Songs",
     )
-    # song will be a tuple of filepaths (str)
-    for i in song:
+    
+    load_music(songs_paths)
+
+
+
+    for i in songs_paths:
         name = i.split("/")[-1]
         song_list.insert("END", name)
+    
 
 
 def song_previous():
-    pass
+    global now_playing
+    global master_playing
+    global playing
+
+    song_time_elapsed=(pygame.mixer.music.get_pos())//1000
+    print(song_time_elapsed)
+    
+    if song_time_elapsed<2:
+        song=songs_paths[now_playing-1]
+        now_playing-=1
+        pygame.mixer.music.load(song)
+        pygame.mixer.music.play(loops=0)
+        playing = 1
+        play_button.configure(image=pause_button_icon)
+    else:
+        pygame.mixer.music.rewind()
+
 
 
 def song_next():
     global playing
+    global now_playing
 
-    current_song = song_list.curselection()
-    next_song = current_song + 1
-
-    song = song_list.get()
-    song = f"H:/Arnav/Python/Python Workspace/meowsic/Audio/{song}"
-
-    pygame.mixer.music.load(song)
-    pygame.mixer.music.play(loops=0)
-
-    playing = 1
-    play_button.configure(image=pause_button_icon)
+    # pygame.mixer.music.set_endevent(pygame.MUSIC_END)
+    try:
+        song=songs_paths[now_playing+1]
+        now_playing+=1
+    except IndexError:
+        print("Can't")
+    else:
+        pygame.mixer.music.load(song)
+        pygame.mixer.music.play(loops=0)
+        playing = 1
+        play_button.configure(image=pause_button_icon)
 
 
 def play_pause(btn: ctk.CTkButton):
     global playing
+    global master_playing
+    master_playing=True
 
     if playing == 1:
         pygame.mixer.music.pause()
@@ -77,7 +113,7 @@ def play_on_click():
     pass
 
 
-load_music()
+# load_music(("H:\Arnav\Python\Python Workspace\meowsic\Audio\song1.mp3",))
 
 
 # Frames
