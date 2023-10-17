@@ -13,7 +13,7 @@ ctk.set_default_color_theme("green")  # Themes: blue (default), dark-blue, green
 app = ctk.CTk()  # create CTk window like you do with the Tk window
 app.geometry("700x700")
 app.title("meowsic")
-app.iconbitmap("H:\Arnav\Python\Python Workspace\meowsic\\assets\icons\\app_icon.ico")
+app.iconbitmap(os.getcwd()+"\\assets\icons\\app_icon.ico")
 
 
 playing = 0
@@ -41,7 +41,7 @@ def add_songs():
     # songs_paths will be a tuple of filepaths (str)
     global songs_paths
     songs_paths = ctk.filedialog.askopenfilenames(
-        initialdir="H:\Arnav\Python\Python Workspace\meowsic\\Audio",
+        initialdir=os.getcwd()+"\Audio",
         title="Choose Songs",
     )
     
@@ -109,7 +109,10 @@ def song_next():
         song=songs_paths[now_playing+1]
         now_playing+=1
     except IndexError:
-        print("Can't")
+        end_of_queue()
+        song=songs_paths[now_playing]
+        pygame.mixer.music.load(song)
+
     else:
         pygame.mixer.music.load(song)
         pygame.mixer.music.play(loops=0)
