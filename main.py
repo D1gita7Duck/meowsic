@@ -33,6 +33,9 @@ def load_music(path):
             pygame.mixer.music.queue(i)
         now_playing=0
 
+        #change status bar to current song name
+        status_bar.configure(text=f'Now playing: {path[0].split("/")[-1]}')
+
 
 def add_songs():
     # songs_paths will be a tuple of filepaths (str)
@@ -56,9 +59,9 @@ def song_previous():
     global now_playing
     global master_playing
     global playing
+    
 
     song_time_elapsed=(pygame.mixer.music.get_pos())//1000
-    print(song_time_elapsed)
     
     if song_time_elapsed<2:
         song=songs_paths[now_playing-1]
@@ -67,10 +70,35 @@ def song_previous():
         pygame.mixer.music.play(loops=0)
         playing = 1
         play_button.configure(image=pause_button_icon)
+
+        #change the highligh to current song
+        song_list.selection_clear()
+        song_list.activate(now_playing)
+        if now_playing >= 0 :
+            song_list.select(f'END{now_playing}')
+        else:
+            song_list.select(f'END{song_list.size()+now_playing}')
+
+        #change status bar to current song name
+        status_bar.configure(text=f'Now playing: {song.split("/")[-1]}')
+        
     else:
-        pygame.mixer.music.rewind()
+        song=songs_paths[now_playing]
+        pygame.mixer.music.load(song)
+        pygame.mixer.music.play(loops=0)
+        playing = 1
+        play_button.configure(image=pause_button_icon)
 
+        #change the highligh to current song
+        song_list.selection_clear()
+        song_list.activate(now_playing)
+        if now_playing >= 0 :
+            song_list.select(f'END{now_playing}')
+        else:
+            song_list.select(f'END{song_list.size()+ now_playing}')
 
+        #change status bar to current song name
+        status_bar.configure(text=f'Now playing: {song.split("/")[-1]}')
 
 def song_next():
     global playing
@@ -88,10 +116,21 @@ def song_next():
         playing = 1
         play_button.configure(image=pause_button_icon)
 
+        #change the highligh to current song
+        song_list.selection_clear()
+        song_list.activate(now_playing)
+        if now_playing >= 0 :
+            song_list.select(f'END{now_playing}')
+        else:
+            song_list.select(f'END{song_list.size() + now_playing}')
+
+        #change status bar to current song name
+        status_bar.configure(text=f'Now playing: {song.split("/")[-1]}')
 
 def play_pause(btn: ctk.CTkButton):
     global playing
     global master_playing
+    global now_playing
     master_playing=True
 
     if playing == 1:
@@ -103,10 +142,27 @@ def play_pause(btn: ctk.CTkButton):
         pygame.mixer.music.unpause()
         btn.configure(image=pause_button_icon)
         playing = 1
+
+        #change the highligh to current song
+        song_list.selection_clear()
+        song_list.activate(now_playing)
+        if now_playing >= 0 :
+            song_list.select(f'END{now_playing}')
+        else:
+            song_list.select(f'END{song_list.size() + now_playing}')
+
     elif playing == 0:
         pygame.mixer.music.play()
         btn.configure(image=pause_button_icon)
         playing = 1
+
+        #change the highligh to current song
+        song_list.selection_clear()
+        song_list.activate(now_playing)
+        if now_playing >= 0 :
+            song_list.select(f'END{now_playing}')
+        else:
+            song_list.select(f'END{song_list.size() + now_playing}')
 
 
 def play_on_click():
@@ -213,5 +269,9 @@ next_button = ctk.CTkButton(
     height=26,
 )
 next_button.grid(row=0, column=2, padx=10)
+
+status_bar=ctk.CTkLabel(app, text='status bar' , justify= 'center' , anchor='e' )
+status_bar.pack(ipady=10)
+
 
 app.mainloop()
