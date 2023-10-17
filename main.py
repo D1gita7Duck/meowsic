@@ -59,11 +59,12 @@ def song_previous():
     global now_playing
     global master_playing
     global playing
-    
+    #print(now_playing)    
 
     song_time_elapsed=(pygame.mixer.music.get_pos())//1000
     
     if song_time_elapsed<2:
+        if now_playing-1<-len(songs_paths):now_playing=0
         song=songs_paths[now_playing-1]
         now_playing-=1
         pygame.mixer.music.load(song)
@@ -109,11 +110,10 @@ def song_next():
         song=songs_paths[now_playing+1]
         now_playing+=1
     except IndexError:
-        end_of_queue()
+        now_playing=0
         song=songs_paths[now_playing]
-        pygame.mixer.music.load(song)
-
-    else:
+    finally:
+        print(now_playing,song)
         pygame.mixer.music.load(song)
         pygame.mixer.music.play(loops=0)
         playing = 1
