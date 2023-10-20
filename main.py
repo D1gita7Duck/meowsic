@@ -4,6 +4,8 @@ import CTkListbox
 import pygame.mixer
 from PIL import Image, ImageTk
 import os
+import time
+import audioread
 
 pygame.mixer.init()
 ctk.set_appearance_mode("System")  # Modes: system (default), light, dark
@@ -13,104 +15,128 @@ ctk.set_default_color_theme("green")  # Themes: blue (default), dark-blue, green
 app = ctk.CTk()  # create CTk window like you do with the Tk window
 app.geometry("700x700")
 app.title("meowsic")
-app.iconbitmap(os.getcwd()+"\\assets\icons\\app_icon.ico")
+app.iconbitmap(os.getcwd() + "\\assets\icons\\app_icon.ico")
 
 
 playing = 0
-now_playing=0
-master_playing=False
+now_playing = 0
+master_playing = False
+formatted_total_song_time=0
 
 def load_music(path):
     global master_playing
     global now_playing
+    global formatted_total_song_time
 
-    if master_playing==True:
+    if master_playing == True:
         for i in path:
             pygame.mixer.music.queue(i)
     else:
         pygame.mixer.music.load(path[0])
         for i in path[1::]:
             pygame.mixer.music.queue(i)
-        now_playing=0
+        now_playing = 0
 
-        #change status bar to current song name
-        status_bar.configure(text=f'Now playing: {path[0].split("/")[-1]}')
+        #total length of song
+        with audioread.audio_open(songs_paths[now_playing]) as song_file:
+            total_song_time=song_file.duration
+            formatted_total_song_time=time.strftime('%M:%S' , time.gmtime(total_song_time))
+
+        # change the highlight to current song
+        song_list.selection_clear()
+        song_list.activate(now_playing)
+        song_list.select(f"END{now_playing % song_list.size()}")
+
+        # change status bar to current song name
+        status_bar.configure(text=f'Paused: {path[0].split("/")[-1]}')
 
 
 def add_songs():
     # songs_paths will be a tuple of filepaths (str)
     global songs_paths
     songs_paths = ctk.filedialog.askopenfilenames(
-        initialdir=os.getcwd()+"\Audio",
+        initialdir=os.getcwd() + "\Audio",
         title="Choose Songs",
     )
-    
-    load_music(songs_paths)
-
-
 
     for i in songs_paths:
         name = i.split("/")[-1]
         song_list.insert("END", name)
-    
 
+    load_music(songs_paths)
+
+def play_time():
+    global songs_paths
+    global now_playing
+    global formatted_total_song_time
+
+    time_elapsed= pygame.mixer.music.get_pos()//1000
+    formatted_time_elapsed= time.strftime('%M:%S' , time.gmtime(time_elapsed))
+
+    #update time label
+    test_label.configure(text=f'{formatted_time_elapsed} of {formatted_total_song_time}')
+    test_label.after(1000,play_time)
 
 def song_previous():
     global now_playing
     global master_playing
     global playing
-    
+    global formatted_total_song_time
 
-    song_time_elapsed=(pygame.mixer.music.get_pos())//1000
-    
-    if song_time_elapsed<2:
-        song=songs_paths[now_playing-1]
-        now_playing-=1
+    song_time_elapsed = (pygame.mixer.music.get_pos()) // 1000
+
+    if song_time_elapsed < 2:
+        song = songs_paths[(now_playing - 1) % song_list.size()]
+        now_playing = (now_playing - 1) % song_list.size()
         pygame.mixer.music.load(song)
         pygame.mixer.music.play(loops=0)
         playing = 1
         play_button.configure(image=pause_button_icon)
 
-        #change the highligh to current song
+        #total length of song
+        with audioread.audio_open(songs_paths[now_playing]) as song_file:
+            total_song_time=song_file.duration
+            formatted_total_song_time=time.strftime('%M:%S' , time.gmtime(total_song_time))
+
+        # change the highlight to current song
         song_list.selection_clear()
         song_list.activate(now_playing)
-        if now_playing >= 0 :
-            song_list.select(f'END{now_playing}')
-        else:
-            song_list.select(f'END{song_list.size()+now_playing}')
+        song_list.select(f"END{now_playing % song_list.size()}")
 
-        #change status bar to current song name
+        # change status bar to current song name
         status_bar.configure(text=f'Now playing: {song.split("/")[-1]}')
-        
+
     else:
-        song=songs_paths[now_playing]
+        song = songs_paths[now_playing]
         pygame.mixer.music.load(song)
         pygame.mixer.music.play(loops=0)
         playing = 1
         play_button.configure(image=pause_button_icon)
 
-        #change the highligh to current song
+        #total length of song
+        with audioread.audio_open(songs_paths[now_playing]) as song_file:
+            total_song_time=song_file.duration
+            formatted_total_song_time=time.strftime('%M:%S' , time.gmtime(total_song_time))
+
+        # change the highlight to current song
         song_list.selection_clear()
         song_list.activate(now_playing)
-        if now_playing >= 0 :
-            song_list.select(f'END{now_playing}')
-        else:
-            song_list.select(f'END{song_list.size()+ now_playing}')
+        song_list.select(f"END{now_playing % song_list.size()}")
 
-        #change status bar to current song name
+        # change status bar to current song name
         status_bar.configure(text=f'Now playing: {song.split("/")[-1]}')
+
 
 def song_next():
     global playing
     global now_playing
-
-    # pygame.mixer.music.set_endevent(pygame.MUSIC_END)
+    global formatted_total_song_time
+    
     try:
-        song=songs_paths[now_playing+1]
-        now_playing+=1
+        song = songs_paths[(now_playing + 1) % song_list.size()]
+        now_playing = (now_playing + 1) % song_list.size()
     except IndexError:
-        end_of_queue()
-        song=songs_paths[now_playing]
+        song = songs_paths[now_playing]
         pygame.mixer.music.load(song)
 
     else:
@@ -119,54 +145,67 @@ def song_next():
         playing = 1
         play_button.configure(image=pause_button_icon)
 
-        #change the highligh to current song
+        #total length of song
+        with audioread.audio_open(songs_paths[now_playing]) as song_file:
+            total_song_time=song_file.duration
+            formatted_total_song_time=time.strftime('%M:%S' , time.gmtime(total_song_time))
+
+        # change the highlight to current song
         song_list.selection_clear()
         song_list.activate(now_playing)
-        if now_playing >= 0 :
-            song_list.select(f'END{now_playing}')
-        else:
-            song_list.select(f'END{song_list.size() + now_playing}')
+        song_list.select(f"END{now_playing % song_list.size()}")
 
-        #change status bar to current song name
+        # change status bar to current song name
         status_bar.configure(text=f'Now playing: {song.split("/")[-1]}')
+
 
 def play_pause(btn: ctk.CTkButton):
     global playing
     global master_playing
     global now_playing
-    master_playing=True
+    master_playing = True
 
     if playing == 1:
         pygame.mixer.music.pause()
+        # change button icon
         btn.configure(image=play_button_icon)
+
+        # change status bar text
+        status_bar.configure(text=f"Paused: {song_list.get()}")
         playing = 2
 
     elif playing == 2:
         pygame.mixer.music.unpause()
+
+        # change button icon
         btn.configure(image=pause_button_icon)
         playing = 1
 
-        #change the highligh to current song
+        # change status bar text
+        status_bar.configure(text=f"Now playing: {song_list.get()}")
+
+        # change the highlight to current song
         song_list.selection_clear()
         song_list.activate(now_playing)
-        if now_playing >= 0 :
-            song_list.select(f'END{now_playing}')
-        else:
-            song_list.select(f'END{song_list.size() + now_playing}')
+        song_list.select(f"END{now_playing % song_list.size()}")
 
+        play_time()
     elif playing == 0:
         pygame.mixer.music.play()
+
+        # change button icon
         btn.configure(image=pause_button_icon)
         playing = 1
 
-        #change the highligh to current song
+        # change status bar text
+        status_bar.configure(text=f"Now playing: {song_list.get()}")
+
+        # change the highlight to current song
         song_list.selection_clear()
         song_list.activate(now_playing)
-        if now_playing >= 0 :
-            song_list.select(f'END{now_playing}')
-        else:
-            song_list.select(f'END{song_list.size() + now_playing}')
+        song_list.select(f"END{now_playing % song_list.size()}")
 
+        play_time()
 
 def play_on_click():
     pass
@@ -273,8 +312,11 @@ next_button = ctk.CTkButton(
 )
 next_button.grid(row=0, column=2, padx=10)
 
-status_bar=ctk.CTkLabel(app, text='status bar' , justify= 'center' , anchor='e' )
+status_bar = ctk.CTkLabel(app, text="status bar", justify="center", anchor="e")
 status_bar.pack(ipady=10)
+
+test_label=ctk.CTkLabel(app,text='time', anchor='e' )
+test_label.pack(fill='x' , side='bottom' , ipady= 10, padx=10)
 
 
 app.mainloop()
