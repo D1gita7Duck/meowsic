@@ -16,6 +16,7 @@ app.title("meowsic")
 app.iconbitmap(os.getcwd()+"\\assets\icons\\app_icon.ico")
 
 
+
 playing = 0
 now_playing=0
 master_playing=False
