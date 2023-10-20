@@ -130,6 +130,7 @@ def song_next():
         #change status bar to current song name
         status_bar.configure(text=f'Now playing: {song.split("/")[-1]}')
 
+
 def play_pause(btn: ctk.CTkButton):
     global playing
     global master_playing
