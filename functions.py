@@ -28,7 +28,6 @@ def search(stringy):
     """
     videosSearch = VideosSearch(stringy, limit = 1)
     Videos=videosSearch.result()
-#    pp.pprint(Videos)
     url="https://www.youtube.com/watch?v="+Videos["result"][0]["id"]
     details=sp.search(q=stringy,limit=1,type="track")
     duration=details["tracks"]["items"][0]["duration_ms"]//1000 #returns in ms
@@ -46,22 +45,13 @@ def thumbs(name,url):
     Accepts name and url of a song to store and download the thumbnail
     """
     res=requests.get(url).content
-#    print("res",res,"url",url)
     file=open(os.path.join("thumbs/",f"{name}.png"),"wb")
     file.write(res)
     file.close()
 
-#thumbs("blindinglights",search("blinding lights")["thumbnail_url"])
-# def better_name(stringy):
-#     stringy=stringy.split()
-#     new_stringy=""
-#     for i in stringy:
-#         new_stringy+=i
-#     new_stringy=new_stringy.casefold()
-#     return new_stringy
-
 def better_name(stringy):
-    # Remove spaces and other special characters from the string
+    """Remove spaces and other special characters from the string
+    """
     new_stringy = ''.join(char for char in stringy if char.isalnum() or char in ['_', '-', '.'])
     new_stringy = new_stringy.casefold()
     return new_stringy
@@ -83,7 +73,3 @@ def download(url,name):
               except:
                   print("this shldnt happen")       
               
-t=search("badass from leo")
-download(t["url"],better_name(t["pretty_name"]))
-thumbs(better_name(t["pretty_name"]),t["thumbnail_url"])
-print(t)
