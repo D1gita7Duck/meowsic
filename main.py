@@ -15,13 +15,14 @@ ctk.set_default_color_theme("green")  # Themes: blue (default), dark-blue, green
 app = ctk.CTk()  # create CTk window like you do with the Tk window
 app.geometry("700x700")
 app.title("meowsic")
-app.iconbitmap(os.getcwd() + "\\assets\icons\\app_icon.ico")
+app.iconbitmap(os.path.join(os.getcwd() , "assets","icons","app_icon.ico"))
 
 
 playing = 0
 now_playing = 0
 master_playing = False
-formatted_total_song_time=0
+formatted_total_song_time = 0
+
 
 def load_music(path):
     global master_playing
@@ -37,10 +38,12 @@ def load_music(path):
             pygame.mixer.music.queue(i)
         now_playing = 0
 
-        #total length of song
+        # total length of song
         with audioread.audio_open(songs_paths[now_playing]) as song_file:
-            total_song_time=song_file.duration
-            formatted_total_song_time=time.strftime('%M:%S' , time.gmtime(total_song_time))
+            total_song_time = song_file.duration
+            formatted_total_song_time = time.strftime(
+                "%M:%S", time.gmtime(total_song_time)
+            )
 
         # change the highlight to current song
         song_list.selection_clear()
@@ -55,7 +58,7 @@ def add_songs():
     # songs_paths will be a tuple of filepaths (str)
     global songs_paths
     songs_paths = ctk.filedialog.askopenfilenames(
-        initialdir=os.getcwd() + "\Audio",
+        initialdir=os.path.join(os.getcwd() , "Audio"),
         title="Choose Songs",
     )
 
@@ -64,24 +67,37 @@ def add_songs():
         song_list.insert("END", name)
 
     load_music(songs_paths)
+    print(songs_paths)
 
 def play_time():
     global songs_paths
     global now_playing
     global formatted_total_song_time
 
-    time_elapsed= pygame.mixer.music.get_pos()//1000
-    formatted_time_elapsed= time.strftime('%M:%S' , time.gmtime(time_elapsed))
+    time_elapsed = pygame.mixer.music.get_pos() // 1000
+    formatted_time_elapsed = time.strftime("%M:%S", time.gmtime(time_elapsed))
 
-    #update time label
-    test_label.configure(text=f'{formatted_time_elapsed} of {formatted_total_song_time}')
-    test_label.after(1000,play_time)
+    # update time label
+    time_elapsed_label.configure(
+        text=f"{formatted_time_elapsed} of {formatted_total_song_time}"
+    )
+
+    #move song_slider with progress of song
+    song_slider.set(time_elapsed)
+
+    time_elapsed_label.after(1000, play_time)
+
+
+def slide(x):
+    test_label.configure(text=f'{"%.2f" % x} of {formatted_total_song_time} ')
+
 
 def song_previous():
     global now_playing
     global master_playing
     global playing
     global formatted_total_song_time
+    global total_song_time
 
     song_time_elapsed = (pygame.mixer.music.get_pos()) // 1000
 
@@ -93,16 +109,22 @@ def song_previous():
         playing = 1
         play_button.configure(image=pause_button_icon)
 
-        #total length of song
+        # total length of song
         with audioread.audio_open(songs_paths[now_playing]) as song_file:
-            total_song_time=song_file.duration
-            formatted_total_song_time=time.strftime('%M:%S' , time.gmtime(total_song_time))
+            total_song_time = song_file.duration
+            formatted_total_song_time = time.strftime(
+                "%M:%S", time.gmtime(total_song_time)
+            )
 
         # change the highlight to current song
         song_list.selection_clear()
         song_list.activate(now_playing)
         song_list.select(f"END{now_playing % song_list.size()}")
 
+        #slider position
+        song_slider.configure(to=total_song_time)
+        song_slider.set(0)
+        
         # change status bar to current song name
         status_bar.configure(text=f'Now playing: {song.split("/")[-1]}')
 
@@ -113,15 +135,21 @@ def song_previous():
         playing = 1
         play_button.configure(image=pause_button_icon)
 
-        #total length of song
+        # total length of song
         with audioread.audio_open(songs_paths[now_playing]) as song_file:
-            total_song_time=song_file.duration
-            formatted_total_song_time=time.strftime('%M:%S' , time.gmtime(total_song_time))
+            total_song_time = song_file.duration
+            formatted_total_song_time = time.strftime(
+                "%M:%S", time.gmtime(total_song_time)
+            )
 
         # change the highlight to current song
         song_list.selection_clear()
         song_list.activate(now_playing)
         song_list.select(f"END{now_playing % song_list.size()}")
+
+        #slider position
+        song_slider.configure(to=total_song_time)
+        song_slider.set(0)
 
         # change status bar to current song name
         status_bar.configure(text=f'Now playing: {song.split("/")[-1]}')
@@ -131,7 +159,7 @@ def song_next():
     global playing
     global now_playing
     global formatted_total_song_time
-    
+
     try:
         song = songs_paths[(now_playing + 1) % song_list.size()]
         now_playing = (now_playing + 1) % song_list.size()
@@ -145,15 +173,21 @@ def song_next():
         playing = 1
         play_button.configure(image=pause_button_icon)
 
-        #total length of song
+        # total length of song
         with audioread.audio_open(songs_paths[now_playing]) as song_file:
-            total_song_time=song_file.duration
-            formatted_total_song_time=time.strftime('%M:%S' , time.gmtime(total_song_time))
+            total_song_time = song_file.duration
+            formatted_total_song_time = time.strftime(
+                "%M:%S", time.gmtime(total_song_time)
+            )
 
         # change the highlight to current song
         song_list.selection_clear()
         song_list.activate(now_playing)
         song_list.select(f"END{now_playing % song_list.size()}")
+
+        #slider position
+        song_slider.configure(to=total_song_time)
+        song_slider.set(0)
 
         # change status bar to current song name
         status_bar.configure(text=f'Now playing: {song.split("/")[-1]}')
@@ -190,6 +224,7 @@ def play_pause(btn: ctk.CTkButton):
         song_list.select(f"END{now_playing % song_list.size()}")
 
         play_time()
+
     elif playing == 0:
         pygame.mixer.music.play()
 
@@ -214,10 +249,6 @@ def play_on_click():
 # load_music(("H:\Arnav\Python\Python Workspace\meowsic\Audio\song1.mp3",))
 
 
-# Frames
-master_frame = ctk.CTkFrame(app)
-master_frame.pack(pady=20)
-
 # menu
 menu = CTkMenuBar.CTkMenuBar(app)
 file_button = menu.add_cascade("File")
@@ -235,27 +266,19 @@ sub_menu = file_dropdown.add_submenu("Export As")
 sub_menu.add_option(option=".TXT")
 sub_menu.add_option(option=".PDF")
 
-
-# Songs List
-song_list = CTkListbox.CTkListbox(
-    app,
-    width=400,
-    height=50,
-    label_text="Songs",
-    fg_color="orange",
-    text_color="purple",
-)
-song_list.pack(pady=20)
-
+# Frames
+master_frame = ctk.CTkFrame(app)
+master_frame.pack(pady=20)
 
 # Media Controls Frame
 playback_controls_frame = ctk.CTkFrame(master_frame)
-playback_controls_frame.grid(row=1, column=0)
+playback_controls_frame.grid(row=2, column=0)
 
 
 # buttons folder path
 icon_folder_path = os.path.join(
-    os.path.dirname(os.path.realpath(__file__)), "assets\icons"
+    os.path.join(os.path.dirname(os.path.realpath(__file__)), "assets","icons")
+    
 )
 
 # buttons images
@@ -312,11 +335,30 @@ next_button = ctk.CTkButton(
 )
 next_button.grid(row=0, column=2, padx=10)
 
+
+song_slider = ctk.CTkSlider(
+    playback_controls_frame, from_=0, to=100, orientation="horizontal", progress_color='orange' , button_color = 'cyan' , button_hover_color = 'blue' , command=slide
+)
+song_slider.grid(columnspan=3 , pady=20)
+
+# Songs List
+song_list = CTkListbox.CTkListbox(
+    app,
+    width=400,
+    height=50,
+    label_text="Songs",
+    fg_color="orange",
+    text_color="purple",
+)
+song_list.pack(pady=20)
+
 status_bar = ctk.CTkLabel(app, text="status bar", justify="center", anchor="e")
 status_bar.pack(ipady=10)
 
-test_label=ctk.CTkLabel(app,text='time', anchor='e' )
-test_label.pack(fill='x' , side='bottom' , ipady= 10, padx=10)
+time_elapsed_label = ctk.CTkLabel(app, text="time", anchor="e")
+time_elapsed_label.pack(fill="x", side="bottom", ipady=10, padx=10)
 
+test_label=ctk.CTkLabel(app, text='slida text')
+test_label.pack(pady=10)
 
 app.mainloop()
