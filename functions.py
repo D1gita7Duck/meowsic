@@ -42,12 +42,18 @@ def search(stringy):
 
 def thumbs(name,url):
     """
-    Accepts name and url of a song to store and download the thumbnail
+    Accepts name and url of a song to store and download the thumbnail.
+    Checks if file already exists and skips if yes
     """
-    res=requests.get(url).content
-    file=open(os.path.join("thumbs/",f"{name}.png"),"wb")
-    file.write(res)
-    file.close()
+    try:
+        file=open(os.path.join("thumbs/",f"{name}.png"),"rb+")
+    except FileNotFoundError:
+        file=open(os.path.join("thumbs/",f"{name}.png"),"wb")
+        res=requests.get(url).content
+        file.write(res)
+        file.close()
+    else:
+        print("thumb already cached. Skipping")
 
 def better_name(stringy):
     """Remove spaces and other special characters from the string
