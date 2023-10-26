@@ -48,7 +48,11 @@ def load_music(path):
         # change the highlight to current song
         song_list.selection_clear()
         song_list.activate(now_playing)
-        song_list.select(f"END{now_playing % song_list.size()}")
+        song_list.select(f"END{now_playing % len(songs_paths)}")
+
+        #slider position
+        song_slider.configure(to=total_song_time)
+        song_slider.set(0)
 
         # change status bar to current song name
         status_bar.configure(text=f'Paused: {path[0].split("/")[-1]}')
@@ -57,25 +61,61 @@ def load_music(path):
 def add_songs():
     # songs_paths will be a tuple of filepaths (str)
     global songs_paths
-    songs_paths = ctk.filedialog.askopenfilenames(
+    global formatted_total_song_time
+    global now_playing
+    global total_song_time
+
+    og_songs_paths = ctk.filedialog.askopenfilenames(
         initialdir=os.path.join(os.getcwd() , "Audio"),
         title="Choose Songs",
     )
 
-    for i in songs_paths:
+    for i in og_songs_paths:
         name = i.split("/")[-1]
         song_list.insert("END", name)
 
-    load_music(songs_paths)
+
+    print(pygame.mixer.music.get_busy())
+    if pygame.mixer.music.get_busy():
+        songs_paths= (songs_paths) + (og_songs_paths)
+
+    else:
+        songs_paths=og_songs_paths+tuple()
+
+        pygame.mixer.music.load(songs_paths[0])
+        now_playing=0
+
+        # total length of song
+        with audioread.audio_open(songs_paths[now_playing]) as song_file:
+            total_song_time = song_file.duration
+            print(total_song_time)
+            formatted_total_song_time = time.strftime(
+                "%M:%S", time.gmtime(total_song_time)
+            )
+
+        # change the highlight to current song
+        song_list.selection_clear()
+        song_list.activate(now_playing)
+        song_list.select(f"END{now_playing % len(songs_paths)}")
+
+        #slider position
+        song_slider.configure(to=total_song_time)
+        song_slider.set(0)
+
+        # change status bar to current song name
+        status_bar.configure(text=f'Paused: {songs_paths[0].split("/")[-1]}')
+
     print(songs_paths)
+
 
 def play_time():
     global songs_paths
     global now_playing
     global formatted_total_song_time
+    global total_song_time
 
-    time_elapsed = pygame.mixer.music.get_pos() // 1000
-    formatted_time_elapsed = time.strftime("%M:%S", time.gmtime(time_elapsed))
+    time_elapsed = pygame.mixer.music.get_pos() 
+    formatted_time_elapsed = time.strftime("%M:%S", time.gmtime(time_elapsed//1000))
 
     # update time label
     time_elapsed_label.configure(
@@ -83,7 +123,11 @@ def play_time():
     )
 
     #move song_slider with progress of song
-    song_slider.set(time_elapsed)
+    song_slider.set(time_elapsed//1000)
+
+    #queue?
+    if time_elapsed//1000==total_song_time//1:
+        song_next()
 
     time_elapsed_label.after(1000, play_time)
 
@@ -102,8 +146,8 @@ def song_previous():
     song_time_elapsed = (pygame.mixer.music.get_pos()) // 1000
 
     if song_time_elapsed < 2:
-        song = songs_paths[(now_playing - 1) % song_list.size()]
-        now_playing = (now_playing - 1) % song_list.size()
+        song = songs_paths[(now_playing - 1) % len(songs_paths)]
+        now_playing = (now_playing - 1) % len(songs_paths)
         pygame.mixer.music.load(song)
         pygame.mixer.music.play(loops=0)
         playing = 1
@@ -119,7 +163,7 @@ def song_previous():
         # change the highlight to current song
         song_list.selection_clear()
         song_list.activate(now_playing)
-        song_list.select(f"END{now_playing % song_list.size()}")
+        song_list.select(f"END{now_playing % len(songs_paths)}")
 
         #slider position
         song_slider.configure(to=total_song_time)
@@ -145,7 +189,7 @@ def song_previous():
         # change the highlight to current song
         song_list.selection_clear()
         song_list.activate(now_playing)
-        song_list.select(f"END{now_playing % song_list.size()}")
+        song_list.select(f"END{now_playing % len(songs_paths)}")
 
         #slider position
         song_slider.configure(to=total_song_time)
@@ -159,12 +203,15 @@ def song_next():
     global playing
     global now_playing
     global formatted_total_song_time
+    global songs_paths
+    global total_song_time
 
     try:
-        song = songs_paths[(now_playing + 1) % song_list.size()]
-        now_playing = (now_playing + 1) % song_list.size()
+        song = songs_paths[(now_playing + 1) % len(songs_paths)]
+        print(songs_paths[(now_playing + 1) % len(songs_paths)])
+        now_playing = (now_playing + 1) % len(songs_paths)
     except IndexError:
-        song = songs_paths[now_playing]
+        song = songs_paths[now_playing % len(songs_paths)]
         pygame.mixer.music.load(song)
 
     else:
@@ -183,7 +230,7 @@ def song_next():
         # change the highlight to current song
         song_list.selection_clear()
         song_list.activate(now_playing)
-        song_list.select(f"END{now_playing % song_list.size()}")
+        song_list.select(f"END{now_playing % len(songs_paths)}")
 
         #slider position
         song_slider.configure(to=total_song_time)
@@ -221,7 +268,7 @@ def play_pause(btn: ctk.CTkButton):
         # change the highlight to current song
         song_list.selection_clear()
         song_list.activate(now_playing)
-        song_list.select(f"END{now_playing % song_list.size()}")
+        song_list.select(f"END{now_playing % len(songs_paths)}")
 
         play_time()
 
@@ -238,7 +285,7 @@ def play_pause(btn: ctk.CTkButton):
         # change the highlight to current song
         song_list.selection_clear()
         song_list.activate(now_playing)
-        song_list.select(f"END{now_playing % song_list.size()}")
+        song_list.select(f"END{now_playing % len(songs_paths)}")
 
         play_time()
 
@@ -246,7 +293,6 @@ def play_on_click():
     pass
 
 
-# load_music(("H:\Arnav\Python\Python Workspace\meowsic\Audio\song1.mp3",))
 
 
 # menu
