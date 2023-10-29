@@ -68,20 +68,18 @@ def search(stringy):
     artists=""
     for i in temp_artists:
         artists+=i["name"]+", "
-    if db.song_search(pretty_name):
+    artists=artists.rstrip(", ")
+    db_search=db.song_search(pretty_name)
+    if db_search:
         print("found in db")
+        thumbnail_path=db_search["thumbnail"]
+
     else:
         print("not found in db downloading thumb")
-        thumbnail_path=thumbs(better_name(pretty_name),url)
+        thumbnail_path=thumbs(better_name(pretty_name),thumbnail_url)
         db.song_insert([url,duration,pretty_name,thumbnail_path,artists])
         print("added record to db")
-    return {"url":url,"duration":duration,"pretty_name":pretty_name,"thumbnail_url":thumbnail_url,"artists":artists}
-t=search("badass")
-# l=list(t.values())
-# print(l)
-# #db.song_insert(l)
-# db.song_search(t["pretty_name"])
-#print(search("ordinary person"))
+    return {"url":url,"duration":duration,"pretty_name":pretty_name,"thumbnail_path":thumbnail_path,"artists":artists}
 
 
 def download(url,name):

@@ -25,13 +25,18 @@ def song_search(song):
    print("searching")
    cur=con.cursor()
    res1 = cur.execute("SELECT * FROM songs where pretty_name = :song",[song])
-   song_list=list(res1.fetchall())
-   if song_list==[]:
+   desc=cur.description
+   #print(desc)
+   column_names=[col[0] for col in desc]
+   check=cur.fetchall()
+   print("check",check)
+   if check==[]:
       print("not found")
       return False
    else:
-      print(song_list)
-      return song_list
+      data=[dict(zip(column_names, row)) for row in check]
+      print(data[0])
+      return data[0]
 
 def close():
    con.close()
