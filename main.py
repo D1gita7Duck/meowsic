@@ -24,40 +24,6 @@ master_playing = False
 formatted_total_song_time = 0
 
 
-def load_music(path):
-    global master_playing
-    global now_playing
-    global formatted_total_song_time
-
-    if master_playing == True:
-        for i in path:
-            pygame.mixer.music.queue(i)
-    else:
-        pygame.mixer.music.load(path[0])
-        for i in path[1::]:
-            pygame.mixer.music.queue(i)
-        now_playing = 0
-
-        # total length of song
-        with audioread.audio_open(songs_paths[now_playing]) as song_file:
-            total_song_time = song_file.duration
-            formatted_total_song_time = time.strftime(
-                "%M:%S", time.gmtime(total_song_time)
-            )
-
-        # change the highlight to current song
-        song_list.selection_clear()
-        song_list.activate(now_playing)
-        song_list.select(f"END{now_playing % len(songs_paths)}")
-
-        #slider position
-        song_slider.configure(to=total_song_time)
-        song_slider.set(0)
-
-        # change status bar to current song name
-        status_bar.configure(text=f'Paused: {path[0].split("/")[-1]}')
-
-
 def add_songs():
     # songs_paths will be a tuple of filepaths (str)
     global songs_paths
