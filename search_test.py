@@ -22,12 +22,16 @@ playing = 0
 now_playing = 0
 master_playing = False
 formatted_total_song_time = 0
+
 def load_music(t):
+    global total_song_time
+    global formatted_total_song_time
     pygame.mixer.music.load(t)
     #inserting into list_box
     name = t.split("/")[-1]
     song_list.insert("END", name)
-
+    print("songs_paths",songs_paths)
+    print("now playing",now_playing)
     # total length of song
     with audioread.audio_open(songs_paths[now_playing]) as song_file:
         total_song_time = song_file.duration
@@ -47,14 +51,16 @@ def load_music(t):
 
     # change status bar to current song name
     status_bar.configure(text=f'Paused: {songs_paths[0].split("/")[-1]}')
+
 def search():
     global songs_paths
-    if pygame.mixer.music.get_busy():
+    if songs_paths:
         search_text = search_bar.get()
         print(search_text)
         temp_res=functions.search(search_text)
         song_name_temp=functions.download(temp_res["url"],functions.better_name(temp_res["pretty_name"]))
         temp_paths=os.path.join("Audio/",song_name_temp)
+        songs_paths+=(temp_paths,)
         load_music(temp_paths)
     else:
         songs_paths=tuple()
@@ -63,6 +69,7 @@ def search():
         temp_res=functions.search(search_text)
         song_name_temp=functions.download(temp_res["url"],functions.better_name(temp_res["pretty_name"]))
         temp_paths=os.path.join("Audio/",song_name_temp)
+        songs_paths+=(temp_paths,)
         # songs_paths+=(temp_paths,)
         # song_list.insert('END', temp_paths)
         # pygame.mixer.music.load(temp_paths)
@@ -143,7 +150,6 @@ def play_time():
     global now_playing
     global formatted_total_song_time
     global total_song_time
-
     time_elapsed = pygame.mixer.music.get_pos() 
     formatted_time_elapsed = time.strftime("%M:%S", time.gmtime(time_elapsed//1000))
 
@@ -154,9 +160,10 @@ def play_time():
 
     #move song_slider with progress of song
     song_slider.set(time_elapsed//1000)
-
+    #print(total_song_time,time_elapsed)
     #queue?
-    if time_elapsed//1000==total_song_time//1:
+
+    if time_elapsed//1000==total_song_time//1 or time_elapsed//1000<0:
         song_next()
 
     time_elapsed_label.after(1000, play_time)
@@ -173,7 +180,8 @@ def song_previous():
     global playing
     global formatted_total_song_time
     global total_song_time
-
+    print("now playing",now_playing)
+    print("songs",songs_paths)
     song_time_elapsed = (pygame.mixer.music.get_pos()) // 1000
 
     if song_time_elapsed < 2:
@@ -234,7 +242,7 @@ def song_next():
     global playing
     global now_playing
     global formatted_total_song_time
-
+    global total_song_time
     try:
         song = songs_paths[(now_playing + 1) % song_list.size()]
         now_playing = (now_playing + 1) % song_list.size()
