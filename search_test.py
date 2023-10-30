@@ -7,6 +7,7 @@ import os
 import time
 import audioread
 import functions
+import asyncio
 
 pygame.mixer.init()
 ctk.set_appearance_mode("System")  # Modes: system (default), light, dark
@@ -22,11 +23,14 @@ playing = 0
 now_playing = 0
 master_playing = False
 formatted_total_song_time = 0
+songs_paths=[]
 
 def load_music(t):
     global total_song_time
     global formatted_total_song_time
-    pygame.mixer.music.load(t)
+    global playing
+    if playing==2:pass
+    else:pygame.mixer.music.load(t)
     #inserting into list_box
     name = t.split("/")[-1]
     song_list.insert("END", name)
@@ -54,10 +58,13 @@ def load_music(t):
 
 def search():
     global songs_paths
+    global playing
     if songs_paths:
         search_text = search_bar.get()
         print(search_text)
-        temp_res=functions.search(search_text)
+        temp_res= functions.search(search_text)
+        if pygame.mixer.music.get_busy():
+            play_pause(play_button)
         song_name_temp=functions.download(temp_res["url"],functions.better_name(temp_res["pretty_name"]))
         temp_paths=os.path.join("Audio/",song_name_temp)
         songs_paths+=(temp_paths,)
@@ -180,8 +187,8 @@ def song_previous():
     global playing
     global formatted_total_song_time
     global total_song_time
-    print("now playing",now_playing)
-    print("songs",songs_paths)
+    #print("now playing",now_playing)
+    #print("songs",songs_paths)
     song_time_elapsed = (pygame.mixer.music.get_pos()) // 1000
 
     if song_time_elapsed < 2:
