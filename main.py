@@ -6,6 +6,8 @@ from PIL import Image, ImageTk
 import os
 import time
 import audioread
+import functions
+import asyncio
 
 pygame.mixer.init()
 ctk.set_appearance_mode("System")  # Modes: system (default), light, dark
@@ -13,53 +15,96 @@ ctk.set_default_color_theme("green")  # Themes: blue (default), dark-blue, green
 
 
 app = ctk.CTk()  # create CTk window like you do with the Tk window
-app.geometry("700x700")
+app.geometry("1000x700")
 app.title("meowsic")
 app.iconbitmap(os.path.join(os.getcwd() , "assets","icons","app_icon.ico"))
-
 
 playing = 0
 now_playing = 0
 master_playing = False
 formatted_total_song_time = 0
+songs_paths=[]
 
-
-def load_music(path):
-    global master_playing
-    global now_playing
+def load_music(t):
+    global total_song_time
     global formatted_total_song_time
+    global playing
+    if playing==2 or playing==1:pass
+    else:pygame.mixer.music.load(t)
+    #inserting into list_box
+    name = t.split("/")[-1]
+    song_list.insert("END", name)
+    print("songs_paths",songs_paths)
+    print("now playing",now_playing)
+    # total length of song
+    with audioread.audio_open(songs_paths[now_playing]) as song_file:
+        total_song_time = song_file.duration
+        print(total_song_time)
+        formatted_total_song_time = time.strftime(
+            "%M:%S", time.gmtime(total_song_time)
+        )
 
-    if master_playing == True:
-        for i in path:
-            pygame.mixer.music.queue(i)
+    # change the highlight to current song
+    song_list.selection_clear()
+    song_list.activate(now_playing)
+    song_list.select(f"END{now_playing % len(songs_paths)}")
+
+    #slider position
+    song_slider.configure(to=total_song_time)
+    song_slider.set(0)
+
+    # change status bar to current song name
+    status_bar.configure(text=f'Paused: {songs_paths[0].split("/")[-1]}')
+
+def search():
+    global songs_paths
+    global playing
+    if songs_paths:
+        search_text = search_bar.get()
+        print(search_text)
+        temp_res= functions.search(search_text)
+        # if pygame.mixer.music.get_busy():
+        #     play_pause(play_button)
+        song_name_temp=functions.download(temp_res["url"],functions.better_name(temp_res["pretty_name"]))
+        temp_paths=os.path.join("Audio/",song_name_temp)
+        songs_paths+=(temp_paths,)
+        load_music(temp_paths)
     else:
-        pygame.mixer.music.load(path[0])
-        for i in path[1::]:
-            pygame.mixer.music.queue(i)
-        now_playing = 0
+        songs_paths=tuple()
+        search_text = search_bar.get()
+        print(search_text)
+        temp_res=functions.search(search_text)
+        song_name_temp=functions.download(temp_res["url"],functions.better_name(temp_res["pretty_name"]))
+        temp_paths=os.path.join("Audio/",song_name_temp)
+        songs_paths+=(temp_paths,)
+        # songs_paths+=(temp_paths,)
+        # song_list.insert('END', temp_paths)
+        # pygame.mixer.music.load(temp_paths)
+        load_music(temp_paths)
+    # Get the search text
 
-        # total length of song
-        with audioread.audio_open(songs_paths[now_playing]) as song_file:
-            total_song_time = song_file.duration
-            formatted_total_song_time = time.strftime(
-                "%M:%S", time.gmtime(total_song_time)
-            )
 
-        # change the highlight to current song
-        song_list.selection_clear()
-        song_list.activate(now_playing)
-        song_list.select(f"END{now_playing % len(songs_paths)}")
+    # Clear the search bar
+    search_bar.delete(0, 'end')
 
-        #slider position
-        song_slider.configure(to=total_song_time)
-        song_slider.set(0)
+def open_search_frame():
+    # Hide the original home screen
+    master_frame.pack_forget()
 
-        # change status bar to current song name
-        status_bar.configure(text=f'Paused: {path[0].split("/")[-1]}')
+    # Display the search frame
+    search_frame.pack(fill='x', expand=True, padx=10, pady=10)
+
+# Define a function to close the search frame and go back to the home screen
+def close_search_frame():
+    # Hide the search frame
+    search_frame.pack_forget()
+
+    # Display the original home screen
+    master_frame.pack(pady=40)
 
 
 def add_songs():
-    # songs_paths will be a tuple of filepaths (str)
+     # songs_paths will be a tuple of filepaths (str)
     global songs_paths
     global formatted_total_song_time
     global now_playing
@@ -107,13 +152,11 @@ def add_songs():
 
     print(songs_paths)
 
-
 def play_time():
     global songs_paths
     global now_playing
     global formatted_total_song_time
     global total_song_time
-
     time_elapsed = pygame.mixer.music.get_pos() 
     formatted_time_elapsed = time.strftime("%M:%S", time.gmtime(time_elapsed//1000))
 
@@ -124,12 +167,14 @@ def play_time():
 
     #move song_slider with progress of song
     song_slider.set(time_elapsed//1000)
-
+    #print(total_song_time,time_elapsed)
     #queue?
-    if time_elapsed//1000==total_song_time//1:
+
+    if time_elapsed//1000==total_song_time//1 or time_elapsed//1000<0:
         song_next()
 
     time_elapsed_label.after(1000, play_time)
+
 
 
 def slide(x):
@@ -142,12 +187,13 @@ def song_previous():
     global playing
     global formatted_total_song_time
     global total_song_time
-
+    #print("now playing",now_playing)
+    #print("songs",songs_paths)
     song_time_elapsed = (pygame.mixer.music.get_pos()) // 1000
 
     if song_time_elapsed < 2:
-        song = songs_paths[(now_playing - 1) % len(songs_paths)]
-        now_playing = (now_playing - 1) % len(songs_paths)
+        song = songs_paths[(now_playing - 1) % song_list.size()]
+        now_playing = (now_playing - 1) % song_list.size()
         pygame.mixer.music.load(song)
         pygame.mixer.music.play(loops=0)
         playing = 1
@@ -163,7 +209,7 @@ def song_previous():
         # change the highlight to current song
         song_list.selection_clear()
         song_list.activate(now_playing)
-        song_list.select(f"END{now_playing % len(songs_paths)}")
+        song_list.select(f"END{now_playing % song_list.size()}")
 
         #slider position
         song_slider.configure(to=total_song_time)
@@ -189,7 +235,7 @@ def song_previous():
         # change the highlight to current song
         song_list.selection_clear()
         song_list.activate(now_playing)
-        song_list.select(f"END{now_playing % len(songs_paths)}")
+        song_list.select(f"END{now_playing % song_list.size()}")
 
         #slider position
         song_slider.configure(to=total_song_time)
@@ -203,15 +249,12 @@ def song_next():
     global playing
     global now_playing
     global formatted_total_song_time
-    global songs_paths
     global total_song_time
-
     try:
-        song = songs_paths[(now_playing + 1) % len(songs_paths)]
-        print(songs_paths[(now_playing + 1) % len(songs_paths)])
-        now_playing = (now_playing + 1) % len(songs_paths)
+        song = songs_paths[(now_playing + 1) % song_list.size()]
+        now_playing = (now_playing + 1) % song_list.size()
     except IndexError:
-        song = songs_paths[now_playing % len(songs_paths)]
+        song = songs_paths[now_playing]
         pygame.mixer.music.load(song)
 
     else:
@@ -230,7 +273,7 @@ def song_next():
         # change the highlight to current song
         song_list.selection_clear()
         song_list.activate(now_playing)
-        song_list.select(f"END{now_playing % len(songs_paths)}")
+        song_list.select(f"END{now_playing % song_list.size()}")
 
         #slider position
         song_slider.configure(to=total_song_time)
@@ -268,7 +311,7 @@ def play_pause(btn: ctk.CTkButton):
         # change the highlight to current song
         song_list.selection_clear()
         song_list.activate(now_playing)
-        song_list.select(f"END{now_playing % len(songs_paths)}")
+        song_list.select(f"END{now_playing % song_list.size()}")
 
         play_time()
 
@@ -285,7 +328,7 @@ def play_pause(btn: ctk.CTkButton):
         # change the highlight to current song
         song_list.selection_clear()
         song_list.activate(now_playing)
-        song_list.select(f"END{now_playing % len(songs_paths)}")
+        song_list.select(f"END{now_playing % song_list.size()}")
 
         play_time()
 
@@ -293,6 +336,7 @@ def play_on_click():
     pass
 
 
+# load_music(("H:\Arnav\Python\Python Workspace\meowsic\Audio\song1.mp3",))
 
 
 # menu
@@ -314,12 +358,44 @@ sub_menu.add_option(option=".PDF")
 
 # Frames
 master_frame = ctk.CTkFrame(app)
-master_frame.pack(pady=20)
+
 
 # Media Controls Frame
 playback_controls_frame = ctk.CTkFrame(master_frame)
 playback_controls_frame.grid(row=2, column=0)
+search_frame = ctk.CTkFrame(app)
 
+# Create a search bar
+search_bar = ctk.CTkEntry(search_frame)
+search_bar.pack(fill='x', expand=True, padx=10, pady=10)
+
+# Create a search button
+search_button = ctk.CTkButton(search_frame, text="Search")
+search_button.pack(fill='x', expand=True, padx=10, pady=10)
+
+# Place the separate frame in the window
+search_frame.pack(fill='x', expand=True, padx=10, pady=10)
+
+# Bind the search button to a function
+search_button.configure(command=search)
+open_search_frame_button = ctk.CTkButton(app, text="Open Search Frame")
+open_search_frame_button.pack()
+
+# Create a button to close the search frame and go back to the home screen
+close_search_frame_button = ctk.CTkButton(search_frame, text="Close Search Frame")
+close_search_frame_button.pack(fill='x', expand=True, padx=10, pady=10)
+
+# Bind the open search frame button to the open_search_frame function
+open_search_frame_button.configure(command=open_search_frame)
+
+# Bind the close search frame button to the close_search_frame function
+close_search_frame_button.configure(command=close_search_frame)
+
+# Place the search frame in the window
+search_frame.pack(fill='x', expand=True, padx=10, pady=10)
+
+# Hide the search frame by default
+search_frame.pack_forget()
 
 # buttons folder path
 icon_folder_path = os.path.join(
@@ -397,7 +473,7 @@ song_list = CTkListbox.CTkListbox(
     text_color="purple",
 )
 song_list.pack(pady=20)
-
+master_frame.pack(pady=40)
 status_bar = ctk.CTkLabel(app, text="status bar", justify="center", anchor="e")
 status_bar.pack(ipady=10)
 
