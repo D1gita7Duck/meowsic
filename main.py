@@ -195,6 +195,7 @@ def song_previous():
         song = songs_paths[(now_playing - 1) % song_list.size()]
         now_playing = (now_playing - 1) % song_list.size()
         pygame.mixer.music.load(song)
+        functions.store_recents(song.split("/")[-1])
         pygame.mixer.music.play(loops=0)
         playing = 1
         play_button.configure(image=pause_button_icon)
@@ -259,6 +260,7 @@ def song_next():
 
     else:
         pygame.mixer.music.load(song)
+        functions.store_recents(song.split("/")[-1])
         pygame.mixer.music.play(loops=0)
         playing = 1
         play_button.configure(image=pause_button_icon)
@@ -281,6 +283,7 @@ def song_next():
 
         # change status bar to current song name
         status_bar.configure(text=f'Now playing: {song.split("/")[-1]}')
+
 
 
 def play_pause(btn: ctk.CTkButton):
@@ -317,7 +320,7 @@ def play_pause(btn: ctk.CTkButton):
 
     elif playing == 0:
         pygame.mixer.music.play()
-
+        functions.store_recents(song_list.get().split("/")[-1])
         # change button icon
         btn.configure(image=pause_button_icon)
         playing = 1
@@ -479,6 +482,9 @@ status_bar.pack(ipady=10)
 
 time_elapsed_label = ctk.CTkLabel(app, text="time", anchor="e")
 time_elapsed_label.pack(fill="x", side="bottom", ipady=10, padx=10)
+
+recent_label=ctk.CTkLabel(app,text="recently played : "+str(functions.get_recents()))
+recent_label.pack()
 
 test_label=ctk.CTkLabel(app, text='slida text')
 test_label.pack(pady=10)

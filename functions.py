@@ -14,7 +14,7 @@ with open("secrets.dat","rb") as credentials:
     client_credentials_manager = SpotifyClientCredentials(client_id=pickle.load(credentials), client_secret=pickle.load(credentials))
     sp = spotipy.Spotify(client_credentials_manager = client_credentials_manager)
 
-db.init()
+
 
 ydl_opts = {
     'outtmpl': "new",
@@ -26,6 +26,34 @@ ydl_opts = {
     }],
 }
 
+db.init()
+
+def check_recents():
+    try:
+        file=open("recents.dat","rb+")
+    except FileNotFoundError:
+        file=open("recents.dat","wb+")
+        pickle.dump([{},{},{}],file)
+    finally:
+        file.close()
+
+check_recents()
+
+def store_recents(song_dict):
+    file=open("recents.dat","rb+")
+    file.seek(0,0)
+    L=pickle.load(file)
+    L.pop()
+    L.insert(0,song_dict)
+    file.seek(0,0)
+    pickle.dump(L,file)
+    file.close()
+
+def get_recents():
+    file=open("recents.dat","rb")
+    file.seek(0,0)
+    recent=pickle.load(file)
+    return recent
 def thumbs(name,url):
     """
     Accepts name and url of a song to store and download the thumbnail.
