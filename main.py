@@ -81,10 +81,7 @@ def search():
         # song_list.insert('END', temp_paths)
         # pygame.mixer.music.load(temp_paths)
         load_music(temp_paths)
-    # Get the search text
 
-
-    # Clear the search bar
     search_bar.delete(0, 'end')
 
 def open_search_frame():

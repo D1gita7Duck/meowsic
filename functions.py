@@ -54,6 +54,7 @@ def get_recents():
     file.seek(0,0)
     recent=pickle.load(file)
     return recent
+
 def thumbs(name,url):
     """
     Accepts name and url of a song to store and download the thumbnail.

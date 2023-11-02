@@ -37,7 +37,7 @@ Version 1.0:
 
 -database stores all songs downloaded , played and liked
 
--robust mechanism for play,pause,stop,next and previous song
+-robust mechanism for play,pause,stop,next and previous song [DONE]
 
 -proper queue system [Mostly_DONE] 
 
