@@ -1,23 +1,61 @@
-import customtkinter as ctk
-import CTkMenuBar
-import CTkListbox
-import pygame.mixer
-from PIL import Image, ImageTk
 import os
 import time
+import atexit
+import threading
+import customtkinter as ctk
+from flask import Flask, request
 import audioread
+from PIL import Image
+import pygame.mixer
+import CTkListbox
+import CTkMenuBar
 import functions
-import asyncio
+import remote.remote as remote
+
+
+flask_app = Flask(__name__)
 
 pygame.mixer.init()
 ctk.set_appearance_mode("System")  # Modes: system (default), light, dark
 ctk.set_default_color_theme("green")  # Themes: blue (default), dark-blue, green
+
+@flask_app.route('/control', methods=['POST'])
+def control_music_player():
+    action = request.form.get('action')
+    if action == 'play_pause':
+        play_pause(play_button)
+    elif action == 'song_previous':
+        song_previous()
+    elif action == 'song_next':
+        song_next()
+    return "OK"
+
+
+def run_flask():
+    flask_app.run(host='0.0.0.0', port=5000)
+def run_client_side():
+    remote.app.run(host="0.0.0.0",port=80)
+flask_thread = threading.Thread(target=run_flask)
+flask_thread.daemon = True
+flask_thread.start()
+client_side_thread=threading.Thread(target=run_client_side)
+client_side_thread.daemon = True
+client_side_thread.start()
+
+def kill_app():
+    func = flask_thread._stop
+    try:
+        app.destroy()
+        func()
+    except:
+        print("closing app")
 
 
 app = ctk.CTk()  # create CTk window like you do with the Tk window
 app.geometry("1000x700")
 app.title("meowsic")
 app.iconbitmap(os.path.join(os.getcwd() , "assets","icons","app_icon.ico"))
+app.protocol("WM_DELETE_WINDOW",kill_app)
 
 playing = 0
 now_playing = 0
@@ -81,7 +119,10 @@ def search():
         # song_list.insert('END', temp_paths)
         # pygame.mixer.music.load(temp_paths)
         load_music(temp_paths)
+    # Get the search text
 
+
+    # Clear the search bar
     search_bar.delete(0, 'end')
 
 def open_search_frame():
@@ -156,7 +197,6 @@ def play_time():
     global total_song_time
     time_elapsed = pygame.mixer.music.get_pos() 
     formatted_time_elapsed = time.strftime("%M:%S", time.gmtime(time_elapsed//1000))
-
     # update time label
     time_elapsed_label.configure(
         text=f"{formatted_time_elapsed} of {formatted_total_song_time}"
@@ -215,7 +255,6 @@ def song_previous():
         
         # change status bar to current song name
         status_bar.configure(text=f'Now playing: {song.split("/")[-1]}')
-
     else:
         song = songs_paths[now_playing]
         pygame.mixer.music.load(song)
@@ -486,4 +525,5 @@ recent_label.pack()
 test_label=ctk.CTkLabel(app, text='slida text')
 test_label.pack(pady=10)
 
+atexit.register(kill_app)
 app.mainloop()

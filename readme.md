@@ -18,24 +18,22 @@ Version 0.9:
 
 -album art , album name , artist name etc to be searched and auto cached using db [DONE]
 
--above metadata to be displayed with currently playing song
+-above metadata to be displayed with currently playing song [Backend_DONE]
 
 -play pause stop next and previous functionality [DONE]
 
 -use libraries to play file in native python instead of using wmp [DONE]
 
--ability to store "liked" songs using sql
+-ability to store "liked" songs using sql [DONE]
 
--above feature to be used to display "recently played" songs with name and album art on the home screen 
+-above feature to be used to display "recently played" songs with name and album art on the home screen [Backend_DONE]
 
 
 Version 1.0:
 
 -everything from 0.9 and more
 
--playlists functionality with either sql db
-
--database stores all songs downloaded , played and liked
+-playlists functionality with sql db
 
 -robust mechanism for play,pause,stop,next and previous song [DONE]
 
@@ -60,7 +58,7 @@ Version 1.5:
 
 -cache management system aka delete music file if not in any playlist or recently played
 
--remote control music playback like spotify connect using flask
+-remote control music playback like spotify connect using flask [DONE]
 
 
 Version 2.0:

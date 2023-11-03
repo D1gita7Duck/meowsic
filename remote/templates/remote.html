@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Meowsic Web Interface</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static',filename='style.css') }}"">
+</head>
+<body bgcolor="orange">
+    <h1>Meowsic Web Interface</h1>
+
+    <div id="buttons-container">
+        <button id="previousButton">
+            <img src="{{ url_for('static',filename='previous_btn.png') }}" alt="Previous">
+        </button>
+        <button id="playPauseButton">
+            <img src="{{ url_for('static',filename='play_btn.png') }}" alt="Play/Pause">
+        </button>
+        <button id="nextButton">
+            <img src="{{ url_for('static',filename='next_btn.png') }}" alt="Next">
+        </button>
+    </div>
+
+    <script>
+        // Function to send a POST request to the server
+        function sendControlAction(action) {
+            fetch('http://192.168.29.45:5000/control', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `action=${action}`,
+            })
+            .then(response => response.text())
+            .then(result => console.log(result))
+            .catch(error => console.error(error));
+        }
+
+        // Attach click event handlers to the buttons
+        document.getElementById('playPauseButton').addEventListener('click', () => {
+            sendControlAction('play_pause');
+        });
+
+        document.getElementById('previousButton').addEventListener('click', () => {
+            sendControlAction('song_previous');
+        });
+
+        document.getElementById('nextButton').addEventListener('click', () => {
+            sendControlAction('song_next');
+        });
+    </script>
+</body>
+</html>
