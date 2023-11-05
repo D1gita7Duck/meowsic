@@ -14,7 +14,7 @@ Version 0.5:
 
 Version 0.9:
 
--moderately complex customtkinter gui with home window ,seperate search window , "currently playing" window on the the bottom or side (to decide after design is final)
+-moderately complex customtkinter gui with home window ,seperate search window , "currently playing" window on the the bottom or side (to decide after design is final) [TO DO]
 
 -album art , album name , artist name etc to be searched and auto cached using db [DONE]
 
@@ -37,13 +37,15 @@ Version 1.0:
 
 -robust mechanism for play,pause,stop,next and previous song [DONE]
 
--proper queue system [Mostly_DONE] 
+-proper queue system [DONE] 
 
 -search mechanism to be more accurate and to provide more options to choose from after searching instead of just one
 
 -settings window to change dark/light mode , quality of songs downloaded etc
 
 -ability for users to delete songs and metadata they dont need anymore
+
+-make progress bar to show progress of downloading song [TO DO]
 
 
 Version 1.5:
