@@ -237,8 +237,7 @@ def play_time():
         song_slider.set(total_song_time)
         song_next()
 
-    test_label.configure(
-        text=f'slider: {song_slider.get()} and time_elapsed: {time_elapsed//1000}')
+    #test_label.configure(text=f'slider: {song_slider.get()} and time_elapsed: {time_elapsed//1000}')
 
     time_elapsed_label.after(1000, play_time)
 
