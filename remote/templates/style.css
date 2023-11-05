@@ -1,0 +1,47 @@
+/* Apply styles to the body and heading */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #FF8604;
+    margin: 0;
+    padding: 0;
+    text-align: center;
+}
+
+h1 {
+    color: #333;
+}
+
+/* Style the buttons */
+button {
+    background-color: transparent; /* Remove background color */
+    border: none;
+    margin: 5px;
+    cursor: pointer;
+    padding: 0; /* Remove padding */
+    width: 80px; /* Adjust the width as needed */
+    height: 80px; /* Adjust the height as needed */
+}
+
+/* Style the images within the buttons */
+button img {
+    width: 100%; /* Make the images fill the button's width */
+    height: 100%; /* Make the images fill the button's height */
+}
+
+button:hover {
+    background-color: #2980b9;
+}
+
+/* Center the buttons */
+#buttons-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 200px;
+}
+
+/* Center the footer text */
+#footer {
+    text-align: center;
+    margin-top: 20px;
+}

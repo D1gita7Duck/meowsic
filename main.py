@@ -1,28 +1,144 @@
-import customtkinter as ctk
-import CTkMenuBar
-import CTkListbox
-import pygame.mixer
-from PIL import Image, ImageTk
 import os
 import time
+import atexit
+import threading
+import customtkinter as ctk
+from flask import Flask, request
 import audioread
+from PIL import Image
+import pygame.mixer
+import CTkListbox
+import CTkMenuBar
+import functions
+import remote.remote as remote
+
+
+flask_app = Flask(__name__)
 
 pygame.mixer.init()
 ctk.set_appearance_mode("System")  # Modes: system (default), light, dark
 # Themes: blue (default), dark-blue, green
 ctk.set_default_color_theme("dark-blue")
 
+@flask_app.route('/control', methods=['POST'])
+def control_music_player():
+    action = request.form.get('action')
+    if action == 'play_pause':
+        play_pause(play_button)
+    elif action == 'song_previous':
+        song_previous()
+    elif action == 'song_next':
+        song_next()
+    return "OK"
+
+
+def run_flask():
+    flask_app.run(host='0.0.0.0', port=5000)
+def run_client_side():
+    remote.app.run(host="0.0.0.0",port=80)
+flask_thread = threading.Thread(target=run_flask)
+flask_thread.daemon = True
+flask_thread.start()
+client_side_thread=threading.Thread(target=run_client_side)
+client_side_thread.daemon = True
+client_side_thread.start()
+
+def kill_app():
+    func = flask_thread._stop
+    try:
+        app.destroy()
+        func()
+    except:
+        print("closing app")
+
 
 app = ctk.CTk()  # create CTk window like you do with the Tk window
-app.geometry("700x700")
+app.geometry("1000x700")
 app.title("meowsic")
-app.iconbitmap(os.path.join(os.getcwd(), "assets", "icons", "app_icon.ico"))
-
+app.iconbitmap(os.path.join(os.getcwd() , "assets","icons","app_icon.ico"))
+app.protocol("WM_DELETE_WINDOW",kill_app)
 
 playing = 0
 now_playing = 0
 master_playing = False
 formatted_total_song_time = 0
+songs_paths=[]
+
+def load_music(t):
+    global total_song_time
+    global formatted_total_song_time
+    global playing
+    if playing==2 or playing==1:pass
+    else:pygame.mixer.music.load(t)
+    #inserting into list_box
+    name = t.split("/")[-1]
+    song_list.insert("END", name)
+    print("songs_paths",songs_paths)
+    print("now playing",now_playing)
+    # total length of song
+    with audioread.audio_open(songs_paths[now_playing]) as song_file:
+        total_song_time = song_file.duration
+        print(total_song_time)
+        formatted_total_song_time = time.strftime(
+            "%M:%S", time.gmtime(total_song_time)
+        )
+
+    # change the highlight to current song
+    song_list.selection_clear()
+    song_list.activate(now_playing)
+    song_list.select(f"END{now_playing % len(songs_paths)}")
+
+    #slider position
+    song_slider.configure(to=total_song_time)
+    song_slider.set(0)
+
+    # change status bar to current song name
+    status_bar.configure(text=f'Paused: {songs_paths[0].split("/")[-1]}')
+
+def search():
+    global songs_paths
+    global playing
+    if songs_paths:
+        search_text = search_bar.get()
+        print(search_text)
+        temp_res= functions.search(search_text)
+        # if pygame.mixer.music.get_busy():
+        #     play_pause(play_button)
+        song_name_temp=functions.download(temp_res["url"],functions.better_name(temp_res["pretty_name"]))
+        temp_paths=os.path.join("Audio/",song_name_temp)
+        songs_paths+=(temp_paths,)
+        load_music(temp_paths)
+    else:
+        songs_paths=tuple()
+        search_text = search_bar.get()
+        print(search_text)
+        temp_res=functions.search(search_text)
+        song_name_temp=functions.download(temp_res["url"],functions.better_name(temp_res["pretty_name"]))
+        temp_paths=os.path.join("Audio/",song_name_temp)
+        songs_paths+=(temp_paths,)
+        # songs_paths+=(temp_paths,)
+        # song_list.insert('END', temp_paths)
+        # pygame.mixer.music.load(temp_paths)
+        load_music(temp_paths)
+    # Get the search text
+    # Clear the search bar
+    search_bar.delete(0, 'end')
+
+def open_search_frame():
+    # Hide the original home screen
+    master_frame.pack_forget()
+
+    # Display the search frame
+    search_frame.pack(fill='x', expand=True, padx=10, pady=10)
+
+# Define a function to close the search frame and go back to the home screen
+def close_search_frame():
+    # Hide the search frame
+    search_frame.pack_forget()
+
+    # Display the original home screen
+    master_frame.pack(pady=40)
+
 
 
 def add_songs():
@@ -95,6 +211,7 @@ def play_time():
         text=f'{formatted_time_elapsed}'
     )
 
+
     # move song_slider with progress of song
     song_slider.set(time_elapsed//1000)
 
@@ -105,6 +222,7 @@ def play_time():
 
     test_label.configure(
         text=f'slider: {song_slider.get()} and time_elapsed: {time_elapsed//1000}')
+
 
     time_elapsed_label.after(1000, play_time)
 
@@ -120,13 +238,15 @@ def song_previous():
     global playing
     global formatted_total_song_time
     global total_song_time
-
+    #print("now playing",now_playing)
+    #print("songs",songs_paths)
     song_time_elapsed = (pygame.mixer.music.get_pos()) // 1000
 
     if song_time_elapsed < 2:
         song = songs_paths[(now_playing - 1) % len(songs_paths)]
         now_playing = (now_playing - 1) % len(songs_paths)
         pygame.mixer.music.load(song)
+        functions.store_recents(song.split("/")[-1])
         pygame.mixer.music.play(loops=0)
         playing = 1
         play_button.configure(image=pause_button_icon)
@@ -149,7 +269,6 @@ def song_previous():
 
         # change status bar to current song name
         status_bar.configure(text=f'Now playing: {song.split("/")[-1]}')
-
     else:
         song = songs_paths[now_playing]
         pygame.mixer.music.load(song)
@@ -194,6 +313,7 @@ def song_next():
 
     else:
         pygame.mixer.music.load(song)
+        functions.store_recents(song.split("/")[-1])
         pygame.mixer.music.play(loops=0)
         playing = 1
         play_button.configure(image=pause_button_icon)
@@ -216,6 +336,7 @@ def song_next():
 
         # change status bar to current song name
         status_bar.configure(text=f'Now playing: {song.split("/")[-1]}')
+
 
 
 def play_pause(btn: ctk.CTkButton):
@@ -252,7 +373,7 @@ def play_pause(btn: ctk.CTkButton):
 
     elif playing == 0:
         pygame.mixer.music.play()
-
+        functions.store_recents(song_list.get().split("/")[-1])
         # change button icon
         btn.configure(image=pause_button_icon)
         playing = 1
@@ -289,6 +410,47 @@ sub_menu = file_dropdown.add_submenu("Export As")
 sub_menu.add_option(option=".TXT")
 sub_menu.add_option(option=".PDF")
 
+
+# Frames
+master_frame = ctk.CTkFrame(app)
+
+
+# Media Controls Frame
+playback_controls_frame = ctk.CTkFrame(master_frame)
+playback_controls_frame.grid(row=2, column=0)
+search_frame = ctk.CTkFrame(app)
+
+# Create a search bar
+search_bar = ctk.CTkEntry(search_frame)
+search_bar.pack(fill='x', expand=True, padx=10, pady=10)
+
+# Create a search button
+search_button = ctk.CTkButton(search_frame, text="Search")
+search_button.pack(fill='x', expand=True, padx=10, pady=10)
+
+# Place the separate frame in the window
+search_frame.pack(fill='x', expand=True, padx=10, pady=10)
+
+# Bind the search button to a function
+search_button.configure(command=search)
+open_search_frame_button = ctk.CTkButton(app, text="Open Search Frame")
+open_search_frame_button.pack()
+
+# Create a button to close the search frame and go back to the home screen
+close_search_frame_button = ctk.CTkButton(search_frame, text="Close Search Frame")
+close_search_frame_button.pack(fill='x', expand=True, padx=10, pady=10)
+
+# Bind the open search frame button to the open_search_frame function
+open_search_frame_button.configure(command=open_search_frame)
+
+# Bind the close search frame button to the close_search_frame function
+close_search_frame_button.configure(command=close_search_frame)
+
+# Place the search frame in the window
+search_frame.pack(fill='x', expand=True, padx=10, pady=10)
+
+# Hide the search frame by default
+search_frame.pack_forget()
 
 # Create Tabview
 master_tab = ctk.CTkTabview(
@@ -405,6 +567,7 @@ song_list = CTkListbox.CTkListbox(
     hightlight_color='red',
     hover_color='#7fb8cc',
 )
+
 song_list.grid(row=0, columnspan=9, pady=10, sticky='ew')
 
 #now playing label
@@ -416,8 +579,16 @@ status_bar.pack(pady=(20, 10))
 time_elapsed_label = ctk.CTkLabel(master=playback_controls_frame, text="time")
 time_elapsed_label.grid(row=5,column=0, sticky='ew', padx=(50,0))
 
+
 total_time_label=ctk.CTkLabel(master=playback_controls_frame, text="time")
 total_time_label.grid(row=5, column=4 , sticky='e' , padx=(0,50))
+
+
+recent_label=ctk.CTkLabel(app,text="recently played : "+str(functions.get_recents()))
+recent_label.pack()
+
+
+atexit.register(kill_app)
 
 #testing
 test_label = ctk.CTkLabel(app, text='slida text')
