@@ -10,6 +10,10 @@ pillow = "*"
 audioread = "*"
 ctklistbox = "*"
 packaging = "*"
+flask = "*"
+youtube-search-python = "*"
+yt-dlp = "*"
+spotipy = "*"
 
 [dev-packages]
 
