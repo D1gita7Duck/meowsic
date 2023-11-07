@@ -68,7 +68,7 @@ playing = 0
 now_playing = 0
 master_playing = False
 formatted_total_song_time = 0
-songs_paths = []
+songs_paths = tuple()
 
 
 def load_music(t):
@@ -178,9 +178,8 @@ def add_songs():
 
     if pygame.mixer.music.get_busy():
         songs_paths = (songs_paths) + (og_songs_paths)
-
     else:
-        songs_paths = og_songs_paths+tuple()
+        songs_paths = (songs_paths) + (og_songs_paths)
 
         pygame.mixer.music.load(songs_paths[0])
         now_playing = 0
@@ -237,7 +236,7 @@ def play_time():
         song_slider.set(total_song_time)
         song_next()
 
-    #test_label.configure(text=f'slider: {song_slider.get()} and time_elapsed: {time_elapsed//1000}')
+    # test_label.configure(text=f'slider: {song_slider.get()} and time_elapsed: {time_elapsed//1000}')
 
     time_elapsed_label.after(1000, play_time)
 
