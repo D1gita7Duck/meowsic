@@ -114,33 +114,50 @@ def load_music(t,pretty_name):
 def search():
     global songs_paths
     global playing
+    global temp_res
+    search_progress.set(0)
+
     if songs_paths:
         search_text = search_bar.get()
         print(search_text)
+        search_progress.start()
         temp_res = functions.search(search_text)
-        # if pygame.mixer.music.get_busy():
-        #     play_pause(play_button)
-        song_name_temp = functions.download(
-            temp_res["url"], functions.better_name(temp_res["pretty_name"]))
-        temp_paths = os.path.join("Audio/", song_name_temp)
-        songs_paths += (temp_paths,)
-        load_music(temp_paths,temp_res["pretty_name"])
+
+        # Download the song in a separate thread
+        download_thread = threading.Thread(target=download_and_load, args=(temp_res,))
+        download_thread.start()
+
     else:
+        # Reset the songs_paths tuple
         songs_paths = tuple()
         search_text = search_bar.get()
         print(search_text)
+        search_progress.start()
         temp_res = functions.search(search_text)
-        song_name_temp = functions.download(
-            temp_res["url"], functions.better_name(temp_res["pretty_name"]))
-        temp_paths = os.path.join("Audio/", song_name_temp)
-        songs_paths += (temp_paths,)
-        # songs_paths+=(temp_paths,)
-        # song_list.insert('END', temp_paths)
-        # pygame.mixer.music.load(temp_paths)
-        load_music(temp_paths,temp_res["pretty_name"])
-    # Get the search text
-    # Clear the search bar
+
+        # Download the song in a separate thread
+        download_thread = threading.Thread(target=download_and_load, args=(temp_res,))
+        download_thread.start()
+
+
+def download_and_load(temp_res):
+    """
+    Function to download and load the song
+    """
+    global songs_paths
+    song_name_temp = functions.download(
+        temp_res["url"], functions.better_name(temp_res["pretty_name"]))
+    temp_paths = os.path.join("Audio/", song_name_temp)
+    songs_paths += (temp_paths,)
+
+    # Stop the search progress bar
+    search_progress.stop()
+
+    # Load the downloaded song
+    load_music(temp_paths, temp_res["pretty_name"])
     search_bar.delete(0, 'end')
+    # Reset the progress bar
+    search_progress.set(0)
 
 
 def open_search_frame():
@@ -490,6 +507,9 @@ search_frame.pack(fill='x', expand=True, padx=10, pady=10)
 search_bar = ctk.CTkEntry(search_frame)
 search_bar.pack(fill='x', expand=True, padx=10, pady=10)
 
+search_progress=ctk.CTkProgressBar(search_frame,mode="indeterminate")
+search_progress.pack(fill="x",padx=10)
+
 # open search frame
 # open_search_frame_button = ctk.CTkButton(search_frame, text="Open Search Frame" , command=open_search_frame)
 # open_search_frame_button.pack()
@@ -615,9 +635,7 @@ recent_label.pack()
 
 atexit.register(kill_app)
 
-# testing
-# test_label = ctk.CTkLabel(app, text='slida text')
-# test_label.pack(pady=10)
+
 
 app.grid_columnconfigure((1, 2, 3, 4, 5, 6, 7, 8, 9, 10), weight=1)
 app.mainloop()

@@ -1,14 +1,15 @@
 import os
+import time
+import threading
 import pickle
 from youtubesearchpython import VideosSearch
 import yt_dlp as youtube_dl
-#from pprint import PrettyPrinter
 import requests
 import spotipy
 from spotipy.oauth2 import SpotifyClientCredentials
 import db 
 
-#pp=PrettyPrinter()
+
 
 with open("secrets.dat","rb") as credentials:
     client_credentials_manager = SpotifyClientCredentials(client_id=pickle.load(credentials), client_secret=pickle.load(credentials))
@@ -120,15 +121,24 @@ def download(url,name):
     if os.path.isfile(os.path.join("Audio/",name)):
         print("song already cached skipping")
     else:
-        print(os.path.isfile(os.path.join("Audio/",name)))       
-        with youtube_dl.YoutubeDL(ydl_opts) as ydl:
-            ydl.download([url])
-            try:
-                os.rename("new.mp3",os.path.join(r"Audio/",name))
-            except FileExistsError:
-                print("already cached")
-                try:
-                    os.remove("new.mp3")
-                except IOError:
-                    print("this shldnt happen")       
+        #print(os.path.isfile(os.path.join("Audio/",name)))       
+        while True:
+                with youtube_dl.YoutubeDL(ydl_opts) as ydl:
+                    # ydl_down = threading.Thread(target=ydl.download, args=[url])
+                    # ydl_down.start()
+
+                    ydl.download([url])
+                    try:
+                        os.rename("new.mp3", os.path.join(r"Audio/",name))
+                        break  # Break out of the loop if the file is successfully renamed
+                    except FileNotFoundError:
+                        print("File not found. Retrying in 1 second...")
+                        time.sleep(1)
+                    except FileExistsError:
+                        print("Already cached")
+                        try:
+                            os.remove("new.mp3")
+                        except IOError:
+                            print("This shouldn't happen")
+                        break      
     return name

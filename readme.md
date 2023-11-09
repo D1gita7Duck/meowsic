@@ -19,7 +19,7 @@ Version 0.9:
 -use libraries to play file in native python instead of using wmp [DONE]
 -ability to store "liked" songs using sql [DONE]
 -above feature to be used to display "recently played" songs with name and album art on the home screen [Backend_DONE]
-
+-make progress bar to show progress of downloading song [DONE]
 
 Version 1.0:
 
@@ -31,7 +31,6 @@ Version 1.0:
 -search mechanism to be more accurate and to provide more options to choose from after searching instead of just one
 -settings window to change dark/light mode , quality of songs downloaded etc
 -ability for users to delete songs and metadata they dont need anymore
--make progress bar to show progress of downloading song [TO_DO]
 
 
 Version 1.5:
