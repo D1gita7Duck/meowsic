@@ -438,7 +438,8 @@ def play_on_click():
     pass
 
 def main_lyrics():
-    lyrics.show_lyrics(temp_res["pretty_name"],temp_res["artists"].split(",")[0],app)
+    res=functions.search(song_list.get())
+    lyrics.show_lyrics(res["pretty_name"],res["artists"].split(",")[0],app)
 
 # menu
 menu = CTkMenuBar.CTkMenuBar(app)

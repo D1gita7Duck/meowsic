@@ -18,7 +18,7 @@ def show_lyrics(song,artist,app):
     try:
         song=genius.search_song(song,artist)
         lyrics=song.lyrics[:-5]
-        print(lyrics)
+        #print(lyrics)
     except:
         print("No lyrics found.")
         lyrics="not found"
