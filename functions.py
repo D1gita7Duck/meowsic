@@ -10,9 +10,9 @@ from spotipy.oauth2 import SpotifyClientCredentials
 import db 
 
 
-
 with open("secrets.dat","rb") as credentials:
-    client_credentials_manager = SpotifyClientCredentials(client_id=pickle.load(credentials), client_secret=pickle.load(credentials))
+    temp_cred=pickle.load(credentials)
+    client_credentials_manager = SpotifyClientCredentials(client_id=temp_cred[0], client_secret=temp_cred[1])
     sp = spotipy.Spotify(client_credentials_manager = client_credentials_manager)
 
 

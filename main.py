@@ -11,7 +11,7 @@ import CTkListbox
 import CTkMenuBar
 import functions
 import remote.remote as remote
-
+import lyrics
 
 flask_app = Flask(__name__)
 
@@ -437,6 +437,8 @@ def play_pause(btn: ctk.CTkButton):
 def play_on_click():
     pass
 
+def main_lyrics():
+    lyrics.show_lyrics(temp_res["pretty_name"],temp_res["artists"].split(",")[0],app)
 
 # menu
 menu = CTkMenuBar.CTkMenuBar(app)
@@ -478,7 +480,9 @@ previous_button_icon = ctk.CTkImage(
 search_button_icon = ctk.CTkImage(
     Image.open(os.path.join(icon_folder_path, "search_btn.png")), size=(30, 30)
 )
-
+mic_icon=ctk.CTkImage(
+    Image.open(os.path.join(icon_folder_path,"mic.png")),size=(30,30)
+)
 
 # Create Tabview
 master_tab = ctk.CTkTabview(
@@ -580,6 +584,19 @@ next_button = ctk.CTkButton(
 )
 next_button.grid(row=5, column=7, padx=(10, 10), sticky='ew')
 
+lyrics_button=ctk.CTkButton(
+    playback_controls_frame,
+    text="",
+    command=main_lyrics,
+    image=mic_icon,
+    border_width=0,
+    corner_radius=100,
+    fg_color="transparent",
+    hover=False,
+    width=0,
+    height=0,
+)
+lyrics_button.grid(row=5,column=8,padx=(10,10),sticky="ew")
 
 song_slider = ctk.CTkSlider(
     master=playback_controls_frame,
