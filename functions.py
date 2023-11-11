@@ -56,6 +56,25 @@ def get_recents():
     recent=pickle.load(file)
     return recent
 
+def like_song(song):
+    res=db.song_search(song)
+    path=os.path.join("Audio/",better_name(res["path"])+".mp3")
+    db.like_song([path,res["duration"],res["pretty_name"],res["thumbnail"],res["artists"]])
+def dislike_song(song):
+    # res=db.song_search(song)
+    # path=os.path.join("Audio/",res["path"]+".mp3")
+    db.dislike_song(song)
+def if_liked(song):
+    L=db.get_liked_songs()
+    print("L",L)
+    for i in L:
+        if i["pretty_name"]==song:
+            print(song,i["pretty_name"])
+            return True
+    return False
+def get_liked_songs():
+    return db.get_liked_songs()
+
 def thumbs(name,url):
     """
     Accepts name and url of a song to store and download the thumbnail.
@@ -84,7 +103,7 @@ def better_name(stringy):
 
 def search(stringy):
     """
-    Accepts a string and uses youtube and spotify API to get metadata.
+    Accepts song name and uses youtube and spotify API to get metadata.
     Returns a dictionary of url, duration, prettyname and thumbnail url.
     """
     videos_search = VideosSearch(stringy, limit = 1)
@@ -107,9 +126,9 @@ def search(stringy):
     else:
         print("not found in db downloading thumb")
         thumbnail_path=thumbs(better_name(pretty_name),thumbnail_url)
-        db.song_insert([url,duration,pretty_name,thumbnail_path,artists])
+        db.song_insert([stringy,duration,pretty_name,thumbnail_path,artists])
         print("added record to db")
-    return {"url":url,"duration":duration,"pretty_name":pretty_name,"thumbnail_path":thumbnail_path,"artists":artists}
+    return {"url":stringy,"duration":duration,"pretty_name":pretty_name,"thumbnail_path":thumbnail_path,"artists":artists}
 
 
 def download(url,name):

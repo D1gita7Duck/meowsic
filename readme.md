@@ -31,7 +31,7 @@ Version 1.0:
 -search mechanism to be more accurate and to provide more options to choose from after searching instead of just one
 -settings window to change dark/light mode , quality of songs downloaded etc
 -ability for users to delete songs and metadata they dont need anymore
-
+-import songs from spotify playlist to queue
 
 Version 1.5:
 

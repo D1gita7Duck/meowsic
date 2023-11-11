@@ -13,6 +13,9 @@ import functions
 import remote.remote as remote
 import lyrics
 
+liked_songs_paths = dict()
+liked = False
+
 flask_app = Flask(__name__)
 
 pygame.mixer.init()
@@ -75,11 +78,18 @@ def load_music(t,pretty_name):
     global total_song_time
     global formatted_total_song_time
     global playing
+    global liked
     if playing == 2 or playing == 1:
         pass
     else:
         pygame.mixer.music.load(t)
+    if functions.if_liked(pretty_name):
+        liked=True
+        like_button.configure(image=like_button_icon)
 
+    else:
+        liked=False
+        like_button.configure(image=disliked_button_icon)
     # inserting into list_box
     song_list.insert("END", pretty_name)
     print("songs_paths", songs_paths)
@@ -109,6 +119,16 @@ def load_music(t,pretty_name):
 
     # change status bar to current song name
     status_bar.configure(text=f'Paused: {songs_paths[0].split("/")[-1]}')
+    
+    #enable buttons
+    like_button.configure(state='normal')
+    previous_button.configure(state='normal')
+    play_button.configure(state='normal')
+    next_button.configure(state='normal')
+    song_slider.configure(state='normal')
+    lyrics_button.configure(state="normal")
+
+
 
 
 def search():
@@ -269,8 +289,19 @@ def song_previous():
     global playing
     global formatted_total_song_time
     global total_song_time
+    global liked
+    global liked_songs_paths
     # print("now playing",now_playing)
     # print("songs",songs_paths)
+    # check if song is liked/disliked
+    if songs_paths[now_playing] in liked_songs_paths:
+        like_button.configure(image=like_button_icon)
+        liked = True
+    else:
+        like_button.configure(image=disliked_button_icon)
+        liked = False
+
+
     song_time_elapsed = (pygame.mixer.music.get_pos()) // 1000
 
     if song_time_elapsed < 2:
@@ -343,6 +374,8 @@ def song_next():
     global formatted_total_song_time
     global songs_paths
     global total_song_time
+    global liked_songs_paths
+    global liked
 
     try:
         song = songs_paths[(now_playing + 1) % len(songs_paths)]
@@ -382,6 +415,14 @@ def song_next():
 
         # change status bar to current song name
         status_bar.configure(text=f'Now playing: {song.split("/")[-1]}')
+
+        if songs_paths[now_playing] in liked_songs_paths:
+            like_button.configure(image=like_button_icon)
+            liked = True
+        else:
+            like_button.configure(image=disliked_button_icon)
+            liked = False
+
 
 
 def play_pause(btn: ctk.CTkButton):
@@ -432,6 +473,41 @@ def play_pause(btn: ctk.CTkButton):
         song_list.select(f"END{now_playing % len(songs_paths)}")
 
         play_time()
+
+def like(btn: ctk.CTkButton):
+    global liked
+    global songs_paths
+    global liked_songs_paths
+    global now_playing
+
+    if not(functions.if_liked(song_list.get())):
+        # change button image
+        btn.configure(image=like_button_icon)
+        # mark song as liked
+        liked = True
+        # insert into liked_songs table
+        functions.like_song(song_list.get())
+
+        # add song path to list of liked songs paths
+        # liked_songs_paths[songs_paths[now_playing]
+        #                   ] = songs_paths[now_playing].split('/')[-1]
+        # insert into liked_songlistbox
+        liked_songs_listbox.insert(
+            "END", song_list.get())
+
+        print(f'liked')
+    else:
+        # change button image
+        btn.configure(image=disliked_button_icon)
+        # mark song as disliked
+        liked = False
+        # remove from liked_songs_paths
+        functions.dislike_song(song_list.get())
+        liked_songs_listbox.delete("all")
+        for i in functions.get_liked_songs():
+            liked_songs_listbox.insert("END",i["pretty_name"])
+
+        print(f'disliked')
 
 
 def play_on_click():
@@ -484,7 +560,12 @@ search_button_icon = ctk.CTkImage(
 mic_icon=ctk.CTkImage(
     Image.open(os.path.join(icon_folder_path,"mic.png")),size=(30,30)
 )
-
+disliked_button_icon = ctk.CTkImage(
+    Image.open(os.path.join(icon_folder_path, "disliked_btn.png")), size=(30, 30)
+)
+like_button_icon = ctk.CTkImage(
+    Image.open(os.path.join(icon_folder_path, "like_btn.png")), size=(30, 30)
+)
 # Create Tabview
 master_tab = ctk.CTkTabview(
     master=app,
@@ -503,7 +584,7 @@ master_tab.pack(pady=50)
 # Create tabs
 playback_tab = master_tab.add('Home')
 search_tab = master_tab.add('Search')
-
+liked_songs_tab = master_tab.add('Liked Songs')
 # Search Frame
 search_frame = ctk.CTkFrame(search_tab)
 search_frame.pack(fill='x', expand=True, padx=10, pady=10)
@@ -541,6 +622,10 @@ playback_controls_frame = ctk.CTkFrame(
     master=playback_tab, fg_color='black', corner_radius=20)
 playback_controls_frame.grid(row=2,  sticky='ew', padx=(20, 20))
 
+liked_songs_frame = ctk.CTkFrame(
+    master=liked_songs_tab
+)
+liked_songs_frame.grid(row=1, pady=(20, 20), padx=(20, 20), sticky='ew')
 
 # buttons
 previous_button = ctk.CTkButton(
@@ -554,8 +639,9 @@ previous_button = ctk.CTkButton(
     hover=False,
     width=0,
     height=0,
+    state="disabled"
 )
-previous_button.grid(row=5, column=5, padx=(10, 10), sticky='ew')
+previous_button.grid(row=5, column=6, padx=(10, 10), sticky='ew')
 
 play_button = ctk.CTkButton(
     playback_controls_frame,
@@ -568,8 +654,9 @@ play_button = ctk.CTkButton(
     hover=False,
     width=0,
     height=0,
+    state='disabled'
 )
-play_button.grid(row=5, column=6, padx=(10, 10), sticky='ew')
+play_button.grid(row=5, column=7, padx=(10, 10), sticky='ew')
 
 next_button = ctk.CTkButton(
     playback_controls_frame,
@@ -582,8 +669,9 @@ next_button = ctk.CTkButton(
     hover=False,
     width=0,
     height=0,
+    state='disabled'
 )
-next_button.grid(row=5, column=7, padx=(10, 10), sticky='ew')
+next_button.grid(row=5, column=8, padx=(10, 10), sticky='ew')
 
 lyrics_button=ctk.CTkButton(
     playback_controls_frame,
@@ -596,8 +684,25 @@ lyrics_button=ctk.CTkButton(
     hover=False,
     width=0,
     height=0,
+    state='disabled'
 )
-lyrics_button.grid(row=5,column=8,padx=(10,10),sticky="ew")
+lyrics_button.grid(row=5,column=9,padx=(10,10),sticky="ew")
+
+like_button = ctk.CTkButton(
+    playback_controls_frame,
+    text='',
+    command=lambda: like(like_button),
+    image=disliked_button_icon,
+    border_width=0,
+    corner_radius=100,
+    fg_color="transparent",
+    hover=False,
+    width=0,
+    height=0,
+    state='disabled'
+)
+like_button.grid(row=5, column=0, padx=(30, 10),)
+
 
 song_slider = ctk.CTkSlider(
     master=playback_controls_frame,
@@ -608,9 +713,10 @@ song_slider = ctk.CTkSlider(
     progress_color='orange',
     button_color='#003f5a',
     button_hover_color='blue',
-    command=slide
+    command=slide,
+    state='disabled'
 )
-song_slider.grid(row=5, column=1, columnspan=3, pady=20, sticky='ew')
+song_slider.grid(row=5, column=2, columnspan=3, pady=20, sticky='ew')
 
 # Songs List
 song_list = CTkListbox.CTkListbox(
@@ -630,6 +736,24 @@ song_list = CTkListbox.CTkListbox(
 
 song_list.grid(row=0, columnspan=9, pady=(10, 30), sticky='ew')
 
+liked_songs_listbox = CTkListbox.CTkListbox(
+    master=liked_songs_frame,
+    width=700,
+    height=120,
+    border_width=2,
+    border_color='black',
+    corner_radius=10,
+    label_text='Liked Songs',
+    label_anchor='center',
+    fg_color="orange",
+    text_color="black",
+    hightlight_color='red',
+    hover_color='#7fb8cc',
+)
+
+liked_songs_listbox.grid(row=0, columnspan=9, pady=(20, 20), sticky='ew')
+for i in functions.get_liked_songs():
+    liked_songs_listbox.insert("END",i["pretty_name"])
 # now playing label
 status_bar = ctk.CTkLabel(
     master=playback_tab, text="status bar", justify="center")
@@ -638,12 +762,12 @@ status_bar.grid(row=3, pady=(40, 20), sticky='ew')
 # time labels
 time_elapsed_label = ctk.CTkLabel(
     master=playback_controls_frame, text="--:--", text_color='white')
-time_elapsed_label.grid(row=5, column=0, sticky='w', padx=(50, 20))
+time_elapsed_label.grid(row=5, column=1, sticky='w', padx=(50, 20))
 
 
 total_time_label = ctk.CTkLabel(
     master=playback_controls_frame, text="--:--", text_color='white')
-total_time_label.grid(row=5, column=4, sticky='e', padx=(20, 50))
+total_time_label.grid(row=5, column=5, sticky='e', padx=(20, 50))
 
 
 recent_label = ctk.CTkLabel(
@@ -655,5 +779,5 @@ atexit.register(kill_app)
 
 
 
-app.grid_columnconfigure((1, 2, 3, 4, 5, 6, 7, 8, 9, 10), weight=1)
+app.grid_columnconfigure((0,1, 2, 3, 4, 5, 6, 7, 8, 9, 10), weight=1)
 app.mainloop()
