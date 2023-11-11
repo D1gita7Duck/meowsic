@@ -11,17 +11,17 @@ def init():
 
    if (res.fetchone() is None):
       print("creating new songs table")
-      con.execute("Create table songs(path varchar(50),duration int,pretty_name varchar(30),thumbnail varchar(50),artists varchar(20))")
+      con.execute("Create table songs(path varchar(50),url varchar(100),duration int,pretty_name varchar(30),thumbnail varchar(50),artists varchar(20))")
 
    if not(cur.execute("SELECT name FROM sqlite_master where name = 'liked_songs'").fetchone()):
       print("creating new liked_songs table")
-      con.execute("Create table liked_songs(path varchar(50),duration int,pretty_name varchar(30),thumbnail varchar(50),artists varchar(20))")
+      con.execute("Create table liked_songs(path varchar(50),url varchar(100),duration int,pretty_name varchar(30),thumbnail varchar(50),artists varchar(20))")
 
 
 def song_insert(song_list):
    # res = cur.execute("SELECT name FROM sqlite_master where name = 'songs'")
    con.execute("BEGIN TRANSACTION")
-   con.execute("INSERT INTO songs(path,duration,pretty_name,thumbnail,artists) VALUES (:path, :duration, :pretty_name, :thumbnail, :artists)",song_list)
+   con.execute("INSERT INTO songs(path,url,duration,pretty_name,thumbnail,artists) VALUES (:path, :url, :duration, :pretty_name, :thumbnail, :artists)",song_list)
    con.execute("COMMIT")
    print("add operation done")
 
@@ -29,7 +29,7 @@ def song_insert(song_list):
 def like_song(song_list):
    print("liking ",song_list)
    con.execute("BEGIN TRANSACTION")
-   con.execute("INSERT INTO liked_songs(path,duration,pretty_name,thumbnail,artists) VALUES (:path, :duration, :pretty_name, :thumbnail, :artists)",song_list)
+   con.execute("INSERT INTO liked_songs(path,url,duration,pretty_name,thumbnail,artists) VALUES (:path, :url, :duration, :pretty_name, :thumbnail, :artists)",song_list)
    con.execute("COMMIT")
    print("like operation done")
 def dislike_song(song_list):

@@ -62,7 +62,7 @@ def kill_app():
 
 
 app = ctk.CTk()  # create CTk window like you do with the Tk window
-app.geometry("1000x700")
+app.geometry("1080x720")
 app.title("meowsic")
 app.iconbitmap(os.path.join(os.getcwd(), "assets", "icons", "app_icon.ico"))
 app.protocol("WM_DELETE_WINDOW", kill_app)
@@ -83,6 +83,18 @@ def load_music(t,pretty_name):
         pass
     else:
         pygame.mixer.music.load(t)
+        # update metadata
+        # album art
+        album_art = ctk.CTkImage(Image.open(os.path.join(
+            thumbs_folder_path, f'{os.path.basename(t)[:-4]+".png"}')), size=(200, 200))
+        song_metadata_image_label.configure(image=album_art)
+
+        # artist name
+        song_metadata_artist_label.configure(
+            text=f'Artist: {functions.artist_search(pretty_name)["artists"].split(",")[0]}')
+        print("this is artist","{}".format(os.path.basename(t).rstrip(".mp3")))
+
+
     if functions.if_liked(pretty_name):
         liked=True
         like_button.configure(image=like_button_icon)
@@ -118,7 +130,7 @@ def load_music(t,pretty_name):
     total_time_label.configure(text=f'{formatted_total_song_time}')
 
     # change status bar to current song name
-    status_bar.configure(text=f'Paused: {songs_paths[0].split("/")[-1]}')
+    status_bar.configure(text=f'Paused: {song_list.get()}')
     
     #enable buttons
     like_button.configure(state='normal')
@@ -245,6 +257,11 @@ def add_songs():
         time_elapsed_label.configure(
             text=time.strftime("%M:%S", time.gmtime(0)))
         total_time_label.configure(text=f'{formatted_total_song_time}')
+        # update metadata
+        song_metadata_image_label.configure(image=garfield_icon)
+        song_metadata_artist_label.configure(text='Miscellaneous')
+        song_metadata_image_label.grid(row=0, columnspan=3, sticky='new', )
+
 
     print(songs_paths)
 
@@ -335,7 +352,28 @@ def song_previous():
         total_time_label.configure(text=f'{formatted_total_song_time}')
 
         # change status bar to current song name
-        status_bar.configure(text=f'Now playing: {song.split("/")[-1]}')
+        status_bar.configure(text=f'Now playing: {song_list.get()}')
+    
+        # update metadata
+        try:
+            # update album art
+            album_art = ctk.CTkImage(Image.open("thumbs/"+ f'{songs_paths[now_playing][5:-4]+".png"}'), size=(200, 200))
+            # artist name
+            song_metadata_artist_label.configure(
+                text=f'Artist: {functions.artist_search(song_list.get())["artists"].split(",")[0]}')
+        except KeyError:
+            print(f'No artist given')
+            song_metadata_artist_label.configure(text='Miscellaneous')
+        except:
+            print(f'no album art')
+            song_metadata_image_label.configure(image=garfield_icon)
+            song_metadata_artist_label.configure(text='Miscellaneous')
+            song_metadata_image_label.grid(row=0, columnspan=3, sticky='new', )
+        else:
+            song_metadata_image_label.configure(image=album_art)
+            song_metadata_image_label.grid(row=0, columnspan=3, sticky='new', )
+
+
     else:
         song = songs_paths[now_playing]
         pygame.mixer.music.load(song)
@@ -364,8 +402,6 @@ def song_previous():
             text=f'{time.strftime("%M:%S", time.gmtime(0))}')
         total_time_label.configure(text=f'{formatted_total_song_time}')
 
-        # change status bar to current song name
-        status_bar.configure(text=f'Now playing: {song.split("/")[-1]}')
 
 
 def song_next():
@@ -414,7 +450,7 @@ def song_next():
         total_time_label.configure(text=f'{formatted_total_song_time}')
 
         # change status bar to current song name
-        status_bar.configure(text=f'Now playing: {song.split("/")[-1]}')
+        status_bar.configure(text=f'Now playing: {song_list.get()}')
 
         if songs_paths[now_playing] in liked_songs_paths:
             like_button.configure(image=like_button_icon)
@@ -422,7 +458,27 @@ def song_next():
         else:
             like_button.configure(image=disliked_button_icon)
             liked = False
-
+        # update metadata
+        try:
+            # update album art
+            #print("album art dir",os.path.join("thumbs/", f'{songs_paths[now_playing][5:-4]+".png"}'))
+            album_art = ctk.CTkImage(Image.open("thumbs/"+ f'{songs_paths[now_playing][5:-4]+".png"}'), size=(200, 200))
+            
+            # artist name
+            print("song list artist get",f'Artist: {functions.artist_search(song_list.get())["artists"].split(",")[0]}')
+            song_metadata_artist_label.configure(
+                text=f'Artist: {functions.artist_search(song_list.get())["artists"].split(",")[0]}')
+        except KeyError:
+            print(f'No artist given')
+            song_metadata_artist_label.configure(text='Miscellaneous')
+        except:
+            print(f'no album art')
+            song_metadata_image_label.configure(image=garfield_icon)
+            song_metadata_artist_label.configure(text='Miscellaneous')
+            song_metadata_image_label.grid(row=0, columnspan=3, sticky='new', )
+        else:
+            song_metadata_image_label.configure(image=album_art)
+            song_metadata_image_label.grid(row=0, columnspan=3, sticky='new', )
 
 
 def play_pause(btn: ctk.CTkButton):
@@ -534,12 +590,20 @@ sub_menu = file_dropdown.add_submenu("Export As")
 sub_menu.add_option(option=".TXT")
 sub_menu.add_option(option=".PDF")
 
+# thumbnails folder path
+thumbs_folder_path = os.path.join("thumbs")
+
+
 # buttons folder path
 icon_folder_path = os.path.join(
     os.path.join(os.path.dirname(
         os.path.realpath(__file__)), "assets", "icons")
 
 )
+garfield_icon = ctk.CTkImage(
+    Image.open(os.path.join(icon_folder_path, "garfield.png")), size=(200, 250)
+)
+
 
 # button icons
 play_button_icon = ctk.CTkImage(
@@ -627,6 +691,16 @@ liked_songs_frame = ctk.CTkFrame(
 )
 liked_songs_frame.grid(row=1, pady=(20, 20), padx=(20, 20), sticky='ew')
 
+song_metadata_frame = ctk.CTkFrame(
+    master=playback_tab,
+    width=300,
+    height=400,
+    fg_color='black',
+)
+song_metadata_frame.grid(row=1, column = 11, columnspan=3, rowspan=3, padx=(10,10)) 
+song_metadata_frame.grid(row=0, column=11, columnspan=3,
+                         rowspan=3, padx=(10, 10))
+song_metadata_frame.columnconfigure((0, 1, 2, 3, 4, 5), weight=1)
 # buttons
 previous_button = ctk.CTkButton(
     playback_controls_frame,
@@ -755,9 +829,9 @@ liked_songs_listbox.grid(row=0, columnspan=9, pady=(20, 20), sticky='ew')
 for i in functions.get_liked_songs():
     liked_songs_listbox.insert("END",i["pretty_name"])
 # now playing label
-status_bar = ctk.CTkLabel(
-    master=playback_tab, text="status bar", justify="center")
-status_bar.grid(row=3, pady=(40, 20), sticky='ew')
+# status_bar = ctk.CTkLabel(
+#     master=playback_tab, text="status bar", justify="center")
+# status_bar.grid(row=3, pady=(40, 20), sticky='ew')
 
 # time labels
 time_elapsed_label = ctk.CTkLabel(
@@ -774,10 +848,30 @@ recent_label = ctk.CTkLabel(
     app, text="recently played : "+str(functions.get_recents()))
 recent_label.pack()
 
+# song metadata labels
+
+# album art label
+song_metadata_image_label = ctk.CTkLabel(
+    song_metadata_frame, text='', image=garfield_icon,)
+song_metadata_image_label.grid(row=0, columnspan=3, sticky='new', )
+
+# artist name label
+song_metadata_artist_label = ctk.CTkLabel(
+    song_metadata_frame, text='Artist: Garfield', text_color='white')
+song_metadata_artist_label.grid(row=1, columnspan=3, sticky='ew', pady=(20, 10))
+
+# now playing label
+status_bar = ctk.CTkLabel(
+    master=song_metadata_frame, text='Status Bar', justify="center", text_color='white')
+status_bar.grid(row=2, columnspan=3, pady=(10, 20), padx=(10, 10), sticky='ew')
 
 atexit.register(kill_app)
 
 
 
-app.grid_columnconfigure((0,1, 2, 3, 4, 5, 6, 7, 8, 9, 10), weight=1)
+# app.grid_columnconfigure((0,1, 2, 3, 4, 5, 6, 7, 8, 9, 10), weight=1)
+# app.grid_columnconfigure((0, 1, 2, 3, 4, 5, 6, 7, 8, 9,10,), weight=1)
+# app.grid_rowconfigure((0, 1, 2, 3, 4, 5, 6, 7, 8), weight=1)
+
+
 app.mainloop()

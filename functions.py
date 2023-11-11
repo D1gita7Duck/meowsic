@@ -59,7 +59,7 @@ def get_recents():
 def like_song(song):
     res=db.song_search(song)
     path=os.path.join("Audio/",better_name(res["path"])+".mp3")
-    db.like_song([path,res["duration"],res["pretty_name"],res["thumbnail"],res["artists"]])
+    db.like_song([path,res["url"],res["duration"],res["pretty_name"],res["thumbnail"],res["artists"]])
 def dislike_song(song):
     # res=db.song_search(song)
     # path=os.path.join("Audio/",res["path"]+".mp3")
@@ -126,10 +126,12 @@ def search(stringy):
     else:
         print("not found in db downloading thumb")
         thumbnail_path=thumbs(better_name(pretty_name),thumbnail_url)
-        db.song_insert([stringy,duration,pretty_name,thumbnail_path,artists])
+        db.song_insert([stringy,url,duration,pretty_name,thumbnail_path,artists])
         print("added record to db")
-    return {"url":stringy,"duration":duration,"pretty_name":pretty_name,"thumbnail_path":thumbnail_path,"artists":artists}
+    return {"path":stringy,"url":url,"duration":duration,"pretty_name":pretty_name,"thumbnail_path":thumbnail_path,"artists":artists}
 
+def artist_search(pretty_name):
+    return db.song_search(pretty_name)
 
 def download(url,name):
     """

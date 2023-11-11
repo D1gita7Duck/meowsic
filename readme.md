@@ -12,18 +12,18 @@ Version 0.5:
 
 Version 0.9:
 
--moderately complex customtkinter gui with home window ,seperate search window , "currently playing" window on the the bottom or side (to decide after design is final) [Almost+Done]
+-moderately complex customtkinter gui with home window ,seperate search window , "currently playing" window on the the bottom or side (to decide after design is final) [DONE]
 -album art , album name , artist name etc to be searched and auto cached using db [DONE]
--above metadata to be displayed with currently playing song [Backend_DONE]
+-above metadata to be displayed with currently playing song [DONE]
 -play pause stop next and previous functionality [DONE]
 -use libraries to play file in native python instead of using wmp [DONE]
 -ability to store "liked" songs using sql [DONE]
--above feature to be used to display "recently played" songs with name and album art on the home screen [Backend_DONE]
+-above feature to be used to display "recently played" songs with name and album art on the home screen [DONE]
 -make progress bar to show progress of downloading song [DONE]
 
 Version 1.0:
 
--Add seperate lyrics window which displays lyrics as a label in a scrollable frame
+-Add seperate lyrics window which displays lyrics as a label in a scrollable frame[DONE]
 -everything from 0.9 and more
 -playlists functionality with sql db
 -robust mechanism for play,pause,stop,next and previous song [DONE]
