@@ -3,14 +3,14 @@ Note:
 -Version 1.5 is initial "end goal"
 -if possible we try 2.0
 
-Version 0.5:
+Version 0.5[DONE]:
 
 -simple customtkinter gui with one search bar and two buttons [DONE]
 -type in search bar and press search to search youtube ,download video and then convert it to mp3 [DONE]
 -press play to start playing the file in windows music player (ik it sucks) [DONE]
 
 
-Version 0.9:
+Version 0.9[DONE]:
 
 -moderately complex customtkinter gui with home window ,seperate search window , "currently playing" window on the the bottom or side (to decide after design is final) [DONE]
 -album art , album name , artist name etc to be searched and auto cached using db [DONE]

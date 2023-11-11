@@ -310,14 +310,6 @@ def song_previous():
     global liked_songs_paths
     # print("now playing",now_playing)
     # print("songs",songs_paths)
-    # check if song is liked/disliked
-    if songs_paths[now_playing] in liked_songs_paths:
-        like_button.configure(image=like_button_icon)
-        liked = True
-    else:
-        like_button.configure(image=disliked_button_icon)
-        liked = False
-
 
     song_time_elapsed = (pygame.mixer.music.get_pos()) // 1000
 
@@ -372,6 +364,14 @@ def song_previous():
         else:
             song_metadata_image_label.configure(image=album_art)
             song_metadata_image_label.grid(row=0, columnspan=3, sticky='new', )
+            
+        if functions.if_liked(song_list.get()):
+            liked=True
+            like_button.configure(image=like_button_icon)
+
+        else:
+            liked=False
+            like_button.configure(image=disliked_button_icon)
 
 
     else:
@@ -452,12 +452,14 @@ def song_next():
         # change status bar to current song name
         status_bar.configure(text=f'Now playing: {song_list.get()}')
 
-        if songs_paths[now_playing] in liked_songs_paths:
+        if functions.if_liked(song_list.get()):
+            liked=True
             like_button.configure(image=like_button_icon)
-            liked = True
+
         else:
+            liked=False
             like_button.configure(image=disliked_button_icon)
-            liked = False
+
         # update metadata
         try:
             # update album art
