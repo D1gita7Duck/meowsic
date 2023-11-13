@@ -22,9 +22,9 @@ Version 0.9[DONE]:
 -make progress bar to show progress of downloading song [DONE]
 
 Version 1.0:
-
--Add seperate lyrics window which displays lyrics as a label in a scrollable frame[DONE]
 -everything from 0.9 and more
+-Add seperate lyrics window which displays lyrics as a label in a scrollable frame[DONE]
+-Add Volume control
 -playlists functionality with sql db
 -robust mechanism for play,pause,stop,next and previous song [DONE]
 -proper queue system [DONE] 

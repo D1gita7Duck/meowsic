@@ -171,7 +171,19 @@ def search():
         download_thread = threading.Thread(target=download_and_load, args=(temp_res,))
         download_thread.start()
 
-
+def load_liked():
+    print("load liked called")
+    temp_res = functions.search(liked_songs_listbox.get())
+    # Download the song in a separate thread
+    download_thread = threading.Thread(target=download_and_load, args=(temp_res,))
+    download_thread.start()
+def down_liked():
+    global songs_paths
+    song_name_temp = functions.download(
+        temp_res["url"], functions.better_name(temp_res["pretty_name"]))
+    temp_paths = os.path.join("Audio/", song_name_temp)
+    songs_paths += (temp_paths,)
+    load_music(temp_paths, temp_res["pretty_name"])
 def download_and_load(temp_res):
     """
     Function to download and load the song
@@ -829,7 +841,7 @@ liked_songs_listbox = CTkListbox.CTkListbox(
 
 liked_songs_listbox.grid(row=0, columnspan=9, pady=(20, 20), sticky='ew')
 for i in functions.get_liked_songs():
-    liked_songs_listbox.insert("END",i["pretty_name"])
+    liked_songs_listbox.insert("END",i["pretty_name"],onclick=load_liked)
 # now playing label
 # status_bar = ctk.CTkLabel(
 #     master=playback_tab, text="status bar", justify="center")
