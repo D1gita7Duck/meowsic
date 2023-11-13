@@ -1,16 +1,14 @@
 import os
 import time
-import threading
 import pickle
 from youtubesearchpython import VideosSearch
 import yt_dlp as youtube_dl
 import requests
 import spotipy
 from spotipy.oauth2 import SpotifyClientCredentials
-import db 
+import app.db as db
 
-
-with open("secrets.dat","rb") as credentials:
+with open("data/secrets.dat","rb") as credentials:
     temp_cred=pickle.load(credentials)
     client_credentials_manager = SpotifyClientCredentials(client_id=temp_cred[0], client_secret=temp_cred[1])
     sp = spotipy.Spotify(client_credentials_manager = client_credentials_manager)
@@ -31,9 +29,9 @@ db.init()
 
 def check_recents():
     try:
-        file=open("recents.dat","rb+")
+        file=open("data/recents.dat","rb+")
     except FileNotFoundError:
-        file=open("recents.dat","wb+")
+        file=open("data/recents.dat","wb+")
         pickle.dump([{},{},{}],file)
     finally:
         file.close()
@@ -41,7 +39,7 @@ def check_recents():
 check_recents()
 
 def store_recents(song_dict):
-    file=open("recents.dat","rb+")
+    file=open("data/recents.dat","rb+")
     file.seek(0,0)
     L=pickle.load(file)
     L.pop()
@@ -51,7 +49,7 @@ def store_recents(song_dict):
     file.close()
 
 def get_recents():
-    file=open("recents.dat","rb")
+    file=open("data/recents.dat","rb")
     file.seek(0,0)
     recent=pickle.load(file)
     return recent
@@ -121,13 +119,13 @@ def search(stringy):
     db_search=db.song_search(pretty_name)
     if db_search:
         print("found in db")
-        thumbnail_path=db_search["thumbnail"]
-
+        thumbnail_path=thumbs(better_name(pretty_name),thumbnail_url)
     else:
         print("not found in db downloading thumb")
         thumbnail_path=thumbs(better_name(pretty_name),thumbnail_url)
         db.song_insert([stringy,url,duration,pretty_name,thumbnail_path,artists])
         print("added record to db")
+    
     return {"path":stringy,"url":url,"duration":duration,"pretty_name":pretty_name,"thumbnail_path":thumbnail_path,"artists":artists}
 
 def artist_search(pretty_name):

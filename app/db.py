@@ -2,7 +2,7 @@ import sqlite3
 import os
 #con=sqlite3.connect("d:\songs2.db", isolation_level=None)
 
-con=sqlite3.connect(os.getcwd()+"/database.db",check_same_thread=False)
+con=sqlite3.connect(os.getcwd()+"/data/database.db",check_same_thread=False)
 
 def init():
    global cur

@@ -2,7 +2,7 @@ import pickle
 import customtkinter as ctk
 import lyricsgenius
 
-with open("secrets.dat","rb") as cred:
+with open("data/secrets.dat","rb") as cred:
     genius = lyricsgenius.Genius(pickle.load(cred)[2])
 
 

@@ -1,0 +1,610 @@
+import os
+import time
+import threading
+import pygame.mixer
+import customtkinter as ctk
+from PIL import Image
+import audioread
+import app.functions as functions
+import app.lyrics as lyrics
+
+pygame.mixer.init()
+
+playing = 0
+now_playing = 0
+master_playing = False
+formatted_total_song_time = 0
+songs_paths = []
+liked_songs_paths = dict()
+liked = False
+loaded=False
+
+def load_music(t,pretty_name):
+    """
+    Loads music into queue. Accepts filename, pretty_name of song.
+    """
+    import app.widgets as widgets
+    global total_song_time
+    global formatted_total_song_time
+    global playing
+    global liked
+    global loaded
+    if playing == 2 or playing == 1 or loaded:
+        pass
+    else:
+        loaded=True
+        pygame.mixer.music.load(t)
+        # update metadata
+        # album art
+        album_art = widgets.ctk.CTkImage(Image.open(os.path.join(
+            thumbs_folder_path, f'{os.path.basename(t)[:-4]+".png"}')), size=(200, 200))
+        widgets.song_metadata_image_label.configure(image=album_art)
+
+        # artist name
+        widgets.song_metadata_artist_label.configure(
+            text=f'Artist: {functions.artist_search(pretty_name)["artists"].split(",")[0]}')
+        print("this is artist","{}".format(os.path.basename(t).rstrip(".mp3")))
+
+
+    if functions.if_liked(pretty_name):
+        liked=True
+        widgets.like_button.configure(image=like_button_icon)
+
+    else:
+        liked=False
+        widgets.like_button.configure(image=disliked_button_icon)
+    # inserting into list_box
+    widgets.song_list.insert("END", pretty_name)
+    print("songs_paths", songs_paths)
+    print("now playing", now_playing)
+
+    # total length of song
+    with audioread.audio_open(songs_paths[now_playing]) as song_file:
+        total_song_time = song_file.duration
+        print(total_song_time)
+        formatted_total_song_time = time.strftime(
+            "%M:%S", time.gmtime(total_song_time)
+        )
+
+    # change the highlight to current song
+    widgets.song_list.selection_clear()
+    widgets.song_list.activate(now_playing)
+    widgets.song_list.select(f"END{now_playing % len(songs_paths)}")
+
+    # slider position
+    widgets.song_slider.configure(to=total_song_time)
+    widgets.song_slider.set(0)
+
+    # update time labels
+    widgets.time_elapsed_label.configure(
+        text=f'{time.strftime("%M:%S", time.gmtime(0))}')
+    widgets.total_time_label.configure(text=f'{formatted_total_song_time}')
+
+    # change status bar to current song name
+    widgets.status_bar.configure(text=f'Paused: {widgets.song_list.get()}')
+    
+    #enable buttons
+    widgets.like_button.configure(state='normal')
+    widgets.previous_button.configure(state='normal')
+    widgets.play_button.configure(state='normal')
+    widgets.next_button.configure(state='normal')
+    widgets.song_slider.configure(state='normal')
+    widgets.lyrics_button.configure(state="normal")
+
+
+
+
+def search():
+    """
+    Searches from string from search bar contents
+    """
+    import app.widgets as widgets
+    global songs_paths
+    global playing
+    global temp_res
+    widgets.search_progress.set(0)
+
+    if songs_paths:
+        search_text = widgets.search_bar.get()
+        print(search_text)
+        widgets.search_progress.start()
+        temp_res = functions.search(search_text)
+
+        # Download the song in a separate thread
+        download_thread = threading.Thread(target=download_and_load, args=(temp_res,))
+        download_thread.start()
+
+    else:
+        # Reset the songs_paths tuple
+        songs_paths = tuple()
+        search_text = widgets.search_bar.get()
+        print(search_text)
+        widgets.search_progress.start()
+        temp_res = functions.search(search_text)
+
+        # Download the song in a separate thread
+        download_thread = threading.Thread(target=download_and_load, args=(temp_res,))
+        download_thread.start()
+
+def load_liked():
+    """
+    load fn for liked songs
+    """
+    import app.widgets as widgets
+    print("load liked called")
+    temp_res = functions.search(widgets.liked_songs_listbox.get())
+    # Download the song in a separate thread
+    download_thread = threading.Thread(target=download_and_load, args=(temp_res,))
+    download_thread.start()
+def down_liked():
+    """
+    download fn for liked songs that have been deleted
+    """
+    global songs_paths
+    song_name_temp = functions.download(
+        temp_res["url"], functions.better_name(temp_res["pretty_name"]))
+    temp_paths = os.path.join("Audio/", song_name_temp)
+    songs_paths += (temp_paths,)
+    load_music(temp_paths, temp_res["pretty_name"])
+def download_and_load(temp_res):
+    import app.widgets as widgets
+    """
+    Function to download and load the song
+    """
+    global songs_paths
+    song_name_temp = functions.download(
+        temp_res["url"], functions.better_name(temp_res["pretty_name"]))
+    temp_paths = os.path.join("Audio/", song_name_temp)
+    songs_paths += (temp_paths,)
+
+    # Stop the search progress bar
+    widgets.search_progress.stop()
+
+    # Load the downloaded song
+    load_music(temp_paths, temp_res["pretty_name"])
+    widgets.search_bar.delete(0, 'end')
+    # Reset the progress bar
+    widgets.search_progress.set(0)
+
+
+
+def add_songs():
+    """
+    fn to add local songs
+    """
+    import app.widgets as widgets
+    global songs_paths
+    global formatted_total_song_time
+    global now_playing
+    global total_song_time
+
+    # og_songs_paths will be a tuple of filepaths (str)
+    og_songs_paths = widgets.ctk.filedialog.askopenfilenames(
+        initialdir=os.path.join(os.getcwd(), "Audio"),
+        title="Choose Songs",
+    )
+
+    # putting song names into playlist
+    for i in og_songs_paths:
+        name = i.split("/")[-1].replace(".mp3","")
+        widgets.song_list.insert("END", name)
+
+    print(pygame.mixer.music.get_busy())
+
+    if pygame.mixer.music.get_busy():
+        songs_paths = (songs_paths) + (og_songs_paths)
+
+    else:
+        songs_paths = og_songs_paths+tuple()
+
+        pygame.mixer.music.load(songs_paths[0])
+        now_playing = 0
+
+        # total length of song
+        with audioread.audio_open(songs_paths[now_playing]) as song_file:
+            total_song_time = song_file.duration
+            print(total_song_time)
+            formatted_total_song_time = time.strftime(
+                "%M:%S", time.gmtime(total_song_time)
+            )
+
+        # change the highlight to current song
+        widgets.song_list.selection_clear()
+        widgets.song_list.activate(now_playing)
+        widgets.song_list.select(f"END{now_playing % len(songs_paths)}")
+
+        # slider position
+        widgets.song_slider.configure(to=total_song_time)
+        widgets.song_slider.set(0)
+
+        # change status bar to current song name
+        widgets.status_bar.configure(text=f'Paused: {songs_paths[0].split("/")[-1]}')
+
+        # update time labels
+        widgets.time_elapsed_label.configure(
+            text=time.strftime("%M:%S", time.gmtime(0)))
+        widgets.total_time_label.configure(text=f'{formatted_total_song_time}')
+        # update metadata
+        widgets.song_metadata_image_label.configure(image=garfield_icon)
+        widgets.song_metadata_artist_label.configure(text='Miscellaneous')
+        widgets.song_metadata_image_label.grid(row=0, columnspan=3, sticky='new', )
+
+
+    print(songs_paths)
+
+
+def play_time():
+    """
+    runtime fn to update slider and time_elapsed label
+    """
+    import app.widgets as widgets
+    global songs_paths
+    global now_playing
+    global formatted_total_song_time
+    global total_song_time
+
+    time_elapsed = pygame.mixer.music.get_pos()
+    # print(f'time_elapsed {time_elapsed}')
+    formatted_time_elapsed = time.strftime(
+        "%M:%S", time.gmtime(time_elapsed//1000))
+
+    # update time label
+    widgets.time_elapsed_label.configure(
+        text=f'{formatted_time_elapsed}'
+    )
+
+    # move song_slider with progress of song
+    widgets.song_slider.set(time_elapsed//1000)
+
+    # queue?
+    if time_elapsed//1000 == total_song_time//1:
+        widgets.song_slider.set(total_song_time)
+        song_next()
+
+    #test_label.configure(text=f'slider: {song_slider.get()} and time_elapsed: {time_elapsed//1000}')
+
+    widgets.time_elapsed_label.after(1000, play_time)
+
+
+def slide(x):
+    pygame.mixer.music.set_pos(x)
+    play_time()
+
+
+def song_previous():
+    """
+    Rewinds song if song has been playing for more than 2 seconds.
+    Else loads previous song into queue
+    """
+    import app.widgets as widgets
+    global now_playing
+    global master_playing
+    global playing
+    global formatted_total_song_time
+    global total_song_time
+    global liked
+    global liked_songs_paths
+    # print("now playing",now_playing)
+    # print("songs",songs_paths)
+
+    song_time_elapsed = (pygame.mixer.music.get_pos()) // 1000
+
+    if song_time_elapsed < 2:
+        song = songs_paths[(now_playing - 1) % len(songs_paths)]
+        now_playing = (now_playing - 1) % len(songs_paths)
+        pygame.mixer.music.load(song)
+        functions.store_recents(song.split("/")[-1])
+        pygame.mixer.music.play(loops=0)
+        playing = 1
+        widgets.play_button.configure(image=pause_button_icon)
+
+        # total length of song
+        with audioread.audio_open(songs_paths[now_playing]) as song_file:
+            total_song_time = song_file.duration
+            formatted_total_song_time = time.strftime(
+                "%M:%S", time.gmtime(total_song_time)
+            )
+
+        # change the highlight to current song
+        widgets.song_list.selection_clear()
+        widgets.song_list.activate(now_playing)
+        widgets.song_list.select(f"END{now_playing % len(songs_paths)}")
+
+        # slider position
+        widgets.song_slider.configure(to=total_song_time)
+        widgets.song_slider.set(0)
+
+        # update time labels
+        widgets.time_elapsed_label.configure(
+            text=f'{time.strftime("%M:%S", time.gmtime(0))}')
+        widgets.total_time_label.configure(text=f'{formatted_total_song_time}')
+
+        # change status bar to current song name
+        widgets.status_bar.configure(text=f'Now playing: {widgets.song_list.get()}')
+    
+        # update metadata
+        try:
+            # update album art
+            album_art = widgets.ctk.CTkImage(Image.open("thumbs/"+ f'{songs_paths[now_playing][5:-4]+".png"}'), size=(200, 200))
+            # artist name
+            widgets.song_metadata_artist_label.configure(
+                text=f'Artist: {functions.artist_search(widgets.song_list.get())["artists"].split(",")[0]}')
+        except KeyError:
+            print(f'No artist given')
+            widgets.song_metadata_artist_label.configure(text='Miscellaneous')
+        except:
+            print(f'no album art')
+            widgets.song_metadata_image_label.configure(image=garfield_icon)
+            widgets.song_metadata_artist_label.configure(text='Miscellaneous')
+            widgets.song_metadata_image_label.grid(row=0, columnspan=3, sticky='new', )
+        else:
+            widgets.song_metadata_image_label.configure(image=album_art)
+            widgets.song_metadata_image_label.grid(row=0, columnspan=3, sticky='new', )
+            
+        if functions.if_liked(widgets.song_list.get()):
+            liked=True
+            widgets.like_button.configure(image=like_button_icon)
+
+        else:
+            liked=False
+            widgets.like_button.configure(image=disliked_button_icon)
+
+
+    else:
+        song = songs_paths[now_playing]
+        pygame.mixer.music.load(song)
+        pygame.mixer.music.play(loops=0)
+        playing = 1
+        widgets.play_button.configure(image=pause_button_icon)
+
+        # total length of song
+        with audioread.audio_open(songs_paths[now_playing]) as song_file:
+            total_song_time = song_file.duration
+            formatted_total_song_time = time.strftime(
+                "%M:%S", time.gmtime(total_song_time)
+            )
+
+        # change the highlight to current song
+        widgets.song_list.selection_clear()
+        widgets.song_list.activate(now_playing)
+        widgets.song_list.select(f"END{now_playing % len(songs_paths)}")
+
+        # slider position
+        widgets.song_slider.configure(to=total_song_time)
+        widgets.song_slider.set(0)
+
+        # update time labels
+        widgets.time_elapsed_label.configure(
+            text=f'{time.strftime("%M:%S", time.gmtime(0))}')
+        widgets.total_time_label.configure(text=f'{formatted_total_song_time}')
+
+
+
+def song_next():
+    """
+    loads next song in queue 
+    """
+    import app.widgets as widgets
+    global playing
+    global now_playing
+    global formatted_total_song_time
+    global songs_paths
+    global total_song_time
+    global liked_songs_paths
+    global liked
+
+    try:
+        song = songs_paths[(now_playing + 1) % len(songs_paths)]
+        print(songs_paths[(now_playing + 1) % len(songs_paths)])
+        now_playing = (now_playing + 1) % len(songs_paths)
+    except IndexError:
+        song = songs_paths[now_playing % len(songs_paths)]
+        pygame.mixer.music.load(song)
+
+    else:
+        pygame.mixer.music.load(song)
+        functions.store_recents(song.split("/")[-1])
+        pygame.mixer.music.play(loops=0)
+        playing = 1
+        widgets.play_button.configure(image=pause_button_icon)
+
+        # total length of song
+        with audioread.audio_open(songs_paths[now_playing]) as song_file:
+            total_song_time = song_file.duration
+            formatted_total_song_time = time.strftime(
+                "%M:%S", time.gmtime(total_song_time)
+            )
+
+        # change the highlight to current song
+        widgets.song_list.selection_clear()
+        widgets.song_list.activate(now_playing)
+        widgets.song_list.select(f"END{now_playing % len(songs_paths)}")
+
+        # slider position
+        widgets.song_slider.configure(to=total_song_time)
+        widgets.song_slider.set(0)
+
+        # update time labels
+        widgets.time_elapsed_label.configure(
+            text=f'{time.strftime("%M:%S", time.gmtime(0))}')
+        widgets.total_time_label.configure(text=f'{formatted_total_song_time}')
+
+        # change status bar to current song name
+        widgets.status_bar.configure(text=f'Now playing: {widgets.song_list.get()}')
+
+        if functions.if_liked(widgets.song_list.get()):
+            liked=True
+            widgets.like_button.configure(image=like_button_icon)
+
+        else:
+            liked=False
+            widgets.like_button.configure(image=disliked_button_icon)
+
+        # update metadata
+        try:
+            # update album art
+            #print("album art dir",os.path.join("thumbs/", f'{songs_paths[now_playing][5:-4]+".png"}'))
+            album_art = widgets.ctk.CTkImage(Image.open("thumbs/"+ f'{songs_paths[now_playing][5:-4]+".png"}'), size=(200, 200))
+            
+            # artist name
+            print("song list artist get",f'Artist: {functions.artist_search(widgets.song_list.get())["artists"].split(",")[0]}')
+            widgets.song_metadata_artist_label.configure(
+                text=f'Artist: {functions.artist_search(widgets.song_list.get())["artists"].split(",")[0]}')
+        except KeyError:
+            print(f'No artist given')
+            widgets.song_metadata_artist_label.configure(text='Miscellaneous')
+        except:
+            print(f'no album art')
+            widgets.song_metadata_image_label.configure(image=garfield_icon)
+            widgets.song_metadata_artist_label.configure(text='Miscellaneous')
+            widgets.song_metadata_image_label.grid(row=0, columnspan=3, sticky='new', )
+        else:
+            widgets.song_metadata_image_label.configure(image=album_art)
+            widgets.song_metadata_image_label.grid(row=0, columnspan=3, sticky='new', )
+
+
+def play_pause(btn: ctk.CTkButton):
+    """
+    Accepts ctkbutton as argument and changes button icon wrt playing state.
+    Also pauses and unpauses current song.
+    """
+    import app.widgets as widgets
+    global playing
+    global master_playing
+    global now_playing
+    master_playing = True
+
+    if playing == 1:
+        pygame.mixer.music.pause()
+        # change button icon
+        btn.configure(image=play_button_icon)
+
+        # change status bar text
+        widgets.status_bar.configure(text=f"Paused: {widgets.song_list.get()}")
+        playing = 2
+
+    elif playing == 2:
+        pygame.mixer.music.unpause()
+
+        # change button icon
+        btn.configure(image=pause_button_icon)
+        playing = 1
+
+        # change status bar text
+        widgets.status_bar.configure(text=f"Now playing: {widgets.song_list.get()}")
+
+        # change the highlight to current song
+        widgets.song_list.selection_clear()
+        widgets.song_list.activate(now_playing)
+        widgets.song_list.select(f"END{now_playing % len(songs_paths)}")
+
+        play_time()
+
+    elif playing == 0:
+        pygame.mixer.music.play()
+        functions.store_recents(widgets.song_list.get().split("/")[-1])
+        # change button icon
+        btn.configure(image=pause_button_icon)
+        playing = 1
+
+        # change status bar text
+        widgets.status_bar.configure(text=f"Now playing: {widgets.song_list.get()}")
+
+        # change the highlight to current song
+        widgets.song_list.selection_clear()
+        widgets.song_list.activate(now_playing)
+        widgets.song_list.select(f"END{now_playing % len(songs_paths)}")
+
+        play_time()
+
+
+def like(btn: ctk.CTkButton):
+    """
+    Accepts ctkbutton as argument and changes icon to liked/unliked wrt liked status.
+    Also calls required backend fns to like/dislike
+    """
+    import app.widgets as widgets
+    global liked
+    global songs_paths
+    global liked_songs_paths
+    global now_playing
+
+    if not(functions.if_liked(widgets.song_list.get())):
+        # change button image
+        btn.configure(image=like_button_icon)
+        # mark song as liked
+        liked = True
+        # insert into liked_songs table
+        functions.like_song(widgets.song_list.get())
+
+        # add song path to list of liked songs paths
+        # liked_songs_paths[songs_paths[now_playing]
+        #                   ] = songs_paths[now_playing].split('/')[-1]
+        # insert into liked_songlistbox
+        widgets.liked_songs_listbox.insert(
+            "END", widgets.song_list.get())
+
+        print(f'liked')
+    else:
+        # change button image
+        btn.configure(image=disliked_button_icon)
+        # mark song as disliked
+        liked = False
+        # remove from liked_songs_paths
+        functions.dislike_song(widgets.song_list.get())
+        widgets.liked_songs_listbox.delete("all")
+        for i in functions.get_liked_songs():
+            widgets.liked_songs_listbox.insert("END",i["pretty_name"])
+
+        print(f'disliked')
+
+
+def play_on_click():
+    pass
+
+def main_lyrics():
+    """
+    Searches for and Displays lyrics
+    """
+    import app.widgets as widgets
+    res=functions.search(widgets.song_list.get())
+    lyrics.show_lyrics(res["pretty_name"],res["artists"].split(",")[0],widgets.app)
+
+
+#DEFINITIONS
+thumbs_folder_path = os.path.join("thumbs")
+
+# buttons folder path
+icon_folder_path = os.path.join(
+    os.path.join(os.path.dirname(
+        os.path.realpath(__file__)), "assets", "icons")
+)
+
+#icons folder path
+garfield_icon =ctk.CTkImage(
+    Image.open(os.path.join(icon_folder_path, "garfield.png")), size=(200, 250)
+)
+play_button_icon = ctk.CTkImage(
+    Image.open(os.path.join(icon_folder_path, "play_btn.png")), size=(30, 30)
+)
+pause_button_icon = ctk.CTkImage(
+    Image.open(os.path.join(icon_folder_path, "pause_btn.png")), size=(30, 30)
+)
+next_button_icon = ctk.CTkImage(
+    Image.open(os.path.join(icon_folder_path, "next_btn.png")), size=(26, 26)
+)
+previous_button_icon = ctk.CTkImage(
+    Image.open(os.path.join(icon_folder_path, "previous_btn.png")), size=(26, 26)
+)
+search_button_icon = ctk.CTkImage(
+    Image.open(os.path.join(icon_folder_path, "search_btn.png")), size=(30, 30)
+)
+mic_icon=ctk.CTkImage(
+    Image.open(os.path.join(icon_folder_path,"mic.png")),size=(30,30)
+)
+disliked_button_icon = ctk.CTkImage(
+    Image.open(os.path.join(icon_folder_path, "disliked_btn.png")), size=(30, 30)
+)
+like_button_icon = ctk.CTkImage(
+    Image.open(os.path.join(icon_folder_path, "like_btn.png")), size=(30, 30)
+)
