@@ -6,40 +6,64 @@ Note:
 Version 0.5[DONE]:
 
 -simple customtkinter gui with one search bar and two buttons [DONE]
+
 -type in search bar and press search to search youtube ,download video and then convert it to mp3 [DONE]
+
 -press play to start playing the file in windows music player (ik it sucks) [DONE]
 
 
 Version 0.9[DONE]:
 
 -moderately complex customtkinter gui with home window ,seperate search window , "currently playing" window on the the bottom or side (to decide after design is final) [DONE]
+
 -album art , album name , artist name etc to be searched and auto cached using db [DONE]
+
 -above metadata to be displayed with currently playing song [DONE]
+
 -play pause stop next and previous functionality [DONE]
+
 -use libraries to play file in native python instead of using wmp [DONE]
+
 -ability to store "liked" songs using sql [DONE]
+
 -above feature to be used to display "recently played" songs with name and album art on the home screen [DONE]
+
 -make progress bar to show progress of downloading song [DONE]
+
 
 Version 1.0:
 -everything from 0.9 and more
+
 -Add seperate lyrics window which displays lyrics as a label in a scrollable frame[DONE]
+
 -Add Volume control
+
 -playlists functionality with sql db
+
 -robust mechanism for play,pause,stop,next and previous song [DONE]
+
 -proper queue system [DONE] 
+
 -search mechanism to be more accurate and to provide more options to choose from after searching instead of just one
+
 -settings window to change dark/light mode , quality of songs downloaded etc
+
 -ability for users to delete songs and metadata they dont need anymore
--import songs from spotify playlist to queue
+
+-import songs from spotify playlist to liked songs [DONE]
 
 Version 1.5:
 
 -everything in 1.0 and more
+
 -better integration with windows like the windows media controls (play pause buttons on keyboard) should work with app
+
 -better theming
+
 -more efficient code for faster execution
+
 -cache management system aka delete music file if not in any playlist or recently played
+
 -remote control music playback like spotify connect using flask [DONE]
 
 
