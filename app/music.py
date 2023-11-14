@@ -7,6 +7,7 @@ from PIL import Image
 import audioread
 import app.functions as functions
 import app.lyrics as lyrics
+import app.import_spotify as import_spotify
 
 pygame.mixer.init()
 
@@ -569,7 +570,36 @@ def main_lyrics():
     import app.widgets as widgets
     res=functions.search(widgets.song_list.get())
     lyrics.show_lyrics(res["pretty_name"],res["artists"].split(",")[0],widgets.app)
+def import_from_spotify(playlist):
+    import app.widgets as widgets
+    L=import_spotify.get_spotify_playlist_tracks(playlist)
+    for i in L:
+        i=i.lstrip("123456789. ")
+        print("syncing",i)
+        temp_res=functions.search(i)
+        functions.like_song(temp_res["pretty_name"])
+        widgets.liked_songs_listbox.insert(
+            "END", temp_res["pretty_name"],onclick=load_liked)
+        print("liked",i)
+    print("all songs imported to liked songs")
 
+def import_sp_playlist():
+    # Import the necessary module
+    import app.widgets as widgets
+    # Get the url from the import entry
+    url = widgets.import_entry.get()
+    # Create an Event object to signal the completion of the import process
+    done_event = threading.Event()
+    # Create a new thread to handle the import process
+    import_thread = threading.Thread(target=run_import, args=[url])
+    # Start the import progress bar
+    widgets.import_progress.start()
+    # Start the import thread
+    import_thread.start()
+def run_import(url):
+    import app.widgets as widgets
+    import_from_spotify(url)
+    widgets.import_progress.stop()
 
 #DEFINITIONS
 thumbs_folder_path = os.path.join("thumbs")

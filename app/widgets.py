@@ -6,24 +6,8 @@ import app.music as music
 import os
 from PIL import Image
 import app.functions as functions
+import app.import_spotify as import_spotify
 app = ctk.CTk()  # create CTk window like you do with the Tk window
-
-# menu
-menu = CTkMenuBar.CTkMenuBar(app)
-file_button = menu.add_cascade("File")
-edit_button = menu.add_cascade("Edit")
-settings_button = menu.add_cascade("Settings")
-about_button = menu.add_cascade("About")
-
-file_dropdown = CTkMenuBar.CustomDropdownMenu(widget=file_button)
-file_dropdown.add_option(option="Open", command=music.add_songs)
-file_dropdown.add_option(option="Save")
-
-file_dropdown.add_separator()
-
-sub_menu = file_dropdown.add_submenu("Export As")
-sub_menu.add_option(option=".TXT")
-sub_menu.add_option(option=".PDF")
 
 # thumbnails folder path
 thumbs_folder_path = os.path.join("thumbs")
@@ -65,6 +49,45 @@ disliked_button_icon = ctk.CTkImage(
 like_button_icon = ctk.CTkImage(
     Image.open(os.path.join(icon_folder_path, "like_btn.png")), size=(30, 30)
 )
+#define top level import window
+def import_win_launch():
+    global import_entry
+    global import_window
+    global import_progress
+    
+    import_window=ctk.CTkToplevel(app)
+    import_window.geometry("300x300")
+    import_window.title('Import tracks from Spotify playlist')
+
+
+    import_entry=ctk.CTkEntry(import_window,placeholder_text="Enter playlist URL")
+    import_entry.pack(pady=20)
+
+    import_progress=ctk.CTkProgressBar(import_window,mode="indeterminate")
+    import_progress.pack(fill="x",padx=20)
+
+
+    import_button=ctk.CTkButton(import_window,text="Import",command=music.import_sp_playlist)
+    import_button.pack(pady=20)
+
+# menu
+menu = CTkMenuBar.CTkMenuBar(app)
+file_button = menu.add_cascade("File")
+edit_button = menu.add_cascade("Edit")
+settings_button = menu.add_cascade("Settings")
+about_button = menu.add_cascade("About")
+
+file_dropdown = CTkMenuBar.CustomDropdownMenu(widget=file_button)
+file_dropdown.add_option(option="Open", command=music.add_songs)
+file_dropdown.add_option(option="Import Spotify Playlist", command=import_win_launch)
+file_dropdown.add_option(option="Save")
+
+file_dropdown.add_separator()
+
+sub_menu = file_dropdown.add_submenu("Export As")
+sub_menu.add_option(option=".TXT")
+sub_menu.add_option(option=".PDF")
+
 # Create Tabview
 master_tab = ctk.CTkTabview(
     master=app,
@@ -268,6 +291,8 @@ for i in functions.get_liked_songs():
 #     master=playback_tab, text="status bar", justify="center")
 # status_bar.grid(row=3, pady=(40, 20), sticky='ew')
 
+
+
 # time labels
 time_elapsed_label = ctk.CTkLabel(
     master=playback_controls_frame, text="--:--", text_color='white')
@@ -299,3 +324,5 @@ song_metadata_artist_label.grid(row=1, columnspan=3, sticky='ew', pady=(20, 10))
 status_bar = ctk.CTkLabel(
     master=song_metadata_frame, text='Status Bar', justify="center", text_color='white')
 status_bar.grid(row=2, columnspan=3, pady=(10, 20), padx=(10, 10), sticky='ew')
+
+
