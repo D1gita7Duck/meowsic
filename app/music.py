@@ -195,7 +195,7 @@ def add_songs():
 
     print(pygame.mixer.music.get_busy())
 
-    if master_playing==True:
+    if pygame.mixer.music.get_busy() or loaded:
         songs_paths = (songs_paths) + (og_songs_paths)
 
     else:

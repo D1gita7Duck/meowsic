@@ -218,7 +218,7 @@ search_progress.pack(fill="x",padx=10)
 
 # Create a search button
 search_button = ctk.CTkButton(
-    search_frame, text="Search", command=music.search, image=search_button_icon)
+    search_frame, text="Search", command=music.search, image=music.search_button_icon)
 search_button.pack(fill='x', expand=True, padx=10, pady=10)
 
 # Create a button to close the search frame and go back to the home screen
@@ -272,7 +272,7 @@ previous_button = ctk.CTkButton(
     playback_controls_frame,
     text="",
     command=music.song_previous,
-    image=previous_button_icon,
+    image=music.previous_button_icon,
     border_width=0,
     corner_radius=100,
     fg_color="transparent",
@@ -287,7 +287,7 @@ play_button = ctk.CTkButton(
     playback_controls_frame,
     text="",
     command=lambda: music.play_pause(play_button),
-    image=play_button_icon,
+    image=music.play_button_icon,
     border_width=0,
     corner_radius=100,
     fg_color="transparent",
@@ -302,7 +302,7 @@ next_button = ctk.CTkButton(
     playback_controls_frame,
     text="",
     command=music.song_next,
-    image=next_button_icon,
+    image=music.next_button_icon,
     border_width=0,
     corner_radius=100,
     fg_color="transparent",
@@ -404,7 +404,7 @@ recent_label.pack()
 
 # album art label
 song_metadata_image_label = ctk.CTkLabel(
-    song_metadata_frame, text='', image=garfield_icon,)
+    song_metadata_frame, text='', image=music.garfield_icon,)
 song_metadata_image_label.grid(row=0, columnspan=3, sticky='new', )
 
 # artist name label
