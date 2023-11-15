@@ -51,11 +51,11 @@ def load_music(t,pretty_name):
 
     if functions.if_liked(pretty_name):
         liked=True
-        widgets.like_button.configure(image=like_button_icon)
+        widgets.like_button.configure(image=widgets.like_button_icon)
 
     else:
         liked=False
-        widgets.like_button.configure(image=disliked_button_icon)
+        widgets.like_button.configure(image=widgets.disliked_button_icon)
     # inserting into list_box
     widgets.song_list.insert("END", pretty_name)
     print("songs_paths", songs_paths)
@@ -229,7 +229,7 @@ def add_songs():
             text=time.strftime("%M:%S", time.gmtime(0)))
         widgets.total_time_label.configure(text=f'{formatted_total_song_time}')
         # update metadata
-        widgets.song_metadata_image_label.configure(image=garfield_icon)
+        widgets.song_metadata_image_label.configure(image=widgets.garfield_icon)
         widgets.song_metadata_artist_label.configure(text='Miscellaneous')
         widgets.song_metadata_image_label.grid(row=0, columnspan=3, sticky='new')
         
@@ -306,7 +306,7 @@ def song_previous():
         functions.store_recents(os.path.basename(song))
         pygame.mixer.music.play(loops=0)
         playing = 1
-        widgets.play_button.configure(image=pause_button_icon)
+        widgets.play_button.configure(image=widgets.pause_button_icon)
 
         # total length of song
         with audioread.audio_open(songs_paths[now_playing]) as song_file:
@@ -344,7 +344,7 @@ def song_previous():
             widgets.song_metadata_artist_label.configure(text='Miscellaneous')
         except:
             print(f'no album art')
-            widgets.song_metadata_image_label.configure(image=garfield_icon)
+            widgets.song_metadata_image_label.configure(image=widgets.garfield_icon)
             widgets.song_metadata_artist_label.configure(text='Miscellaneous')
             widgets.song_metadata_image_label.grid(row=0, columnspan=3, sticky='new', )
         else:
@@ -353,11 +353,11 @@ def song_previous():
             
         if functions.if_liked(widgets.song_list.get()):
             liked=True
-            widgets.like_button.configure(image=like_button_icon)
+            widgets.like_button.configure(image=widgets.like_button_icon)
 
         else:
             liked=False
-            widgets.like_button.configure(image=disliked_button_icon)
+            widgets.like_button.configure(image=widgets.disliked_button_icon)
 
 
     else:
@@ -365,7 +365,7 @@ def song_previous():
         pygame.mixer.music.load(song)
         pygame.mixer.music.play(loops=0)
         playing = 1
-        widgets.play_button.configure(image=pause_button_icon)
+        widgets.play_button.configure(image=widgets.pause_button_icon)
 
         # total length of song
         with audioread.audio_open(songs_paths[now_playing]) as song_file:
@@ -416,7 +416,7 @@ def song_next():
         functions.store_recents(song.split("/")[-1])
         pygame.mixer.music.play(loops=0)
         playing = 1
-        widgets.play_button.configure(image=pause_button_icon)
+        widgets.play_button.configure(image=widgets.pause_button_icon)
 
         # total length of song
         with audioread.audio_open(songs_paths[now_playing]) as song_file:
@@ -444,11 +444,11 @@ def song_next():
 
         if functions.if_liked(widgets.song_list.get()):
             liked=True
-            widgets.like_button.configure(image=like_button_icon)
+            widgets.like_button.configure(image=widgets.like_button_icon)
 
         else:
             liked=False
-            widgets.like_button.configure(image=disliked_button_icon)
+            widgets.like_button.configure(image=widgets.disliked_button_icon)
 
         # update metadata
         try:
@@ -465,7 +465,7 @@ def song_next():
             widgets.song_metadata_artist_label.configure(text='Miscellaneous')
         except:
             print(f'no album art')
-            widgets.song_metadata_image_label.configure(image=garfield_icon)
+            widgets.song_metadata_image_label.configure(image=widgets.garfield_icon)
             widgets.song_metadata_artist_label.configure(text='Miscellaneous')
             widgets.song_metadata_image_label.grid(row=0, columnspan=3, sticky='new', )
         else:
@@ -487,7 +487,7 @@ def play_pause(btn: ctk.CTkButton):
     if playing == 1:
         pygame.mixer.music.pause()
         # change button icon
-        btn.configure(image=play_button_icon)
+        btn.configure(image=widgets.play_button_icon)
 
         # change status bar text
         widgets.status_bar.configure(text=f"Paused: {widgets.song_list.get()}")
@@ -497,7 +497,7 @@ def play_pause(btn: ctk.CTkButton):
         pygame.mixer.music.unpause()
 
         # change button icon
-        btn.configure(image=pause_button_icon)
+        btn.configure(image=widgets.pause_button_icon)
         playing = 1
 
         # change status bar text
@@ -514,7 +514,7 @@ def play_pause(btn: ctk.CTkButton):
         pygame.mixer.music.play()
         functions.store_recents(os.path.basename(widgets.song_list.get()))
         # change button icon
-        btn.configure(image=pause_button_icon)
+        btn.configure(image=widgets.pause_button_icon)
         playing = 1
 
         # change status bar text
@@ -541,7 +541,7 @@ def like(btn: ctk.CTkButton):
 
     if not(functions.if_liked(widgets.song_list.get())):
         # change button image
-        btn.configure(image=like_button_icon)
+        btn.configure(image=widgets.like_button_icon)
         # mark song as liked
         liked = True
         # insert into liked_songs table
@@ -557,7 +557,7 @@ def like(btn: ctk.CTkButton):
         print(f'liked')
     else:
         # change button image
-        btn.configure(image=disliked_button_icon)
+        btn.configure(image=widgets.disliked_button_icon)
         # mark song as disliked
         liked = False
         # remove from liked_songs_paths
@@ -622,33 +622,4 @@ thumbs_folder_path = os.path.join("thumbs")
 icon_folder_path = os.path.join(
     os.path.join(os.path.dirname(
         os.path.realpath(__file__)), "assets", "icons")
-)
-
-#icons folder path
-garfield_icon =ctk.CTkImage(
-    Image.open(os.path.join(icon_folder_path, "garfield.png")), size=(200, 250)
-)
-play_button_icon = ctk.CTkImage(
-    Image.open(os.path.join(icon_folder_path, "play_btn.png")), size=(30, 30)
-)
-pause_button_icon = ctk.CTkImage(
-    Image.open(os.path.join(icon_folder_path, "pause_btn.png")), size=(30, 30)
-)
-next_button_icon = ctk.CTkImage(
-    Image.open(os.path.join(icon_folder_path, "next_btn.png")), size=(26, 26)
-)
-previous_button_icon = ctk.CTkImage(
-    Image.open(os.path.join(icon_folder_path, "previous_btn.png")), size=(26, 26)
-)
-search_button_icon = ctk.CTkImage(
-    Image.open(os.path.join(icon_folder_path, "search_btn.png")), size=(30, 30)
-)
-mic_icon=ctk.CTkImage(
-    Image.open(os.path.join(icon_folder_path,"mic.png")),size=(30,30)
-)
-disliked_button_icon = ctk.CTkImage(
-    Image.open(os.path.join(icon_folder_path, "disliked_btn.png")), size=(30, 30)
-)
-like_button_icon = ctk.CTkImage(
-    Image.open(os.path.join(icon_folder_path, "like_btn.png")), size=(30, 30)
 )
