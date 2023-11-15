@@ -62,7 +62,7 @@ def load_music(t,pretty_name):
     print("now playing", now_playing)
 
     # total length of song
-    with audioread.audio_open(songs_paths[now_playing]) as song_file:
+    with audioread.audio_open(t) as song_file:
         total_song_time = song_file.duration
         print(total_song_time)
         formatted_total_song_time = time.strftime(
@@ -191,8 +191,7 @@ def add_songs():
 
     # putting song names into playlist
     for i in og_songs_paths:
-        name = i.split("/")[-1].replace(".mp3","")
-        widgets.song_list.insert("END", name)
+        widgets.song_list.insert("END", os.path.basename(i))
 
     print(pygame.mixer.music.get_busy())
 
@@ -304,7 +303,7 @@ def song_previous():
         song = songs_paths[(now_playing - 1) % len(songs_paths)]
         now_playing = (now_playing - 1) % len(songs_paths)
         pygame.mixer.music.load(song)
-        functions.store_recents(song.split("/")[-1])
+        functions.store_recents(os.path.basename(song))
         pygame.mixer.music.play(loops=0)
         playing = 1
         widgets.play_button.configure(image=pause_button_icon)
@@ -513,7 +512,7 @@ def play_pause(btn: ctk.CTkButton):
 
     elif playing == 0:
         pygame.mixer.music.play()
-        functions.store_recents(widgets.song_list.get().split("/")[-1])
+        functions.store_recents(os.path.basename(widgets.song_list.get()))
         # change button icon
         btn.configure(image=pause_button_icon)
         playing = 1
@@ -568,6 +567,11 @@ def like(btn: ctk.CTkButton):
             widgets.liked_songs_listbox.insert("END",i["pretty_name"])
 
         print(f'disliked')
+
+def show_liked_songs():
+    #called from liked songs btn on homepage of application
+    import app.widgets as widgets
+    widgets.master_tab.set('Liked Songs')
 
 
 def play_on_click():
