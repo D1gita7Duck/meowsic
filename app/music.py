@@ -228,8 +228,14 @@ def add_songs():
         # update metadata
         widgets.song_metadata_image_label.configure(image=garfield_icon)
         widgets.song_metadata_artist_label.configure(text='Miscellaneous')
-        widgets.song_metadata_image_label.grid(row=0, columnspan=3, sticky='new', )
-
+        widgets.song_metadata_image_label.grid(row=0, columnspan=3, sticky='new')
+        
+    widgets.like_button.configure(state='normal')
+    widgets.previous_button.configure(state='normal')
+    widgets.play_button.configure(state='normal')
+    widgets.next_button.configure(state='normal')
+    widgets.song_slider.configure(state='normal')
+    widgets.lyrics_button.configure(state="normal")
 
     print(songs_paths)
 
