@@ -192,7 +192,7 @@ def add_songs():
 
     print(pygame.mixer.music.get_busy())
 
-    if pygame.mixer.music.get_busy():
+    if pygame.mixer.music.get_busy() or loaded:
         songs_paths = (songs_paths) + (og_songs_paths)
 
     else:
