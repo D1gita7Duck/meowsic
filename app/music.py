@@ -30,6 +30,8 @@ def load_music(t,pretty_name):
     global playing
     global liked
     global loaded
+    global master_playing
+
     if playing == 2 or playing == 1 or loaded:
         pass
     else:
@@ -92,6 +94,7 @@ def load_music(t,pretty_name):
     widgets.song_slider.configure(state='normal')
     widgets.lyrics_button.configure(state="normal")
 
+    master_playing=True
 
 
 
@@ -178,6 +181,7 @@ def add_songs():
     global formatted_total_song_time
     global now_playing
     global total_song_time
+    global master_playing
 
     # og_songs_paths will be a tuple of filepaths (str)
     og_songs_paths = widgets.ctk.filedialog.askopenfilenames(
@@ -192,7 +196,7 @@ def add_songs():
 
     print(pygame.mixer.music.get_busy())
 
-    if pygame.mixer.music.get_busy():
+    if master_playing==True:
         songs_paths = (songs_paths) + (og_songs_paths)
 
     else:
