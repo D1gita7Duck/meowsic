@@ -19,36 +19,6 @@ icon_folder_path = os.path.join(
         os.path.realpath(__file__)), "assets", "icons")
 
 )
-garfield_icon = ctk.CTkImage(
-    Image.open(os.path.join(icon_folder_path, "garfield.png")), size=(200, 250)
-)
-
-
-# button icons
-play_button_icon = ctk.CTkImage(
-    Image.open(os.path.join(icon_folder_path, "play_btn.png")), size=(30, 30)
-)
-pause_button_icon = ctk.CTkImage(
-    Image.open(os.path.join(icon_folder_path, "pause_btn.png")), size=(30, 30)
-)
-next_button_icon = ctk.CTkImage(
-    Image.open(os.path.join(icon_folder_path, "next_btn.png")), size=(26, 26)
-)
-previous_button_icon = ctk.CTkImage(
-    Image.open(os.path.join(icon_folder_path, "previous_btn.png")), size=(26, 26)
-)
-search_button_icon = ctk.CTkImage(
-    Image.open(os.path.join(icon_folder_path, "search_btn.png")), size=(30, 30)
-)
-mic_icon=ctk.CTkImage(
-    Image.open(os.path.join(icon_folder_path,"mic.png")),size=(30,30)
-)
-disliked_button_icon = ctk.CTkImage(
-    Image.open(os.path.join(icon_folder_path, "disliked_btn.png")), size=(30, 30)
-)
-like_button_icon = ctk.CTkImage(
-    Image.open(os.path.join(icon_folder_path, "like_btn.png")), size=(30, 30)
-)
 #define top level import window
 def import_win_launch():
     global import_entry
@@ -124,7 +94,7 @@ search_progress.pack(fill="x",padx=10)
 
 # Create a search button
 search_button = ctk.CTkButton(
-    search_frame, text="Search", command=music.search, image=search_button_icon)
+    search_frame, text="Search", command=music.search, image=music.search_button_icon)
 search_button.pack(fill='x', expand=True, padx=10, pady=10)
 
 # Create a button to close the search frame and go back to the home screen
@@ -164,7 +134,7 @@ previous_button = ctk.CTkButton(
     playback_controls_frame,
     text="",
     command=music.song_previous,
-    image=previous_button_icon,
+    image=music.previous_button_icon,
     border_width=0,
     corner_radius=100,
     fg_color="transparent",
@@ -179,7 +149,7 @@ play_button = ctk.CTkButton(
     playback_controls_frame,
     text="",
     command=lambda: music.play_pause(play_button),
-    image=play_button_icon,
+    image=music.play_button_icon,
     border_width=0,
     corner_radius=100,
     fg_color="transparent",
@@ -194,7 +164,7 @@ next_button = ctk.CTkButton(
     playback_controls_frame,
     text="",
     command=music.song_next,
-    image=next_button_icon,
+    image=music.next_button_icon,
     border_width=0,
     corner_radius=100,
     fg_color="transparent",
@@ -209,7 +179,7 @@ lyrics_button=ctk.CTkButton(
     playback_controls_frame,
     text="",
     command=music.main_lyrics,
-    image=mic_icon,
+    image=music.mic_icon,
     border_width=0,
     corner_radius=100,
     fg_color="transparent",
@@ -224,7 +194,7 @@ like_button = ctk.CTkButton(
     playback_controls_frame,
     text='',
     command=lambda: music.like(like_button),
-    image=disliked_button_icon,
+    image=music.disliked_button_icon,
     border_width=0,
     corner_radius=100,
     fg_color="transparent",
@@ -312,7 +282,7 @@ recent_label.pack()
 
 # album art label
 song_metadata_image_label = ctk.CTkLabel(
-    song_metadata_frame, text='', image=garfield_icon,)
+    song_metadata_frame, text='', image=music.garfield_icon,)
 song_metadata_image_label.grid(row=0, columnspan=3, sticky='new', )
 
 # artist name label
