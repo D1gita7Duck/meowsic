@@ -140,7 +140,7 @@ elif current_time[3] >= 12 and current_time[3] <= 16:
 else:
     greeting_text = 'Good Evening'
 greeting_label = ctk.CTkLabel(
-    master=home_tab, text=greeting_text, font=('Helvetica', 16))
+    master=home_tab, text=greeting_text, font=('Helvetica', 20),text_color="black",width=20,height=20)
 greeting_label.grid(row=0, column=5, sticky='ew', pady=(20, 20), columnspan=3,)
 
 # division home tab into two frames
@@ -163,8 +163,9 @@ recently_played_listbox = CTkListbox.CTkListbox(master=home_tab_recently_played,
                                                 text_color="black",
                                                 hightlight_color='red',
                                                 hover_color='#7fb8cc',)
-for i in functions.get_recents():
-    recently_played_listbox.insert('END', i)
+if functions.get_recents():
+    for i in functions.get_recents():
+        recently_played_listbox.insert('END', i,onclick=music.load_recents)
 recently_played_listbox.grid(columnspan=5, sticky='ew',)
 
 #buttons on home page
@@ -398,10 +399,6 @@ total_time_label = ctk.CTkLabel(
     master=playback_controls_frame, text="--:--", text_color='white')
 total_time_label.grid(row=0, column=5, sticky='e', padx=(20, 50))
 
-
-recent_label = ctk.CTkLabel(
-    app, text="recently played : "+str(functions.get_recents()))
-recent_label.pack()
 
 # song metadata labels
 

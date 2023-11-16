@@ -142,16 +142,18 @@ def load_liked():
     # Download the song in a separate thread
     download_thread = threading.Thread(target=download_and_load, args=(temp_res,))
     download_thread.start()
-def down_liked():
+
+def load_recents():
     """
-    download fn for liked songs that have been deleted
+    load fn for recently played songs
     """
-    global songs_paths
-    song_name_temp = functions.download(
-        temp_res["url"], functions.better_name(temp_res["pretty_name"]))
-    temp_paths = os.path.join("Audio/", song_name_temp)
-    songs_paths += (temp_paths,)
-    load_music(temp_paths, temp_res["pretty_name"])
+    import app.widgets as widgets
+    print("load recents called")
+    temp_res = functions.search(widgets.recently_played_listbox.get())
+    # Download the song in a separate thread
+    download_thread = threading.Thread(target=download_and_load, args=(temp_res,))
+    download_thread.start()
+
 def download_and_load(temp_res):
     import app.widgets as widgets
     """
@@ -172,6 +174,12 @@ def download_and_load(temp_res):
     # Reset the progress bar
     widgets.search_progress.set(0)
 
+    widgets.master_tab.set('Queue')
+    # update status bar
+    print("loaded",loaded)
+    if "None" in widgets.status_bar.cget("text"):
+        print(temp_res["pretty_name"])
+        widgets.status_bar.configure(text=f'Paused: {temp_res["pretty_name"]}')
 
 
 def add_songs():
@@ -305,7 +313,6 @@ def song_previous():
         song = songs_paths[(now_playing - 1) % len(songs_paths)]
         now_playing = (now_playing - 1) % len(songs_paths)
         pygame.mixer.music.load(song)
-        functions.store_recents(os.path.basename(song))
         pygame.mixer.music.play(loops=0)
         playing = 1
         widgets.play_button.configure(image=widgets.pause_button_icon)
@@ -321,7 +328,7 @@ def song_previous():
         widgets.song_list.selection_clear()
         widgets.song_list.activate(now_playing)
         widgets.song_list.select(f"END{now_playing % len(songs_paths)}")
-
+        functions.store_recents(widgets.song_list.get())
         # slider position
         widgets.song_slider.configure(to=total_song_time)
         widgets.song_slider.set(0)
@@ -415,7 +422,6 @@ def song_next():
 
     else:
         pygame.mixer.music.load(song)
-        functions.store_recents(song.split("/")[-1])
         pygame.mixer.music.play(loops=0)
         playing = 1
         widgets.play_button.configure(image=widgets.pause_button_icon)
@@ -431,7 +437,7 @@ def song_next():
         widgets.song_list.selection_clear()
         widgets.song_list.activate(now_playing)
         widgets.song_list.select(f"END{now_playing % len(songs_paths)}")
-
+        functions.store_recents(widgets.song_list.get())
         # slider position
         widgets.song_slider.configure(to=total_song_time)
         widgets.song_slider.set(0)

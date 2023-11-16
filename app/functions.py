@@ -52,7 +52,9 @@ def get_recents():
     file=open("data/recents.dat","rb")
     file.seek(0,0)
     recent=pickle.load(file)
-    return recent
+    if recent==[{},{},{}]:
+        return None
+    else:return recent
 
 def like_song(song):
     res=db.song_search(song)
