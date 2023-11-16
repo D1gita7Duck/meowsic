@@ -8,7 +8,7 @@ ctk.set_appearance_mode("System")  # Modes: system (default), light, dark
 # Themes: blue (default), dark-blue, green
 ctk.set_default_color_theme("dark-blue")
 
-app.geometry("1080x720")
+app.geometry("1280x800")
 app.title("meowsic")
 app.iconbitmap(os.path.join(os.getcwd(),"app","assets", "icons", "app_icon.ico"))
 

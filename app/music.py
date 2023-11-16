@@ -47,54 +47,56 @@ def load_music(t,pretty_name):
         widgets.song_metadata_artist_label.configure(
             text=f'Artist: {functions.artist_search(pretty_name)["artists"].split(",")[0]}')
         print("this is artist","{}".format(os.path.basename(t).rstrip(".mp3")))
+            
+        # total length of song
+        with audioread.audio_open(t) as song_file:
+            total_song_time = song_file.duration
+            print(total_song_time)
+            formatted_total_song_time = time.strftime(
+                "%M:%S", time.gmtime(total_song_time)
+            )
 
+        # slider position
+        widgets.song_slider.configure(to=total_song_time)
+        widgets.song_slider.set(0)
 
-    if functions.if_liked(pretty_name):
-        liked=True
-        widgets.like_button.configure(image=widgets.like_button_icon)
+        # update time labels
+        widgets.time_elapsed_label.configure(
+            text=f'{time.strftime("%M:%S", time.gmtime(0))}')
+        widgets.total_time_label.configure(text=f'{formatted_total_song_time}')
 
-    else:
-        liked=False
-        widgets.like_button.configure(image=widgets.disliked_button_icon)
+        # change status bar to current song name
+        widgets.status_bar.configure(text=f'Paused: {widgets.song_list.get()}')
+
+        if functions.if_liked(pretty_name):
+            liked=True
+            widgets.like_button.configure(image=widgets.like_button_icon)
+
+        else:
+            liked=False
+            widgets.like_button.configure(image=widgets.disliked_button_icon)
+            
+        #enable buttons
+        widgets.like_button.configure(state='normal')
+        widgets.previous_button.configure(state='normal')
+        widgets.play_button.configure(state='normal')
+        widgets.next_button.configure(state='normal')
+        widgets.song_slider.configure(state='normal')
+        widgets.lyrics_button.configure(state="normal")
+
+    master_playing=True
     # inserting into list_box
     widgets.song_list.insert("END", pretty_name)
-    print("songs_paths", songs_paths)
-    print("now playing", now_playing)
-
-    # total length of song
-    with audioread.audio_open(t) as song_file:
-        total_song_time = song_file.duration
-        print(total_song_time)
-        formatted_total_song_time = time.strftime(
-            "%M:%S", time.gmtime(total_song_time)
-        )
-
     # change the highlight to current song
     widgets.song_list.selection_clear()
     widgets.song_list.activate(now_playing)
     widgets.song_list.select(f"END{now_playing % len(songs_paths)}")
 
-    # slider position
-    widgets.song_slider.configure(to=total_song_time)
-    widgets.song_slider.set(0)
+    print("songs_paths", songs_paths)
+    print("now playing", now_playing)
 
-    # update time labels
-    widgets.time_elapsed_label.configure(
-        text=f'{time.strftime("%M:%S", time.gmtime(0))}')
-    widgets.total_time_label.configure(text=f'{formatted_total_song_time}')
-
-    # change status bar to current song name
-    widgets.status_bar.configure(text=f'Paused: {widgets.song_list.get()}')
     
-    #enable buttons
-    widgets.like_button.configure(state='normal')
-    widgets.previous_button.configure(state='normal')
-    widgets.play_button.configure(state='normal')
-    widgets.next_button.configure(state='normal')
-    widgets.song_slider.configure(state='normal')
-    widgets.lyrics_button.configure(state="normal")
 
-    master_playing=True
 
 
 
@@ -196,7 +198,7 @@ def add_songs():
     print(pygame.mixer.music.get_busy())
 
     if pygame.mixer.music.get_busy() or loaded:
-        songs_paths = (songs_paths) + (og_songs_paths)
+        songs_paths = (songs_paths) + list(og_songs_paths)
 
     else:
         songs_paths = og_songs_paths+tuple()

@@ -252,7 +252,7 @@ song_metadata_frame = ctk.CTkFrame(
     fg_color='black',
 )
 # song_metadata_frame.pack(side='right', padx=(20,20), expand=True ,after=master_tab)
-song_metadata_frame.grid(row=0, column=7, columnspan=3, rowspan=3, )
+song_metadata_frame.grid(row=0, column=9, columnspan=3, rowspan=3, )
 song_metadata_frame.grid_columnconfigure((0, 1, 2, 3, 4, 5), weight=1)
 
 # buttons
