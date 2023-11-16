@@ -52,6 +52,9 @@ search_button_icon = ctk.CTkImage(
 lyrics_button_icon_white=ctk.CTkImage(
     Image.open(os.path.join(icon_folder_path,"song_lyrics_white.png")),size=(30,30)
 )
+lyrics_button_icon_orange=ctk.CTkImage(
+    Image.open(os.path.join(icon_folder_path,"song_lyrics_orange.png")),size=(30,30)
+)
 disliked_button_icon = ctk.CTkImage(
     Image.open(os.path.join(icon_folder_path, "disliked_btn.png")), size=(30, 30)
 )
