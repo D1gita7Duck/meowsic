@@ -81,7 +81,7 @@ def load_music(t,pretty_name):
         widgets.previous_button.configure(state='normal')
         widgets.play_button.configure(state='normal')
         widgets.next_button.configure(state='normal')
-        widgets.song_slider.configure(state='normal')
+       # widgets.song_slider.configure(state='normal')     TEMPORARY FIX
         widgets.lyrics_button.configure(state="normal")
 
     master_playing=True
@@ -122,7 +122,7 @@ def search():
 
     else:
         # Reset the songs_paths tuple
-        songs_paths = tuple()
+        songs_paths = list()
         search_text = widgets.search_bar.get()
         print(search_text)
         widgets.search_progress.start()
@@ -209,7 +209,7 @@ def add_songs():
         songs_paths = (songs_paths) + list(og_songs_paths)
 
     else:
-        songs_paths = og_songs_paths+tuple()
+        songs_paths = list(og_songs_paths)
 
         pygame.mixer.music.load(songs_paths[0])
         now_playing = 0
@@ -247,7 +247,7 @@ def add_songs():
     widgets.previous_button.configure(state='normal')
     widgets.play_button.configure(state='normal')
     widgets.next_button.configure(state='normal')
-    widgets.song_slider.configure(state='normal')
+    #widgets.song_slider.configure(state='normal')    TEMPORARY FIX
     widgets.lyrics_button.configure(state="normal")
 
     print(songs_paths)

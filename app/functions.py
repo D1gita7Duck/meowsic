@@ -38,23 +38,26 @@ def check_recents():
 
 check_recents()
 
-def store_recents(song_dict):
-    file=open("data/recents.dat","rb+")
-    file.seek(0,0)
-    L=pickle.load(file)
-    L.pop()
-    L.insert(0,song_dict)
-    file.seek(0,0)
-    pickle.dump(L,file)
-    file.close()
+def store_recents(song):
+    if ".mp3" in song:
+        print("local song not adding to recents")
+    else:
+        file=open("data/recents.dat","rb+")
+        file.seek(0,0)
+        L=pickle.load(file)
+        L.pop()
+        L.insert(0,song)
+        file.seek(0,0)
+        pickle.dump(L,file)
+        file.close()
 
 def get_recents():
     file=open("data/recents.dat","rb")
     file.seek(0,0)
     recent=pickle.load(file)
-    if recent==[{},{},{}]:
-        return None
-    else:return recent
+    while {} in recent:
+        recent.remove({})
+    return list(set(recent)) #remove repeated songs
 
 def like_song(song):
     res=db.song_search(song)
