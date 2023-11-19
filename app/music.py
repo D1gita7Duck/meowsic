@@ -1,6 +1,8 @@
+from multiprocessing import dummy
 import os
 import time
 import threading
+from tkinter import W
 import pygame.mixer
 import customtkinter as ctk
 from PIL import Image
@@ -15,7 +17,7 @@ playing = 0
 now_playing = 0
 master_playing = False
 formatted_total_song_time = 0
-songs_paths = []
+songs_paths = list()
 liked_songs_paths = dict()
 liked = False
 loaded=False
@@ -83,6 +85,8 @@ def load_music(t,pretty_name):
         widgets.next_button.configure(state='normal')
        # widgets.song_slider.configure(state='normal')     TEMPORARY FIX
         widgets.lyrics_button.configure(state="normal")
+        widgets.add_to_playlist_menu.configure(state='normal')
+        widgets.delete_from_queue_button.configure(state='normal')
 
     master_playing=True
     # inserting into list_box
@@ -91,6 +95,8 @@ def load_music(t,pretty_name):
     widgets.song_list.selection_clear()
     widgets.song_list.activate(now_playing)
     widgets.song_list.select(f"END{now_playing % len(songs_paths)}")
+
+    widgets.master_tab.set('Queue')
 
     print("songs_paths", songs_paths)
     print("now playing", now_playing)
@@ -249,6 +255,10 @@ def add_songs():
     widgets.next_button.configure(state='normal')
     #widgets.song_slider.configure(state='normal')    TEMPORARY FIX
     widgets.lyrics_button.configure(state="normal")
+    widgets.add_to_playlist_menu.configure(state='normal')
+    widgets.delete_from_queue_button.configure(state='normal')
+
+    widgets.master_tab.set('Queue')
 
     print(songs_paths)
 
@@ -592,6 +602,38 @@ def main_lyrics():
     import app.widgets as widgets
     res=functions.search(widgets.song_list.get())
     lyrics.show_lyrics(res["pretty_name"],res["artists"].split(",")[0],widgets.app)
+
+def add_to_playlist(choice):
+    import app.widgets as widgets
+    print(choice)
+    add_to_playlist_var=ctk.StringVar(value='Add to Playlist')
+    widgets.add_to_playlist_menu.configure(variable=add_to_playlist_var)
+
+    if choice=='Create New Playlist':
+        create_playlist_dialog=ctk.CTkInputDialog(text='Give Playlist Name:', title = 'Creating a Playlist')
+        playlist_name=create_playlist_dialog.get_input()
+        print(playlist_name)
+        widgets.add_to_playlist_options.append(playlist_name)
+
+def delete_from_queue():
+    import app.widgets as widgets
+    global now_playing
+    current_song_index=widgets.song_list.curselection()
+    print(current_song_index)
+    if current_song_index!=now_playing:
+        songs_paths.pop(current_song_index)
+        widgets.song_list.delete(current_song_index)
+    else:
+        incorrect_delete_queue_win=ctk.CTkToplevel(widgets.app)
+        incorrect_delete_queue_win.geometry('200x100')
+        text_label=ctk.CTkLabel(master=incorrect_delete_queue_win,
+                                text='Incorrect Operation',
+                                image=widgets.information_icon,
+                                compound='left',
+                                anchor='center',)
+        text_label.pack(pady=(20,20), padx=(10,10), anchor='center')
+
+
 def import_from_spotify(playlist):
     import app.widgets as widgets
     L=import_spotify.get_spotify_playlist_tracks(playlist)
@@ -618,6 +660,7 @@ def import_sp_playlist():
     widgets.import_progress.start()
     # Start the import thread
     import_thread.start()
+    
 def run_import(url):
     import app.widgets as widgets
     import_from_spotify(url)

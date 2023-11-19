@@ -26,7 +26,7 @@ icon_folder_path = os.path.join(
 
 )
 garfield_icon = ctk.CTkImage(
-    Image.open(os.path.join(icon_folder_path, "garfield.png")), size=(200, 250)
+    Image.open(os.path.join(icon_folder_path, "garfield.png")), size=(200, 200)
 )
 library_button_icon=ctk.CTkImage(
     Image.open(os.path.join(icon_folder_path, "library_icon.png")), size=(30, 30)
@@ -61,6 +61,16 @@ disliked_button_icon = ctk.CTkImage(
 like_button_icon = ctk.CTkImage(
     Image.open(os.path.join(icon_folder_path, "like_btn.png")), size=(30, 30)
 )
+add_to_queue_button_icon= ctk.CTkImage(
+    Image.open(os.path.join(icon_folder_path, "add_queue_btn.png")), size=(30, 30)
+)
+delete_from_queue_button_icon=ctk.CTkImage(
+    Image.open(os.path.join(icon_folder_path, "delete_queue_btn.png")), size=(30, 30)
+)
+information_icon=ctk.CTkImage(
+    Image.open(os.path.join(icon_folder_path, "info_icon.png")), size=(30, 30)
+)
+
 #define top level import window
 def import_win_launch():
     global import_entry
@@ -101,7 +111,7 @@ sub_menu = file_dropdown.add_submenu("Export As")
 sub_menu.add_option(option=".TXT")
 sub_menu.add_option(option=".PDF")
 
-#frame for tabview and metadata
+#frame for tabview and metadata and misc frame
 big_frame = ctk.CTkFrame(master=app, height=800)
 big_frame.pack(pady=(20, 20), anchor='center', fill='x', ipadx=10,)
 big_frame.grid_columnconfigure((0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10), weight=1)
@@ -120,7 +130,7 @@ master_tab = ctk.CTkTabview(
     segmented_button_selected_hover_color='#4b85a8',
     segmented_button_unselected_hover_color='#7fb8cc',
 )
-master_tab.grid(pady=(10,10), row=0, column=2, columnspan=7)
+master_tab.grid(pady=(10,10), row=0, column=1, columnspan=8, padx=(30,10),)
 master_tab._segmented_button.configure(font=('Helvetica', 22,))
 
 # Create tabs
@@ -238,25 +248,70 @@ song_list_frame = ctk.CTkFrame(master=queue_tab, fg_color='#ebd9c8' , height=500
 song_list_frame.grid(row=1, pady=20, sticky='ew', padx=(20, 20))
 
 # Media Controls Frame
-playback_controls_frame = ctk.CTkFrame(
-    master=app, fg_color='black', corner_radius=20 , width=800 )
+playback_controls_frame = ctk.CTkFrame(master=app, fg_color='black', corner_radius=20 , width=800 )
 playback_controls_frame.pack(side='bottom', pady=(20, 20), ipadx=10, expand=True, anchor='center')  # removed fill='x'
 playback_controls_frame.grid_columnconfigure((0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10), weight=1)
 
+# liked songs frame
 liked_songs_frame = ctk.CTkFrame(master=liked_songs_tab)
 liked_songs_frame.grid(row=1, pady=(20, 20), padx=(20, 20), sticky='ew')
 
+# song metadata frame
 song_metadata_frame = ctk.CTkFrame(
     master=big_frame,
-    width=300,
+    width=350,
     height=400,
     fg_color='black',
 )
-# song_metadata_frame.pack(side='right', padx=(20,20), expand=True ,after=master_tab)
-song_metadata_frame.grid(row=0, column=9, columnspan=3, rowspan=3, )
+song_metadata_frame.grid(row=0, column=7, columnspan=3, rowspan=3, )
 song_metadata_frame.grid_columnconfigure((0, 1, 2, 3, 4, 5), weight=1)
 
-# buttons
+# misc functions frame (add to playlist, delete from queue, add to queue)
+misc_frame=ctk.CTkFrame(master=big_frame, fg_color='black', corner_radius=20 , )
+misc_frame.grid(row=0, column=0, columnspan=3, padx=(10,10) )
+misc_frame.grid_columnconfigure(0, weight=1)
+misc_frame.grid_rowconfigure((0,1,2), weight=1)
+
+# misc frame buttons
+add_to_playlist_label_text=ctk.StringVar(value='Add to Playlist')
+add_to_playlist_options=['Create New Playlist']
+add_to_playlist_menu=ctk.CTkOptionMenu(
+    misc_frame,
+    width=200,
+    height=35,
+    command=music.add_to_playlist,
+    variable=add_to_playlist_label_text,
+    values=add_to_playlist_options,
+    state='disabled',
+)
+add_to_playlist_menu.grid(row=0, column=0, columnspan=2,  padx=(10,10), pady=(20,10), sticky='ew')
+
+# add to queue
+# add_to_queue_button=ctk.CTkButton(
+#     misc_frame,
+#     width=200,
+#     height=30,
+#     command=music.add_to_queue,
+#     text='Add to Queue',
+#     image=add_to_queue_button_icon,
+#     anchor='center'
+# )
+# add_to_queue_button.grid(row=1, column=0, columnspan=2, padx=(10,10), pady=(10,20), sticky='ew')
+
+# delete from queue
+delete_from_queue_button=ctk.CTkButton(
+    misc_frame,
+    width=200,
+    height=30,
+    command=music.delete_from_queue,
+    text='Delete from Queue',
+    image=delete_from_queue_button_icon,
+    anchor='center',
+    state='disabled',
+)
+delete_from_queue_button.grid(row=1, column=0, columnspan=2, padx=(10,10), pady=(10,20), sticky='ew')
+
+#playback controls buttons
 like_button = ctk.CTkButton(
     playback_controls_frame,
     text='',
