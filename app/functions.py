@@ -1,5 +1,6 @@
 import os
 import time
+from datetime import datetime
 import pickle
 from youtubesearchpython import VideosSearch
 import yt_dlp as youtube_dl
@@ -135,6 +136,16 @@ def search(stringy):
 
 def artist_search(pretty_name):
     return db.song_search(pretty_name)
+
+def add_playlist(header_dict):
+    if len(header_dict)==1:
+        db.insert_playlist_header([header_dict["name"],"Null","Null"])
+    else:
+        db.insert_playlist_header([x for x in header_dict.values()])
+def get_playlists():
+    return db.get_all_playlists()
+def add_to_playlist(song_name,playlist_name):
+    db.insert_playlist_details([playlist_name,song_name,datetime.today().strftime('%Y-%m-%d')])
 
 def download(url,name):
     """

@@ -31,7 +31,7 @@ def song_insert(song_list):
 
 def insert_playlist_header(playlist_header_list):
    con.execute("BEGIN TRANSACTION")
-   con.execute("INSERT INTO playlist_header(playlistname, playlist_art_location , date_of_creation) VALUES (:playlistname, :playlist_art_location, :date_of_creation)",playlist_header_list)
+   con.execute("INSERT INTO playlist_header(playlist_name, playlist_art_location , date_of_creation) VALUES (:playlistname, :playlist_art_location, :date_of_creation)",playlist_header_list)
    con.execute("COMMIT")
    print("add operation done")
 def insert_playlist_details(playlist_details_list):
@@ -94,6 +94,12 @@ def get_playlist_detail(playlist_name_in):
    return playlist_details_dict
 
 
+def get_all_playlists():
+   con=sqlite3.connect(os.getcwd()+"/data/database.db",check_same_thread=False)
+   cur=con.cursor()
+   res=cur.execute("select playlist_name from playlist_header")
+   list_playlists=res.fetchall()
+   return list_playlists
 
 def get_playlist_header(playlist_name_in):
    con=sqlite3.connect(os.getcwd()+"/data/database.db",check_same_thread=False)

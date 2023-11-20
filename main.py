@@ -8,7 +8,7 @@ ctk.set_appearance_mode("System")  # Modes: system (default), light, dark
 # Themes: blue (default), dark-blue, green
 ctk.set_default_color_theme("dark-blue")
 
-app.geometry("1280x800")
+app.geometry(f'{str(app.winfo_screenwidth())}x{str(app.winfo_screenheight())}')
 app.title("meowsic")
 app.iconbitmap(os.path.join(os.getcwd(),"app","assets", "icons", "app_icon.ico"))
 
@@ -24,6 +24,6 @@ def kill_all():
 
 
 app.protocol("WM_DELETE_WINDOW", kill_all)
-
+app.after(0, lambda: app.state('zoomed'))
 
 app.mainloop()

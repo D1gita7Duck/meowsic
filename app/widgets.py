@@ -12,6 +12,7 @@ import time
 app = ctk.CTk()  # create CTk window like you do with the Tk window
 app.grid_columnconfigure((0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10,), weight=1)
 app.grid_rowconfigure((0, 1, 2, 3, 4, 5, 6, 7, 8), weight=1)
+scale_factor=1920/app.winfo_screenwidth()
 
 current_time=time.localtime()
 
@@ -26,10 +27,10 @@ icon_folder_path = os.path.join(
 
 )
 garfield_icon = ctk.CTkImage(
-    Image.open(os.path.join(icon_folder_path, "garfield.png")), size=(200, 200)
+    Image.open(os.path.join(icon_folder_path, "garfield.png")), size=(200//scale_factor, 200//scale_factor)
 )
 library_button_icon=ctk.CTkImage(
-    Image.open(os.path.join(icon_folder_path, "library_icon.png")), size=(30, 30)
+    Image.open(os.path.join(icon_folder_path, "library_icon.png")), size=(30//scale_factor, 30//scale_factor)
 )
 
 
@@ -120,8 +121,8 @@ big_frame.lower()
 # Create Tabview
 master_tab = ctk.CTkTabview(
     master=big_frame,
-    width=800,
-    height=550,
+    width=800//scale_factor,
+    height=550//scale_factor,
     corner_radius=10,
     border_width=1,
     border_color='black',
@@ -160,8 +161,8 @@ home_tab_recently_played.grid(
     row=1, columnspan=3, column=6, rowspan=5, sticky='ew' , padx=(20,10))
 
 recently_played_listbox = CTkListbox.CTkListbox(master=home_tab_recently_played,
-                                                width=600,
-                                                height=300,
+                                                width=600//scale_factor,
+                                                height=300//scale_factor,
                                                 border_width=2,
                                                 border_color='black',
                                                 corner_radius=10,
@@ -187,8 +188,8 @@ home_tab_buttons_frame.grid_columnconfigure(0, weight=1)
 
 home_tab_your_library_button=ctk.CTkButton(
     master=home_tab_buttons_frame,
-    width=200,
-    height=50,
+    width=200//scale_factor,
+    height=50//scale_factor,
     text='Your Library',
     image=library_button_icon,
     anchor='center',
@@ -274,10 +275,12 @@ misc_frame.grid_rowconfigure((0,1,2), weight=1)
 
 # misc frame buttons
 add_to_playlist_label_text=ctk.StringVar(value='Add to Playlist')
-add_to_playlist_options=['Create New Playlist']
+print(functions.get_playlists())
+add_to_playlist_options=[x[0] for x in functions.get_playlists()]
+add_to_playlist_options.append('Create New Playlist')
 add_to_playlist_menu=ctk.CTkOptionMenu(
     misc_frame,
-    width=200,
+    width=200//scale_factor,
     height=35,
     command=music.add_to_playlist,
     variable=add_to_playlist_label_text,
@@ -301,7 +304,7 @@ add_to_playlist_menu.grid(row=0, column=0, columnspan=2,  padx=(10,10), pady=(20
 # delete from queue
 delete_from_queue_button=ctk.CTkButton(
     misc_frame,
-    width=200,
+    width=200//scale_factor,
     height=30,
     command=music.delete_from_queue,
     text='Delete from Queue',

@@ -608,13 +608,15 @@ def add_to_playlist(choice):
     print(choice)
     add_to_playlist_var=ctk.StringVar(value='Add to Playlist')
     widgets.add_to_playlist_menu.configure(variable=add_to_playlist_var)
-
     if choice=='Create New Playlist':
         create_playlist_dialog=ctk.CTkInputDialog(text='Give Playlist Name:', title = 'Creating a Playlist')
         playlist_name=create_playlist_dialog.get_input()
         print(playlist_name)
+        functions.add_playlist({"name":playlist_name})
         widgets.add_to_playlist_options.append(playlist_name)
-
+        functions.add_to_playlist(widgets.song_list.get(),choice)
+    else:
+        functions.add_to_playlist(widgets.song_list.get(),choice)
 def delete_from_queue():
     import app.widgets as widgets
     global now_playing
