@@ -16,6 +16,7 @@ youtube-search-python = "*"
 spotipy = "*"
 yt_dlp = "*"
 ctkmenubar = "*"
+ctktable = "*"
 
 [dev-packages]
 

@@ -7,6 +7,7 @@ import pygame.mixer
 import customtkinter as ctk
 from PIL import Image
 import audioread
+from CTkListbox import ctk_listbox
 import app.functions as functions
 import app.lyrics as lyrics
 import app.import_spotify as import_spotify
@@ -603,6 +604,10 @@ def main_lyrics():
     res=functions.search(widgets.song_list.get())
     lyrics.show_lyrics(res["pretty_name"],res["artists"].split(",")[0],widgets.app)
 
+def show_your_library():
+    import app.widgets as widgets
+    widgets.master_tab.set('Your Library')
+
 def add_to_playlist(choice):
     import app.widgets as widgets
     print(choice)
@@ -614,9 +619,30 @@ def add_to_playlist(choice):
         print(playlist_name)
         functions.add_playlist({"name":playlist_name})
         widgets.add_to_playlist_options.append(playlist_name)
+        widgets.add_to_playlist_menu.configure(values=widgets.add_to_playlist_options)
         functions.add_to_playlist(widgets.song_list.get(),choice)
     else:
         functions.add_to_playlist(widgets.song_list.get(),choice)
+
+def show_playlist():
+    import app.widgets as widgets
+    print("show playlist called")
+    playlist_listbox=ctk_listbox.CTkListbox(
+        master=widgets.your_library_tab,
+        width=700,
+        height=250,
+        border_width=2,
+        border_color='black',
+        corner_radius=10,
+        label_text='Playlists',
+        label_anchor='center',
+        fg_color="orange",
+        text_color="black",
+        hightlight_color='red',
+        hover_color='#7fb8cc',
+    )
+    
+
 def delete_from_queue():
     import app.widgets as widgets
     global now_playing
@@ -628,6 +654,7 @@ def delete_from_queue():
     else:
         incorrect_delete_queue_win=ctk.CTkToplevel(widgets.app)
         incorrect_delete_queue_win.geometry('200x100')
+        incorrect_delete_queue_win.focus()
         text_label=ctk.CTkLabel(master=incorrect_delete_queue_win,
                                 text='Incorrect Operation',
                                 image=widgets.information_icon,

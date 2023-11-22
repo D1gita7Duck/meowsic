@@ -1,6 +1,8 @@
+from doctest import master
 import customtkinter as ctk
 import CTkMenuBar
 import CTkListbox
+from CTkListbox import ctk_listbox
 #from app.music import add_songs,search,song_previous,play_pause,song_next,like,slide,main_lyrics,load_liked
 import app.music as music
 import os
@@ -8,6 +10,7 @@ from PIL import Image
 import app.functions as functions
 import app.import_spotify as import_spotify
 import time
+import CTkTable
 
 app = ctk.CTk()  # create CTk window like you do with the Tk window
 app.grid_columnconfigure((0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10,), weight=1)
@@ -139,6 +142,7 @@ home_tab = master_tab.add('Home')
 queue_tab = master_tab.add('Queue')
 search_tab = master_tab.add('Search')
 liked_songs_tab = master_tab.add('Liked Songs')
+your_library_tab=master_tab.add('Your Library')
 
 # home tab stuff
 home_tab.grid_columnconfigure((0, 1, 2, 3, 4, 5,), weight=1)
@@ -193,6 +197,7 @@ home_tab_your_library_button=ctk.CTkButton(
     text='Your Library',
     image=library_button_icon,
     anchor='center',
+    command=music.show_your_library,
 )
 home_tab_your_library_button.grid(row=0, column=0, columnspan=3, padx=(10,10), pady=(10,10), sticky='ew')
 
@@ -207,14 +212,59 @@ home_tab_liked_songs_button=ctk.CTkButton(
 )
 home_tab_liked_songs_button.grid(row=1, column=0, columnspan=3, padx=(10,10), pady=(10,10), sticky='ew')
 
-third_button=ctk.CTkButton(
+discover_button=ctk.CTkButton(
     master=home_tab_buttons_frame,
     width=200,
     height=50,
-    text='Do Button Stuff',
+    text='Discover',
     anchor='center',
 )
-third_button.grid(row=2, column=0, columnspan=3, padx=(10,10), pady=(10,10), sticky='ew')
+discover_button.grid(row=2, column=0, columnspan=3, padx=(10,10), pady=(10,10), sticky='ew')
+
+# Your Library Tab
+your_library_tab.grid_columnconfigure((0,1,2,3,4,5,6,7), weight=1)
+
+your_library_frame=ctk.CTkScrollableFrame(
+    master=your_library_tab,
+    width=700,
+    height=250,
+    border_width=0,
+    border_color='black',
+    corner_radius=10,
+    label_text='Playlists',
+    label_anchor='center',
+    fg_color="orange",
+)
+your_library_frame.grid(row=0, pady=(20,20), padx=(10,10),sticky='ew')
+your_library_frame.grid_columnconfigure((0,1,2,3,4,5),weight=1)
+playlist_table_values=[
+    ['Name', 'Date Created','Songs','Duration'],
+    [functions.get_playlists()],
+]
+playlists_table=CTkTable.CTkTable(
+    master=your_library_frame,
+    values=playlist_table_values,
+)
+playlists_table.grid(row=0, columnspan=9, sticky='ew')
+
+# your_library_playlists_listbox=CTkListbox.CTkListbox(
+#     master=your_library_tab,
+#     width=700,
+#     height=250,
+#     border_width=2,
+#     border_color='black',
+#     corner_radius=10,
+#     label_text='Playlists',
+#     label_anchor='center',
+#     fg_color="orange",
+#     text_color="black",
+#     hightlight_color='red',
+#     hover_color='#7fb8cc',
+# )
+# your_library_playlists_listbox.grid(row=0, columnspan=9, pady=(20, 20), padx=(10,10), sticky='ew')
+# # add existing playlists into listbox
+# for i in [x[0] for x in functions.get_playlists()]:
+#     your_library_playlists_listbox.insert('END', i, onclick=music.show_playlist)
 
 # Search Frame
 search_frame = ctk.CTkFrame(search_tab)
