@@ -33,12 +33,12 @@ def insert_playlist_header(playlist_header_list):
    con.execute("BEGIN TRANSACTION")
    con.execute("INSERT INTO playlist_header(playlist_name, playlist_art_location , date_of_creation) VALUES (:playlistname, :playlist_art_location, :date_of_creation)",playlist_header_list)
    con.execute("COMMIT")
-   print("add operation done")
+   print("add operation done",playlist_header_list)
 def insert_playlist_details(playlist_details_list):
    con.execute("BEGIN TRANSACTION")
    con.execute("INSERT INTO playlist_details(playlist_name,song_name,date_of_addition ) VALUES (:playlist_name,:song_name,:date_of_addition)",playlist_details_list)
    con.execute("COMMIT")
-   print("add operation done")
+   print("add operation done",playlist_details_list)
 
 
 def like_song(song_list):
@@ -101,16 +101,31 @@ def get_all_playlists():
    list_playlists=res.fetchall()
    return list_playlists
 
-def get_playlist_header(playlist_name_in):
-   con=sqlite3.connect(os.getcwd()+"/data/database.db",check_same_thread=False)
-   cur=con.cursor() 
-   res=cur.execute("select h.playlist_name, h.date_of_creation ,  count(*) as number_of_songs, sum(duration) as duration from playlist_header h join playlist_details d join songs s where h.playlist_name=d.playlist_name and h.playlist_name=(?) and d.song_name= s.path;", (playlist_name_in, ))
-   playlist_header_list=res.fetchall()
-   desc=cur.description
-   column_names=[col[0] for col in desc]
-   playlist_header_dict=[dict(zip(column_names,row))for row in playlist_header_list]
-   return playlist_header_dict
+def get_playlist_header(playlist_name):
+    con = sqlite3.connect(os.getcwd() + "/data/database.db", check_same_thread=False)
+    cur = con.cursor()
+    res = cur.execute("""
+    SELECT playlist_header.playlist_name, playlist_header.date_of_creation,
+           COUNT(songs.path) AS number_of_songs, SUM(songs.duration) AS duration
+    FROM playlist_header, playlist_details, songs
+    WHERE playlist_header.playlist_name = playlist_details.playlist_name
+      AND playlist_header.playlist_name = ?
+      AND playlist_details.song_name = songs.pretty_name;
+""", (playlist_name))
+    playlist_details_list = []
 
+    if res is not None:
+        playlist_details_list = res.fetchall()
+        print(playlist_details_list)
+        desc = cur.description
+        column_names = [col[0] for col in desc]
+        playlist_details_dict = [dict(zip(column_names, row)) for row in playlist_details_list]
+
+    con.close()
+    return playlist_details_dict
+
+
+#print("AAAAA",get_playlist_header("test1"))
 def delete_playlist(playlist_name):
    con=sqlite3.connect(os.getcwd()+"/data/database.db",check_same_thread=False)
    cur=con.cursor()

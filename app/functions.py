@@ -144,6 +144,14 @@ def add_playlist(header_dict):
         db.insert_playlist_header([x for x in header_dict.values()])
 def get_playlists():
     return db.get_all_playlists()
+def get_playlist_details(name):
+    print(db.get_playlist_header(name))
+    L=[]
+    for i in db.get_playlist_header(name):
+        for x in i.values():
+            L.append(x)
+    print(L)
+    return L
 def add_to_playlist(song_name,playlist_name):
     db.insert_playlist_details([playlist_name,song_name,datetime.today().strftime('%Y-%m-%d')])
 

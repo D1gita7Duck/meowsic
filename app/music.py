@@ -1,13 +1,13 @@
 from multiprocessing import dummy
 import os
 import time
+from datetime import datetime
 import threading
 from tkinter import W
 import pygame.mixer
 import customtkinter as ctk
 from PIL import Image
 import audioread
-from CTkListbox import ctk_listbox
 import app.functions as functions
 import app.lyrics as lyrics
 import app.import_spotify as import_spotify
@@ -88,6 +88,8 @@ def load_music(t,pretty_name):
         widgets.lyrics_button.configure(state="normal")
         widgets.add_to_playlist_menu.configure(state='normal')
         widgets.delete_from_queue_button.configure(state='normal')
+        widgets.volume_button.configure(state="normal")
+        widgets.volume_slider.configure(state="normal")
 
     master_playing=True
     # inserting into list_box
@@ -595,7 +597,16 @@ def show_liked_songs():
 
 def play_on_click():
     pass
-
+def volume(value):
+    pygame.mixer.music.set_volume(value/100)
+def mute():
+    import app.widgets as widgets
+    if pygame.mixer.music.get_volume()!=0:
+        pygame.mixer.music.set_volume(0)
+        widgets.volume_button.configure(image=widgets.mute_icon)
+    else:
+        pygame.mixer.music.set_volume(widgets.volume_slider.get())
+        widgets.volume_button.configure(image=widgets.volume_icon)
 def main_lyrics():
     """
     Searches for and Displays lyrics
@@ -603,10 +614,6 @@ def main_lyrics():
     import app.widgets as widgets
     res=functions.search(widgets.song_list.get())
     lyrics.show_lyrics(res["pretty_name"],res["artists"].split(",")[0],widgets.app)
-
-def show_your_library():
-    import app.widgets as widgets
-    widgets.master_tab.set('Your Library')
 
 def add_to_playlist(choice):
     import app.widgets as widgets
@@ -617,32 +624,12 @@ def add_to_playlist(choice):
         create_playlist_dialog=ctk.CTkInputDialog(text='Give Playlist Name:', title = 'Creating a Playlist')
         playlist_name=create_playlist_dialog.get_input()
         print(playlist_name)
-        functions.add_playlist({"name":playlist_name})
+        functions.add_playlist({"name":playlist_name,"art_location":"nothing","date":datetime.today().strftime('%Y-%m-%d')})
         widgets.add_to_playlist_options.append(playlist_name)
         widgets.add_to_playlist_menu.configure(values=widgets.add_to_playlist_options)
-        functions.add_to_playlist(widgets.song_list.get(),choice)
+        functions.add_to_playlist(widgets.song_list.get(),playlist_name)
     else:
         functions.add_to_playlist(widgets.song_list.get(),choice)
-
-def show_playlist():
-    import app.widgets as widgets
-    print("show playlist called")
-    playlist_listbox=ctk_listbox.CTkListbox(
-        master=widgets.your_library_tab,
-        width=700,
-        height=250,
-        border_width=2,
-        border_color='black',
-        corner_radius=10,
-        label_text='Playlists',
-        label_anchor='center',
-        fg_color="orange",
-        text_color="black",
-        hightlight_color='red',
-        hover_color='#7fb8cc',
-    )
-    
-
 def delete_from_queue():
     import app.widgets as widgets
     global now_playing
@@ -661,6 +648,30 @@ def delete_from_queue():
                                 compound='left',
                                 anchor='center',)
         text_label.pack(pady=(20,20), padx=(10,10), anchor='center')
+
+def show_playlist():
+    import app.widgets as widgets
+    print("show playlist called")
+    playlist_listbox=ctk.CTkListbox(
+        master=widgets.your_library_tab,
+        width=700,
+        height=250,
+        border_width=2,
+        border_color='black',
+        corner_radius=10,
+        label_text='Playlists',
+        label_anchor='center',
+        fg_color="orange",
+        text_color="black",
+        hightlight_color='red',
+        hover_color='#7fb8cc',
+    )
+
+
+def show_your_library():
+    import app.widgets as widgets
+    widgets.master_tab.set('Your Library')
+
 
 
 def import_from_spotify(playlist):
