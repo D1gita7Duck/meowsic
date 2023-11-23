@@ -147,10 +147,13 @@ def load_playlist_song():
     """
     import app.widgets as widgets
     print("load playlist called")
-    temp_res = functions.search(playlist_listbox.get())
-    # Download the song in a separate thread
-    download_thread = threading.Thread(target=download_and_load, args=(temp_res,))
-    download_thread.start()
+    if ".mp3" in playlist_listbox.get():
+        load_local(playlist_listbox.get())
+    else:
+        temp_res = functions.search(playlist_listbox.get())
+        # Download the song in a separate thread
+        download_thread = threading.Thread(target=download_and_load, args=(temp_res,))
+        download_thread.start()
 
 def load_liked():
     """
@@ -174,6 +177,60 @@ def load_recents():
     download_thread = threading.Thread(target=download_and_load, args=(temp_res,))
     download_thread.start()
 
+def load_local(name):
+    import app.widgets as widgets
+    global loaded
+    global songs_paths
+    global now_playing
+    global total_song_time
+    if pygame.mixer.music.get_busy() or loaded:
+        songs_paths = (songs_paths) + ["Audio/"+name]
+
+    else:
+        songs_paths = ["Audio/"+name]
+
+        pygame.mixer.music.load(songs_paths[0])
+        loaded=True
+        now_playing = 0
+
+        # total length of song
+        with audioread.audio_open(songs_paths[now_playing]) as song_file:
+            total_song_time = song_file.duration
+            print(total_song_time)
+            formatted_total_song_time = time.strftime(
+                "%M:%S", time.gmtime(total_song_time)
+            )
+        # slider position
+        widgets.song_slider.configure(to=total_song_time)
+        widgets.song_slider.set(0)
+
+        # change status bar to current song name
+        widgets.status_bar.configure(text=f'Paused: {songs_paths[0].split("/")[-1]}')
+
+        # update time labels
+        widgets.time_elapsed_label.configure(
+            text=time.strftime("%M:%S", time.gmtime(0)))
+        widgets.total_time_label.configure(text=f'{formatted_total_song_time}')
+        # update metadata
+        widgets.song_metadata_image_label.configure(image=widgets.garfield_icon)
+        widgets.song_metadata_artist_label.configure(text='Miscellaneous')
+        widgets.song_metadata_image_label.grid(row=0, columnspan=3, sticky='new')
+        widgets.like_button.configure(state='normal')
+        widgets.previous_button.configure(state='normal')
+        widgets.play_button.configure(state='normal')
+        widgets.next_button.configure(state='normal')
+       # widgets.song_slider.configure(state='normal')     TEMPORARY FIX
+        widgets.lyrics_button.configure(state="normal")
+        widgets.add_to_playlist_menu.configure(state='normal')
+        widgets.delete_from_queue_button.configure(state='normal')
+        widgets.volume_button.configure(state="normal")
+        widgets.volume_slider.configure(state="normal")
+    widgets.song_list.insert("END",name)
+    # change the highlight to current song
+    widgets.song_list.selection_clear()
+    widgets.song_list.activate(now_playing)
+    widgets.song_list.select(f"END{now_playing % len(songs_paths)}")
+    widgets.master_tab.set('Queue')
 def download_and_load(temp_res):
     import app.widgets as widgets
     """
@@ -222,6 +279,7 @@ def add_songs():
     # putting song names into playlist
     for i in og_songs_paths:
         widgets.song_list.insert("END", os.path.basename(i))
+        functions.store_local(os.path.basename(i))
 
     print(pygame.mixer.music.get_busy())
 
@@ -639,6 +697,9 @@ def add_to_playlist(choice):
         widgets.add_to_playlist_options.append(playlist_name)
         widgets.add_to_playlist_menu.configure(values=widgets.add_to_playlist_options)
         functions.add_to_playlist(widgets.song_list.get(),playlist_name)
+        print("TUPLE",(playlist_name,))
+        widgets.playlist_table_values.append(functions.get_playlist_details((playlist_name,)))
+        print("valuessss",widgets.playlist_table_values)
     else:
         functions.add_to_playlist(widgets.song_list.get(),choice)
 def delete_from_queue():

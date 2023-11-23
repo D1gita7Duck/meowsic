@@ -7,6 +7,7 @@ import yt_dlp as youtube_dl
 import requests
 import spotipy
 from spotipy.oauth2 import SpotifyClientCredentials
+from tinytag import TinyTag
 import app.db as db
 
 with open("data/secrets.dat","rb") as credentials:
@@ -145,6 +146,7 @@ def add_playlist(header_dict):
 def get_playlists():
     return db.get_all_playlists()
 def get_playlist_details(name):
+    print("arnav name",name)
     print(db.get_playlist_header(name))
     L=[]
     for i in db.get_playlist_header(name):
@@ -153,7 +155,9 @@ def get_playlist_details(name):
     print(L)
     return L
 def add_to_playlist(song_name,playlist_name):
+    print("adding",song_name,"to",playlist_name)
     db.insert_playlist_details([playlist_name,song_name,datetime.today().strftime('%Y-%m-%d')])
+    print("after",[playlist_name,song_name,datetime.today().strftime('%Y-%m-%d')])
 def get_playlist_songs(name):
     names=[]
     L=db.get_playlist_detail(name)
@@ -161,6 +165,9 @@ def get_playlist_songs(name):
         names.append(song["pretty_name"])
     print(names)
     return names
+def store_local(name):
+    duration=int(TinyTag.get("Audio/"+name).duration)
+    db.song_insert([name,"None",duration,name,"None","Miscellaneous"])
 def download(url,name):
     """
     Function to download song and convert it to mp3.
