@@ -36,15 +36,13 @@ Version 1.0:
 
 -Add seperate lyrics window which displays lyrics as a label in a scrollable frame[DONE]
 
--Add Volume control
+-Add Volume control [DONE]
 
--playlists functionality with sql db
+-playlists functionality with sql db [DONE_AF]
 
 -robust mechanism for play,pause,stop,next and previous song [DONE]
 
 -proper queue system [DONE] 
-
--search mechanism to be more accurate and to provide more options to choose from after searching instead of just one
 
 -settings window to change dark/light mode , quality of songs downloaded etc
 
@@ -55,6 +53,8 @@ Version 1.0:
 Version 1.5:
 
 -everything in 1.0 and more
+
+-search mechanism to be more accurate and to provide more options to choose from after searching instead of just one
 
 -better integration with windows like the windows media controls (play pause buttons on keyboard) should work with app
 

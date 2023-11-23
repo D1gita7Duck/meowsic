@@ -300,9 +300,12 @@ for i in functions.get_playlists():
     print(t,i)
     playlist_table_values.append(t)
 print("VALUES",playlist_table_values)
+def open_playlist(value):
+    music.show_playlist(value)
 playlists_table=CTkTable.CTkTable(
     master=your_library_frame,
     values=playlist_table_values,
+    command=open_playlist
 )
 playlists_table.grid(row=0, columnspan=9, sticky='ew')
 
@@ -518,6 +521,7 @@ liked_songs_listbox = CTkListbox.CTkListbox(
 )
 
 liked_songs_listbox.grid(row=0, columnspan=9, pady=(20, 20), sticky='ew')
+
 for i in functions.get_liked_songs():
     liked_songs_listbox.insert("END",i["pretty_name"],onclick=music.load_liked)
 # now playing label

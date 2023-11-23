@@ -154,7 +154,13 @@ def get_playlist_details(name):
     return L
 def add_to_playlist(song_name,playlist_name):
     db.insert_playlist_details([playlist_name,song_name,datetime.today().strftime('%Y-%m-%d')])
-
+def get_playlist_songs(name):
+    names=[]
+    L=db.get_playlist_detail(name)
+    for song in L:
+        names.append(song["pretty_name"])
+    print(names)
+    return names
 def download(url,name):
     """
     Function to download song and convert it to mp3.

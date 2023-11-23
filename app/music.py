@@ -141,6 +141,17 @@ def search():
         download_thread = threading.Thread(target=download_and_load, args=(temp_res,))
         download_thread.start()
 
+def load_playlist_song():
+    """
+    load fn for playlist songs
+    """
+    import app.widgets as widgets
+    print("load playlist called")
+    temp_res = functions.search(playlist_listbox.get())
+    # Download the song in a separate thread
+    download_thread = threading.Thread(target=download_and_load, args=(temp_res,))
+    download_thread.start()
+
 def load_liked():
     """
     load fn for liked songs
@@ -649,23 +660,35 @@ def delete_from_queue():
                                 anchor='center',)
         text_label.pack(pady=(20,20), padx=(10,10), anchor='center')
 
-def show_playlist():
+def show_playlist(value):
     import app.widgets as widgets
+    global playlist_frame
+    global playlist_listbox
     print("show playlist called")
-    playlist_listbox=ctk.CTkListbox(
-        master=widgets.your_library_tab,
-        width=700,
-        height=250,
-        border_width=2,
-        border_color='black',
-        corner_radius=10,
-        label_text='Playlists',
-        label_anchor='center',
-        fg_color="orange",
-        text_color="black",
-        hightlight_color='red',
-        hover_color='#7fb8cc',
-    )
+    print(value)
+    if value["column"]!=0 or value["value"]=="Name":pass
+    else:
+        playlist_tab=widgets.master_tab.add(value["value"])
+        playlist_frame=ctk.CTkFrame(master=playlist_tab)
+        playlist_frame.pack()
+        playlist_listbox = widgets.CTkListbox.CTkListbox(
+            master=playlist_frame,
+            width=700,
+            height=250,
+            border_width=2,
+            border_color='black',
+            corner_radius=10,
+            label_text='Playlists',
+            label_anchor='center',
+            fg_color="orange",
+            text_color="black",
+            hightlight_color='red',
+            hover_color='#7fb8cc',)
+
+       # widgets.playlist_listbox.configure(master=playlist_frame)
+        playlist_listbox.pack()
+        for i in functions.get_playlist_songs(value["value"]):
+            playlist_listbox.insert("END",i,onclick=load_playlist_song)
 
 
 def show_your_library():

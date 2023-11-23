@@ -85,7 +85,7 @@ def song_search(song):
 def get_playlist_detail(playlist_name_in):
    con=sqlite3.connect(os.getcwd()+"/data/database.db",check_same_thread=False)
    cur=con.cursor()
-   res=cur.execute("select path , duration, artists , date_of_addition from songs, playlist_details where songs.path= playlist_details.song_name and playlist_details.playlist_name=(?)", (playlist_name_in,))
+   res=cur.execute("select pretty_name , duration, artists , date_of_addition from songs, playlist_details where songs.pretty_name= playlist_details.song_name and playlist_details.playlist_name=(?)", (playlist_name_in,))
    playlist_details_list=res.fetchall()
    desc=cur.description
    column_names=[col[0] for col in desc]
