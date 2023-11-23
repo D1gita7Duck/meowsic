@@ -22,7 +22,7 @@ songs_paths = list()
 liked_songs_paths = dict()
 liked = False
 loaded=False
-
+open_playlist=None
 def load_music(t,pretty_name):
     """
     Loads music into queue. Accepts filename, pretty_name of song.
@@ -664,11 +664,13 @@ def show_playlist(value):
     import app.widgets as widgets
     global playlist_frame
     global playlist_listbox
+    global open_playlist
     print("show playlist called")
-    print(value)
+    if open_playlist:widgets.master_tab.delete(open_playlist)
     if value["column"]!=0 or value["value"]=="Name":pass
     else:
         playlist_tab=widgets.master_tab.add(value["value"])
+        open_playlist=value["value"]
         playlist_frame=ctk.CTkFrame(master=playlist_tab)
         playlist_frame.pack()
         playlist_listbox = widgets.CTkListbox.CTkListbox(
