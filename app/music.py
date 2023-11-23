@@ -150,7 +150,7 @@ def load_playlist_song():
     if ".mp3" in playlist_listbox.get():
         load_local(playlist_listbox.get())
     else:
-        temp_res = functions.search(playlist_listbox.get())
+        temp_res = functions.artist_search(playlist_listbox.get())
         # Download the song in a separate thread
         download_thread = threading.Thread(target=download_and_load, args=(temp_res,))
         download_thread.start()
@@ -161,7 +161,7 @@ def load_liked():
     """
     import app.widgets as widgets
     print("load liked called")
-    temp_res = functions.search(widgets.liked_songs_listbox.get())
+    temp_res = functions.artist_search(widgets.liked_songs_listbox.get())
     # Download the song in a separate thread
     download_thread = threading.Thread(target=download_and_load, args=(temp_res,))
     download_thread.start()
@@ -172,7 +172,7 @@ def load_recents():
     """
     import app.widgets as widgets
     print("load recents called")
-    temp_res = functions.search(widgets.recently_played_listbox.get())
+    temp_res = functions.artist_search(widgets.recently_played_listbox.get())
     # Download the song in a separate thread
     download_thread = threading.Thread(target=download_and_load, args=(temp_res,))
     download_thread.start()
@@ -692,14 +692,15 @@ def add_to_playlist(choice):
     if choice=='Create New Playlist':
         create_playlist_dialog=ctk.CTkInputDialog(text='Give Playlist Name:', title = 'Creating a Playlist')
         playlist_name=create_playlist_dialog.get_input()
-        print(playlist_name)
+       # print(playlist_name)
         functions.add_playlist({"name":playlist_name,"art_location":"nothing","date":datetime.today().strftime('%Y-%m-%d')})
         widgets.add_to_playlist_options.append(playlist_name)
         widgets.add_to_playlist_menu.configure(values=widgets.add_to_playlist_options)
         functions.add_to_playlist(widgets.song_list.get(),playlist_name)
-        print("TUPLE",(playlist_name,))
+       #print("TUPLE",(playlist_name,))
         widgets.playlist_table_values.append(functions.get_playlist_details((playlist_name,)))
-        print("valuessss",widgets.playlist_table_values)
+        widgets.playlists_table.configure(values=widgets.playlist_table_values)
+       # print("valuessss",widgets.playlist_table_values)
     else:
         functions.add_to_playlist(widgets.song_list.get(),choice)
 def delete_from_queue():

@@ -136,17 +136,22 @@ def search(stringy):
     return {"path":stringy,"url":url,"duration":duration,"pretty_name":pretty_name,"thumbnail_path":thumbnail_path,"artists":artists}
 
 def artist_search(pretty_name):
-    return db.song_search(pretty_name)
+    search_res=db.song_search(pretty_name)
+    if search_res:
+        return search_res
+    else:
+        return search(pretty_name)
 
 def add_playlist(header_dict):
     if len(header_dict)==1:
         db.insert_playlist_header([header_dict["name"],"Null","Null"])
     else:
         db.insert_playlist_header([x for x in header_dict.values()])
+
 def get_playlists():
     return db.get_all_playlists()
+
 def get_playlist_details(name):
-    print("arnav name",name)
     print(db.get_playlist_header(name))
     L=[]
     for i in db.get_playlist_header(name):
@@ -154,10 +159,12 @@ def get_playlist_details(name):
             L.append(x)
     print(L)
     return L
+
 def add_to_playlist(song_name,playlist_name):
     print("adding",song_name,"to",playlist_name)
     db.insert_playlist_details([playlist_name,song_name,datetime.today().strftime('%Y-%m-%d')])
     print("after",[playlist_name,song_name,datetime.today().strftime('%Y-%m-%d')])
+
 def get_playlist_songs(name):
     names=[]
     L=db.get_playlist_detail(name)
@@ -165,9 +172,11 @@ def get_playlist_songs(name):
         names.append(song["pretty_name"])
     print(names)
     return names
+
 def store_local(name):
     duration=int(TinyTag.get("Audio/"+name).duration)
     db.song_insert([name,"None",duration,name,"None","Miscellaneous"])
+
 def download(url,name):
     """
     Function to download song and convert it to mp3.

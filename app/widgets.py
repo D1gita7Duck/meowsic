@@ -292,6 +292,7 @@ your_library_frame=ctk.CTkScrollableFrame(
 )
 your_library_frame.grid(row=0, pady=(20,20), padx=(10,10),sticky='ew')
 your_library_frame.grid_columnconfigure((0,1,2,3,4,5),weight=1)
+
 playlist_table_values=[
     ['Name', 'Date Created','Songs','Duration'],
 ]
@@ -299,9 +300,10 @@ for i in functions.get_playlists():
     t=functions.get_playlist_details(i)
     print(t,i)
     playlist_table_values.append(t)
-print("VALUES",playlist_table_values)
+#print("VALUES",playlist_table_values)
 def open_playlist(value):
     music.show_playlist(value)
+
 playlists_table=CTkTable.CTkTable(
     master=your_library_frame,
     values=playlist_table_values,
