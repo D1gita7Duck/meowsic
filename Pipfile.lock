@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "2e516c64a38eb482aa10d9dca5b5c5aad3496d19be4f3ff63be1ff1850d8e5d4"
+            "sha256": "3567d8159a2dd5568ce57e71e31ea027d32cf0df27025a75e06289ef3eef7d94"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -18,11 +18,11 @@
     "default": {
         "anyio": {
             "hashes": [
-                "sha256:cfdb2b588b9fc25ede96d8db56ed50848b0b649dca3dd1df0b11f683bb9e0b5f",
-                "sha256:f7ed51751b2c2add651e5747c891b47e26d2a21be5d32d9311dfe9692f3e5d7a"
+                "sha256:56a415fbc462291813a94528a779597226619c8e78af7de0507333f700011e5f",
+                "sha256:5a0bec7085176715be77df87fc66d6c9d70626bd752fcc85f57cdbee5b3760da"
             ],
             "markers": "python_version >= '3.8'",
-            "version": "==4.0.0"
+            "version": "==4.1.0"
         },
         "audioread": {
             "hashes": [
@@ -661,6 +661,15 @@
             ],
             "index": "pypi",
             "version": "==2.23.0"
+        },
+        "tinytag": {
+            "hashes": [
+                "sha256:122a63b836f85094aacca43fc807aaee3290be3de17d134f5f4a08b509ae268f",
+                "sha256:e437654d04c966fbbbdbf807af61eb9759f1d80e4173a7d26202506b37cfdaf0"
+            ],
+            "index": "pypi",
+            "markers": "python_version >= '2.7'",
+            "version": "==1.10.1"
         },
         "urllib3": {
             "hashes": [

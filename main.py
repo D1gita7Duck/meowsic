@@ -4,7 +4,7 @@ import pygame.mixer
 import remote.server as server
 from app.widgets import app
 
-ctk.set_appearance_mode("System")  # Modes: system (default), light, dark
+ctk.set_appearance_mode("light")  # Modes: system (default), light, dark
 # Themes: blue (default), dark-blue, green
 ctk.set_default_color_theme("dark-blue")
 

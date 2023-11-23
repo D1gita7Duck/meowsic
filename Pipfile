@@ -17,6 +17,8 @@ spotipy = "*"
 yt_dlp = "*"
 ctkmenubar = "*"
 ctktable = "*"
+tinytag = "*"
+
 [dev-packages]
 
 [requires]

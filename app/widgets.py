@@ -1,5 +1,6 @@
 import customtkinter as ctk
 import CTkMenuBar
+from httpx import options
 import CTkListbox
 #from app.music import add_songs,search,song_previous,play_pause,song_next,like,slide,main_lyrics,load_liked
 import app.music as music
@@ -72,12 +73,19 @@ delete_from_queue_button_icon=ctk.CTkImage(
 information_icon=ctk.CTkImage(
     Image.open(os.path.join(icon_folder_path, "info_icon.png")), size=(30, 30)
 )
-volume_icon=ctk.CTkImage(
-    Image.open(os.path.join(icon_folder_path, "volume_icon.png")), size=(30, 30)
+volume_full_icon=ctk.CTkImage(
+    Image.open(os.path.join(icon_folder_path, "volume_full.png")), size=(25, 25)
+)
+volume_2bar_icon=ctk.CTkImage(
+    Image.open(os.path.join(icon_folder_path, "volume_2bar.png")), size=(30, 30)
+)
+volume_1bar_icon=ctk.CTkImage(
+    Image.open(os.path.join(icon_folder_path, "volume_1bar.png")), size=(30, 30)
 )
 mute_icon=ctk.CTkImage(
-    Image.open(os.path.join(icon_folder_path, "mute_icon.png")), size=(30, 30)
+    Image.open(os.path.join(icon_folder_path, "mute_icon.png")), size=(25, 25)
 )
+
 #define top level import window
 def import_win_launch():
     global import_entry
@@ -99,14 +107,22 @@ def import_win_launch():
     import_button=ctk.CTkButton(import_window,text="Import",command=music.import_sp_playlist)
     import_button.pack(pady=20)
 
+# toggling theme
+def toggle_theme(t):
+    if t=='dark':
+        ctk.set_appearance_mode('dark')
+    else:
+        ctk.set_appearance_mode('light')
+
 # menu
 menu = CTkMenuBar.CTkMenuBar(app)
 menu.lift()
 file_button = menu.add_cascade("File")
 edit_button = menu.add_cascade("Edit")
-settings_button = menu.add_cascade("Settings")
+options_button = menu.add_cascade("Options")
 about_button = menu.add_cascade("About")
 
+# file tab
 file_dropdown = CTkMenuBar.CustomDropdownMenu(widget=file_button)
 file_dropdown.add_option(option="Open", command=music.add_songs)
 file_dropdown.add_option(option="Import Spotify Playlist", command=import_win_launch)
@@ -117,6 +133,18 @@ file_dropdown.add_separator()
 sub_menu = file_dropdown.add_submenu("Export As")
 sub_menu.add_option(option=".TXT")
 sub_menu.add_option(option=".PDF")
+
+# options tab
+options_dropdown=CTkMenuBar.CustomDropdownMenu(widget=options_button)
+# light and dark mode toggle button
+theme_switch=ctk.CTkSwitch(
+    master=options_dropdown,
+    onvalue='dark',
+    offvalue='light',
+    text='Dark Mode',
+    command=lambda: toggle_theme(theme_switch.get()),
+)
+theme_switch.pack(pady=(10,10), padx=(10,10), anchor='center',fill='x',)
 
 #frame for tabview and metadata and misc frame
 big_frame = ctk.CTkFrame(master=app, height=800)
@@ -146,6 +174,7 @@ queue_tab = master_tab.add('Queue')
 search_tab = master_tab.add('Search')
 liked_songs_tab = master_tab.add('Liked Songs')
 your_library_tab=master_tab.add('Your Library')
+
 # home tab stuff
 home_tab.grid_columnconfigure((0, 1, 2, 3, 4, 5,), weight=1)
 
@@ -279,6 +308,7 @@ misc_frame.grid_columnconfigure(0, weight=1)
 misc_frame.grid_rowconfigure((0,1,2), weight=1)
 your_library_tab.grid_columnconfigure((0,1,2,3,4,5,6,7), weight=1)
 
+# your library stuff
 your_library_frame=ctk.CTkScrollableFrame(
     master=your_library_tab,
     width=700,
@@ -296,17 +326,20 @@ your_library_frame.grid_columnconfigure((0,1,2,3,4,5),weight=1)
 playlist_table_values=[
     ['Name', 'Date Created','Songs','Duration'],
 ]
+
 for i in functions.get_playlists():
     t=functions.get_playlist_details(i)
-    print(t,i)
+    print('playlist_details',t,i)
     playlist_table_values.append(t)
 #print("VALUES",playlist_table_values)
 def open_playlist(value):
+    #value is dictionary of kwargs of CTkTable
     music.show_playlist(value)
 
 playlists_table=CTkTable.CTkTable(
     master=your_library_frame,
     values=playlist_table_values,
+    header_color='#984447',
     command=open_playlist
 )
 playlists_table.grid(row=0, columnspan=9, sticky='ew')
@@ -334,8 +367,8 @@ playlists_table.grid(row=0, columnspan=9, sticky='ew')
 # misc frame buttons
 add_to_playlist_label_text=ctk.StringVar(value='Add to Playlist')
 print(functions.get_playlists())
-add_to_playlist_options=[x[0] for x in functions.get_playlists()]
-add_to_playlist_options.append('Create New Playlist')
+add_to_playlist_options=['Create New Playlist...'] + [x[0] for x in functions.get_playlists()]
+
 add_to_playlist_menu=ctk.CTkOptionMenu(
     misc_frame,
     width=200//scale_factor,
@@ -450,8 +483,8 @@ lyrics_button.grid(row=0,column=9,padx=(10,30),sticky="ew")
 volume_button=ctk.CTkButton(
     playback_controls_frame,
     text="",
-    command=music.mute,
-    image=volume_icon,
+    command=music.mute_unmute,
+    image=volume_full_icon,
     border_width=0,
     corner_radius=100,
     fg_color="transparent",
@@ -460,7 +493,7 @@ volume_button=ctk.CTkButton(
     height=0,
     state='disabled'
 )
-volume_button.grid(row=0,column=11,padx=(10,30),sticky="ew")
+volume_button.grid(row=0,column=11,padx=(10,10),sticky="ew")
 volume_slider = ctk.CTkSlider(
     master=playback_controls_frame,
     from_=0,
@@ -473,7 +506,7 @@ volume_slider = ctk.CTkSlider(
     command=music.volume,
     state='disabled'
 )
-volume_slider.grid(row=0, column=12, columnspan=3, pady=5, sticky='ew')
+volume_slider.grid(row=0, column=12, columnspan=3, pady=5, sticky='ew', padx=(10,30))
 volume_slider.set(100)
 song_slider = ctk.CTkSlider(
     master=playback_controls_frame,

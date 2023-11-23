@@ -38,13 +38,13 @@ Version 1.0:
 
 -Add Volume control [DONE]
 
--playlists functionality with sql db [DONE_AF]
+-playlists functionality with sql db [DONE]
 
 -robust mechanism for play,pause,stop,next and previous song [DONE]
 
 -proper queue system [DONE] 
 
--settings window to change dark/light mode , quality of songs downloaded etc
+-settings window to change dark/light mode [DONE] , quality of songs downloaded etc
 
 -ability for users to delete songs and metadata they dont need anymore
 

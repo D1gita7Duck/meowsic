@@ -329,6 +329,8 @@ def add_songs():
     widgets.lyrics_button.configure(state="normal")
     widgets.add_to_playlist_menu.configure(state='normal')
     widgets.delete_from_queue_button.configure(state='normal')
+    widgets.volume_button.configure(state="normal")
+    widgets.volume_slider.configure(state="normal")
 
     widgets.master_tab.set('Queue')
 
@@ -664,18 +666,33 @@ def show_liked_songs():
     widgets.master_tab.set('Liked Songs')
 
 
-def play_on_click():
-    pass
 def volume(value):
+    '''
+    Changes volume of pygame mixer channel as per given value. Value must be between 0 to 100
+    '''
+    import app.widgets as widgets
     pygame.mixer.music.set_volume(value/100)
-def mute():
+    if widgets.volume_slider.get()>66:
+        widgets.volume_button.configure(image=widgets.volume_full_icon)
+    elif widgets.volume_slider.get()>33:
+        widgets.volume_button.configure(image=widgets.volume_2bar_icon)
+    else:
+        widgets.volume_button.configure(image=widgets.volume_1bar_icon)
+
+def mute_unmute():
     import app.widgets as widgets
     if pygame.mixer.music.get_volume()!=0:
         pygame.mixer.music.set_volume(0)
         widgets.volume_button.configure(image=widgets.mute_icon)
     else:
         pygame.mixer.music.set_volume(widgets.volume_slider.get())
-        widgets.volume_button.configure(image=widgets.volume_icon)
+        if widgets.volume_slider.get()>66:
+            widgets.volume_button.configure(image=widgets.volume_full_icon)
+        elif widgets.volume_slider.get()>33:
+            widgets.volume_button.configure(image=widgets.volume_2bar_icon)
+        else:
+            widgets.volume_button.configure(image=widgets.volume_1bar_icon)
+
 def main_lyrics():
     """
     Searches for and Displays lyrics
@@ -703,6 +720,7 @@ def add_to_playlist(choice):
        # print("valuessss",widgets.playlist_table_values)
     else:
         functions.add_to_playlist(widgets.song_list.get(),choice)
+
 def delete_from_queue():
     import app.widgets as widgets
     global now_playing
@@ -713,7 +731,10 @@ def delete_from_queue():
         widgets.song_list.delete(current_song_index)
     else:
         incorrect_delete_queue_win=ctk.CTkToplevel(widgets.app)
+        incorrect_delete_queue_win.resizable(False,False)
+        widgets.app.eval(f'tk::PlaceWindow {str(incorrect_delete_queue_win)} center')
         incorrect_delete_queue_win.geometry('200x100')
+        # put the toplevel on top of all windows
         incorrect_delete_queue_win.focus()
         text_label=ctk.CTkLabel(master=incorrect_delete_queue_win,
                                 text='Incorrect Operation',
@@ -728,7 +749,7 @@ def show_playlist(value):
     global playlist_listbox
     global open_playlist
     print("show playlist called")
-    if open_playlist:widgets.master_tab.delete(open_playlist)
+    # if open_playlist:widgets.master_tab.delete(open_playlist)
     if value["column"]!=0 or value["value"]=="Name":pass
     else:
         playlist_tab=widgets.master_tab.add(value["value"])
@@ -753,6 +774,9 @@ def show_playlist(value):
         playlist_listbox.pack()
         for i in functions.get_playlist_songs(value["value"]):
             playlist_listbox.insert("END",i,onclick=load_playlist_song)
+        
+        # display the playlist tab
+        widgets.master_tab.set(value['value'])
 
 
 def show_your_library():
