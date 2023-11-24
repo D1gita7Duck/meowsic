@@ -66,9 +66,14 @@ class CTkListbox(customtkinter.CTkScrollableFrame):
             
     def select(self, index):
         """ select the option """
+        #print("selecting",index)
+        temp_buttons = {}
+        for i, key in enumerate(sorted(self.buttons.keys())):
+            temp_buttons[f"END{i}"] = self.buttons[key]
+        self.buttons = temp_buttons
         for options in self.buttons.values():
             options.configure(fg_color="transparent")
-        
+        #print(self.buttons)
         if self.multiple:
             if self.buttons[index] in self.selections:
                 self.selections.remove(self.buttons[index])
@@ -86,6 +91,9 @@ class CTkListbox(customtkinter.CTkScrollableFrame):
         
         if self.command:
             self.command(self.get())
+
+
+        #print(self.buttons)
     def load_select(self,index,onclick):
         """ select the option and calls fn"""
         for options in self.buttons.values():
@@ -158,14 +166,20 @@ class CTkListbox(customtkinter.CTkScrollableFrame):
         
     def insert(self, index, option,onclick=None,**args):
         """ add new option in the listbox """
-                
+        
+        temp_buttons = {}
+        for i, key in enumerate(sorted(self.buttons.keys())):
+            temp_buttons[f"END{i}"] = self.buttons[key]
+        self.buttons = temp_buttons
+
         if str(index).lower()=="end":
             index = f"END{self.end_num}"
             self.end_num +=1
-        #print("onclick",onclick)
+
         if index in self.buttons:
             self.buttons[index].destroy()
-        if onclick==None:
+
+        if onclick is None:
             self.buttons[index] = customtkinter.CTkButton(self, text=option, fg_color="transparent", anchor=self.justify,
                                                         text_color=self.text_color, font=self.font,
                                                         hover_color=self.hover_color, **args)
@@ -174,39 +188,40 @@ class CTkListbox(customtkinter.CTkScrollableFrame):
             self.buttons[index] = customtkinter.CTkButton(self, text=option, fg_color="transparent", anchor=self.justify,
                                                         text_color=self.text_color, font=self.font,
                                                         hover_color=self.hover_color, **args)
-            self.buttons[index].configure(command=lambda num=index: self.load_select(num,onclick))
-        
+            self.buttons[index].configure(command=lambda num=index: self.load_select(num, onclick))
+
         self.buttons[index].pack(padx=0, pady=(0,5), fill="x", expand=True)
 
+        #print(self.buttons)
     def delete(self, index, last=None):
         """ delete options from the listbox """
 
-        if str(index).lower()=="all":
+        if str(index).lower() == "all":
             for i in self.buttons:
                 self.buttons[i].destroy()
             self.buttons = {}
             self.end_num = 0
             return
 
-        if str(index).lower()=="end":
+        if str(index).lower() == "end":
             index = f"END{self.end_num}"
-            self.end_num -=1
+            self.end_num -= 1
         else:
-            if int(index)==len(self.buttons):
-                index = len(self.buttons)-1
-            if int(index)>len(self.buttons):
+            if int(index) == len(self.buttons):
+                index = len(self.buttons) - 1
+            if int(index) >= len(self.buttons):
                 return
             if not last:
                 index = list(self.buttons.keys())[int(index)]
 
         if last:
-            if str(last).lower()=="end":
-                last = len(self.buttons)-1
-            elif int(last)>=len(self.buttons):
-                last = len(self.buttons)-1
-                
+            if str(last).lower() == "end":
+                last = len(self.buttons) - 1
+            elif int(last) >= len(self.buttons):
+                last = len(self.buttons) - 1
+
             deleted_list = []
-            for i in range(index, int(last)+1):
+            for i in range(int(index), int(last) + 1):
                 list(self.buttons.values())[i].destroy()
                 deleted_list.append(list(self.buttons.keys())[i])
             for i in deleted_list:
@@ -214,7 +229,16 @@ class CTkListbox(customtkinter.CTkScrollableFrame):
         else:
             self.buttons[index].destroy()
             del self.buttons[index]
-        
+        temp_buttons = {}
+        for i, key in enumerate(sorted(self.buttons.keys())):
+            temp_buttons[f"END{i}"] = self.buttons[key]
+        self.buttons = temp_buttons
+        # Now, regenerate the buttons
+        for i, key in enumerate(list(self.buttons.keys())):
+            self.buttons[key].pack_forget()  # Unpack the button
+            self.insert("END"+str(i), option=self.buttons[key].cget("text"))  # Regenerate the button
+        self.end_num-=1
+
     def size(self):
         """ return total number of items in the listbox """
         return len(self.buttons.keys())

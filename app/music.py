@@ -34,7 +34,8 @@ def load_music(t,pretty_name):
     global liked
     global loaded
     global master_playing
-
+    global now_playing
+    
     if playing == 2 or playing == 1 or loaded:
         pass
     else:
@@ -724,11 +725,16 @@ def add_to_playlist(choice):
 def delete_from_queue():
     import app.widgets as widgets
     global now_playing
+    global songs_paths
     current_song_index=widgets.song_list.curselection()
     print(current_song_index)
     if current_song_index!=now_playing:
         songs_paths.pop(current_song_index)
         widgets.song_list.delete(current_song_index)
+        if current_song_index<now_playing:
+            now_playing-=1
+        #widgets.song_list.activate(now_playing+1)
+        widgets.song_list.select(f"END{now_playing % len(songs_paths)}")
     else:
         incorrect_delete_queue_win=ctk.CTkToplevel(widgets.app)
         incorrect_delete_queue_win.resizable(False,False)
@@ -761,14 +767,16 @@ def show_playlist(value):
             width=700,
             height=250,
             border_width=2,
-            border_color='black',
             corner_radius=10,
             label_text='Playlists',
             label_anchor='center',
-            fg_color="orange",
-            text_color="black",
-            hightlight_color='red',
-            hover_color='#7fb8cc',)
+            border_color=widgets.current_theme["color2"],
+            fg_color=widgets.current_theme["color3"],
+            text_color=widgets.current_theme["color2"],
+            hightlight_color=widgets.current_theme["color2"],
+            hover_color=widgets.current_theme["color4"],
+            select_color=widgets.current_theme["color5"],
+)
 
        # widgets.playlist_listbox.configure(master=playlist_frame)
         playlist_listbox.pack()
