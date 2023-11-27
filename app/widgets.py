@@ -1,9 +1,9 @@
 import os
 import time
+import tkinter
 import customtkinter as ctk
 import CTkMenuBar
 import CTkTable
-from httpx import options
 from PIL import Image
 import CTkListbox
 import app.music as music
@@ -601,6 +601,33 @@ song_list = CTkListbox.CTkListbox(
 )
 
 song_list.grid(row=0, columnspan=9, pady=(10, 30), sticky='ew')
+
+
+def do_popup(event, frame):
+    print('EVENT IS ', event)
+    x=song_list.winfo_x()
+    y=song_list.winfo_y()
+    try: 
+        frame.tk_popup(x, y)
+        
+        # add_to_playlist_submenu.add_command(label='Playlsit1')
+        # add_to_playlist_submenu.add_command(label='Playlsit2')
+    finally: 
+        frame.grab_release()
+
+
+RightClickMenu = tkinter.Menu(song_list, tearoff=False, background='#565b5e', fg='white', borderwidth=0, bd=0)
+# RightClickMenu.add_command(label="Add to PLAYLSIT", command=add_cascade_for_playlist)
+
+RightClickMenu.add_command(label="Delete From Queue", command=music.delete_from_queue)
+add_to_playlist_submenu=tkinter.Menu(RightClickMenu)
+RightClickMenu.add_cascade(label='Add to Playlist', menu=add_to_playlist_submenu)
+for i in add_to_playlist_options:
+    add_to_playlist_submenu.add_command(label=i,command=lambda: music.add_to_playlist(i))
+
+
+song_list.bind("<Button-3>", lambda event: do_popup(event, frame=RightClickMenu))
+app.bind("<1>", lambda event: event.widget.focus_set())
 
 liked_songs_listbox = CTkListbox.CTkListbox(
     master=liked_songs_frame,

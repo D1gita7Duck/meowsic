@@ -707,7 +707,7 @@ def add_to_playlist(choice):
     print(choice)
     add_to_playlist_var=ctk.StringVar(value='Add to Playlist')
     widgets.add_to_playlist_menu.configure(variable=add_to_playlist_var)
-    if choice=='Create New Playlist':
+    if choice=='Create New Playlist...':
         create_playlist_dialog=ctk.CTkInputDialog(text='Give Playlist Name:', title = 'Creating a Playlist')
         playlist_name=create_playlist_dialog.get_input()
        # print(playlist_name)
@@ -718,6 +718,8 @@ def add_to_playlist(choice):
        #print("TUPLE",(playlist_name,))
         widgets.playlist_table_values.append(functions.get_playlist_details((playlist_name,)))
         widgets.playlists_table.configure(values=widgets.playlist_table_values)
+        widgets.playlists_table.add_row(values='abcd')
+        widgets.playlists_table.update_values(widgets.playlist_table_values)
        # print("valuessss",widgets.playlist_table_values)
     else:
         functions.add_to_playlist(widgets.song_list.get(),choice)
@@ -741,7 +743,7 @@ def delete_from_queue():
         widgets.app.eval(f'tk::PlaceWindow {str(incorrect_delete_queue_win)} center')
         incorrect_delete_queue_win.geometry('200x100')
         # put the toplevel on top of all windows
-        incorrect_delete_queue_win.focus()
+        incorrect_delete_queue_win.focus_force()
         text_label=ctk.CTkLabel(master=incorrect_delete_queue_win,
                                 text='Incorrect Operation',
                                 image=widgets.information_icon,
@@ -758,33 +760,36 @@ def show_playlist(value):
     # if open_playlist:widgets.master_tab.delete(open_playlist)
     if value["column"]!=0 or value["value"]=="Name":pass
     else:
-        playlist_tab=widgets.master_tab.add(value["value"])
-        open_playlist=value["value"]
-        playlist_frame=ctk.CTkFrame(master=playlist_tab)
-        playlist_frame.pack()
-        playlist_listbox = widgets.CTkListbox.CTkListbox(
-            master=playlist_frame,
-            width=700,
-            height=250,
-            border_width=2,
-            corner_radius=10,
-            label_text='Playlists',
-            label_anchor='center',
-            border_color=widgets.current_theme["color2"],
-            fg_color=widgets.current_theme["color3"],
-            text_color=widgets.current_theme["color2"],
-            hightlight_color=widgets.current_theme["color2"],
-            hover_color=widgets.current_theme["color4"],
-            select_color=widgets.current_theme["color5"],
-)
+        try:
+            playlist_tab=widgets.master_tab.add(value["value"])
+            open_playlist=value["value"]
+            playlist_frame=ctk.CTkFrame(master=playlist_tab)
+            playlist_frame.pack()
+            playlist_listbox = widgets.CTkListbox.CTkListbox(
+                master=playlist_frame,
+                width=700,
+                height=250,
+                border_width=2,
+                corner_radius=10,
+                label_text='Playlists',
+                label_anchor='center',
+                border_color=widgets.current_theme["color2"],
+                fg_color=widgets.current_theme["color3"],
+                text_color=widgets.current_theme["color2"],
+                hightlight_color=widgets.current_theme["color2"],
+                hover_color=widgets.current_theme["color4"],
+                select_color=widgets.current_theme["color5"],
+    )
 
-       # widgets.playlist_listbox.configure(master=playlist_frame)
-        playlist_listbox.pack()
-        for i in functions.get_playlist_songs(value["value"]):
-            playlist_listbox.insert("END",i,onclick=load_playlist_song)
-        
-        # display the playlist tab
-        widgets.master_tab.set(value['value'])
+            # widgets.playlist_listbox.configure(master=playlist_frame)
+            playlist_listbox.pack()
+            for i in functions.get_playlist_songs(value["value"]):
+                playlist_listbox.insert("END",i,onclick=load_playlist_song)
+            
+            # display the playlist tab
+            widgets.master_tab.set(value['value'])
+        except ValueError:
+            widgets.master_tab.set(value['value'])
 
 
 def show_your_library():
