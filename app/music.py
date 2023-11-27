@@ -110,7 +110,7 @@ def load_music(t,pretty_name):
 
 
 
-def search():
+def search(event=None):
     """
     Searches from string from search bar contents
     """
@@ -118,29 +118,48 @@ def search():
     global songs_paths
     global playing
     global temp_res
-    widgets.search_progress.set(0)
+    print('EVENTTTT ISSSS',event)
+    # check if user gave query or not
+    if widgets.search_bar.get().isspace() or widgets.search_bar.get()=='':
+        incorrect_delete_queue_win=ctk.CTkToplevel(widgets.app)
+        incorrect_delete_queue_win.resizable(False,False)
+        widgets.app.eval(f'tk::PlaceWindow {str(incorrect_delete_queue_win)} center')
+        incorrect_delete_queue_win.geometry('200x100')
+        text_label=ctk.CTkLabel(master=incorrect_delete_queue_win,
+                                text='Incorrect Operation',
+                                image=widgets.information_icon,
+                                compound='left',
+                                anchor='center',)
+        text_label.pack(pady=(20,20), padx=(10,10), anchor='center')
 
-    if songs_paths:
-        search_text = widgets.search_bar.get()
-        print(search_text)
-        widgets.search_progress.start()
-        temp_res = functions.search(search_text)
-
-        # Download the song in a separate thread
-        download_thread = threading.Thread(target=download_and_load, args=(temp_res,))
-        download_thread.start()
+        # put the toplevel on top of all windows
+        incorrect_delete_queue_win.attributes('-topmost',True)
+        incorrect_delete_queue_win.focus()
 
     else:
-        # Reset the songs_paths tuple
-        songs_paths = list()
-        search_text = widgets.search_bar.get()
-        print(search_text)
-        widgets.search_progress.start()
-        temp_res = functions.search(search_text)
+        widgets.search_progress.set(0)
 
-        # Download the song in a separate thread
-        download_thread = threading.Thread(target=download_and_load, args=(temp_res,))
-        download_thread.start()
+        if songs_paths:
+            search_text = widgets.search_bar.get()
+            print(search_text)
+            widgets.search_progress.start()
+            temp_res = functions.search(search_text)
+
+            # Download the song in a separate thread
+            download_thread = threading.Thread(target=download_and_load, args=(temp_res,))
+            download_thread.start()
+
+        else:
+            # Reset the songs_paths tuple
+            songs_paths = list()
+            search_text = widgets.search_bar.get()
+            print(search_text)
+            widgets.search_progress.start()
+            temp_res = functions.search(search_text)
+
+            # Download the song in a separate thread
+            download_thread = threading.Thread(target=download_and_load, args=(temp_res,))
+            download_thread.start()
 
 def load_playlist_song():
     """
@@ -742,14 +761,16 @@ def delete_from_queue():
         incorrect_delete_queue_win.resizable(False,False)
         widgets.app.eval(f'tk::PlaceWindow {str(incorrect_delete_queue_win)} center')
         incorrect_delete_queue_win.geometry('200x100')
-        # put the toplevel on top of all windows
-        incorrect_delete_queue_win.focus_force()
         text_label=ctk.CTkLabel(master=incorrect_delete_queue_win,
                                 text='Incorrect Operation',
                                 image=widgets.information_icon,
                                 compound='left',
                                 anchor='center',)
         text_label.pack(pady=(20,20), padx=(10,10), anchor='center')
+
+        # put the toplevel on top of all windows
+        incorrect_delete_queue_win.attributes('-topmost',True)
+        incorrect_delete_queue_win.focus()
 
 def show_playlist(value):
     import app.widgets as widgets

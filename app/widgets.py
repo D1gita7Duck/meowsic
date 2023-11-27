@@ -159,6 +159,10 @@ def do_popup(event, frame):
         finally: 
             frame.grab_release()
 
+def return_pressed(event=None):
+    print(event)
+    print('RETURN PRESSED')
+
 # menu
 menu = CTkMenuBar.CTkMenuBar(app)
 menu.lift()
@@ -342,6 +346,7 @@ search_button = ctk.CTkButton(
     border_width=1,
     text_color=current_theme["color1"],)  
 search_button.pack(fill='x', expand=True, padx=10, pady=10)
+search_button.bind('<Enter>', music.search)
 
 # Create a button to close the search frame and go back to the home screen
 # close_search_frame_button = ctk.CTkButton(search_frame, text="Close Search Frame", command=close_search_frame)
