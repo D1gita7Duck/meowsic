@@ -36,7 +36,7 @@ icon_folder_path = os.path.join(
 
 )
 garfield_icon = ctk.CTkImage(
-    Image.open(os.path.join(icon_folder_path, "garfield.png")), size=(200//scale_factor, 200//scale_factor)
+    Image.open(os.path.join(icon_folder_path, "garfield.png")), size=(250//scale_factor, 200//scale_factor)
 )
 library_button_icon=ctk.CTkImage(
     Image.open(os.path.join(icon_folder_path, "library_icon.png")), size=(30//scale_factor, 30//scale_factor)
@@ -81,7 +81,7 @@ information_icon=ctk.CTkImage(
     Image.open(os.path.join(icon_folder_path, "info_icon.png")), size=(30, 30)
 )
 volume_full_icon=ctk.CTkImage(
-    Image.open(os.path.join(icon_folder_path, "volume_full.png")), size=(25, 25)
+    Image.open(os.path.join(icon_folder_path, "volume_full.png")), size=(30, 30)
 )
 volume_2bar_icon=ctk.CTkImage(
     Image.open(os.path.join(icon_folder_path, "volume_2bar.png")), size=(30, 30)
@@ -90,7 +90,7 @@ volume_1bar_icon=ctk.CTkImage(
     Image.open(os.path.join(icon_folder_path, "volume_1bar.png")), size=(30, 30)
 )
 mute_icon=ctk.CTkImage(
-    Image.open(os.path.join(icon_folder_path, "mute_icon.png")), size=(25, 25)
+    Image.open(os.path.join(icon_folder_path, "mute_icon.png")), size=(30, 30)
 )
 
 #define top level import window
@@ -138,6 +138,26 @@ def toggle_theme(t):
                                 compound='left',
                                 anchor='center',)
         text_label.pack(pady=(20,20), padx=(10,10), anchor='center')
+
+
+# rightclickmenu pops up on calling this function
+def do_popup(event, frame):
+    # print('EVENT IS ', event)
+    x1 = song_list_frame.winfo_rootx()
+    y1 = song_list_frame.winfo_rooty()
+    x2=song_list_frame.winfo_width()+x1
+    y2=song_list_frame.winfo_height()+y1
+    abs_coord_x = app.winfo_pointerx() - app.winfo_vrootx()
+    abs_coord_y = app.winfo_pointery() - app.winfo_vrooty()
+    print(x1,y1,x2,y2,abs_coord_x,abs_coord_y)
+    if (550<=abs_coord_x and abs_coord_x<=1261) and (157<=abs_coord_y and abs_coord_y<=450):
+        try: 
+            frame.tk_popup(abs_coord_x, abs_coord_y)
+            
+            # add_to_playlist_submenu.add_command(label='Playlsit1')
+            # add_to_playlist_submenu.add_command(label='Playlsit2')
+        finally: 
+            frame.grab_release()
 
 # menu
 menu = CTkMenuBar.CTkMenuBar(app)
@@ -603,19 +623,7 @@ song_list = CTkListbox.CTkListbox(
 song_list.grid(row=0, columnspan=9, pady=(10, 30), sticky='ew')
 
 
-def do_popup(event, frame):
-    print('EVENT IS ', event)
-    x=song_list.winfo_x()
-    y=song_list.winfo_y()
-    try: 
-        frame.tk_popup(x, y)
-        
-        # add_to_playlist_submenu.add_command(label='Playlsit1')
-        # add_to_playlist_submenu.add_command(label='Playlsit2')
-    finally: 
-        frame.grab_release()
-
-
+# context menu to add songs to playlist and delete them from queue
 RightClickMenu = tkinter.Menu(song_list, tearoff=False, background='#565b5e', fg='white', borderwidth=0, bd=0)
 # RightClickMenu.add_command(label="Add to PLAYLSIT", command=add_cascade_for_playlist)
 
@@ -629,6 +637,7 @@ for i in add_to_playlist_options:
 song_list.bind("<Button-3>", lambda event: do_popup(event, frame=RightClickMenu))
 app.bind("<1>", lambda event: event.widget.focus_set())
 
+# liked songs listbox
 liked_songs_listbox = CTkListbox.CTkListbox(
     master=liked_songs_frame,
     width=700//scale_factor,
