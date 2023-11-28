@@ -34,7 +34,8 @@ def load_music(t,pretty_name):
     global liked
     global loaded
     global master_playing
-
+    global now_playing
+    
     if playing == 2 or playing == 1 or loaded:
         pass
     else:
@@ -109,7 +110,7 @@ def load_music(t,pretty_name):
 
 
 
-def search():
+def search(event=None):
     """
     Searches from string from search bar contents
     """
@@ -117,29 +118,48 @@ def search():
     global songs_paths
     global playing
     global temp_res
-    widgets.search_progress.set(0)
+    print('EVENTTTT ISSSS',event)
+    # check if user gave query or not
+    if widgets.search_bar.get().isspace() or widgets.search_bar.get()=='':
+        incorrect_delete_queue_win=ctk.CTkToplevel(widgets.app)
+        incorrect_delete_queue_win.resizable(False,False)
+        widgets.app.eval(f'tk::PlaceWindow {str(incorrect_delete_queue_win)} center')
+        incorrect_delete_queue_win.geometry('200x100')
+        text_label=ctk.CTkLabel(master=incorrect_delete_queue_win,
+                                text='Incorrect Operation',
+                                image=widgets.information_icon,
+                                compound='left',
+                                anchor='center',)
+        text_label.pack(pady=(20,20), padx=(10,10), anchor='center')
 
-    if songs_paths:
-        search_text = widgets.search_bar.get()
-        print(search_text)
-        widgets.search_progress.start()
-        temp_res = functions.search(search_text)
-
-        # Download the song in a separate thread
-        download_thread = threading.Thread(target=download_and_load, args=(temp_res,))
-        download_thread.start()
+        # put the toplevel on top of all windows
+        incorrect_delete_queue_win.attributes('-topmost',True)
+        incorrect_delete_queue_win.focus()
 
     else:
-        # Reset the songs_paths tuple
-        songs_paths = list()
-        search_text = widgets.search_bar.get()
-        print(search_text)
-        widgets.search_progress.start()
-        temp_res = functions.search(search_text)
+        widgets.search_progress.set(0)
 
-        # Download the song in a separate thread
-        download_thread = threading.Thread(target=download_and_load, args=(temp_res,))
-        download_thread.start()
+        if songs_paths:
+            search_text = widgets.search_bar.get()
+            print(search_text)
+            widgets.search_progress.start()
+            temp_res = functions.search(search_text)
+
+            # Download the song in a separate thread
+            download_thread = threading.Thread(target=download_and_load, args=(temp_res,))
+            download_thread.start()
+
+        else:
+            # Reset the songs_paths tuple
+            songs_paths = list()
+            search_text = widgets.search_bar.get()
+            print(search_text)
+            widgets.search_progress.start()
+            temp_res = functions.search(search_text)
+
+            # Download the song in a separate thread
+            download_thread = threading.Thread(target=download_and_load, args=(temp_res,))
+            download_thread.start()
 
 def load_playlist_song():
     """
@@ -706,7 +726,7 @@ def add_to_playlist(choice):
     print(choice)
     add_to_playlist_var=ctk.StringVar(value='Add to Playlist')
     widgets.add_to_playlist_menu.configure(variable=add_to_playlist_var)
-    if choice=='Create New Playlist':
+    if choice=='Create New Playlist...':
         create_playlist_dialog=ctk.CTkInputDialog(text='Give Playlist Name:', title = 'Creating a Playlist')
         playlist_name=create_playlist_dialog.get_input()
        # print(playlist_name)
@@ -717,6 +737,8 @@ def add_to_playlist(choice):
        #print("TUPLE",(playlist_name,))
         widgets.playlist_table_values.append(functions.get_playlist_details((playlist_name,)))
         widgets.playlists_table.configure(values=widgets.playlist_table_values)
+        widgets.playlists_table.add_row(values='abcd')
+        widgets.playlists_table.update_values(widgets.playlist_table_values)
        # print("valuessss",widgets.playlist_table_values)
     else:
         functions.add_to_playlist(widgets.song_list.get(),choice)
@@ -724,24 +746,31 @@ def add_to_playlist(choice):
 def delete_from_queue():
     import app.widgets as widgets
     global now_playing
+    global songs_paths
     current_song_index=widgets.song_list.curselection()
     print(current_song_index)
     if current_song_index!=now_playing:
         songs_paths.pop(current_song_index)
         widgets.song_list.delete(current_song_index)
+        if current_song_index<now_playing:
+            now_playing-=1
+        #widgets.song_list.activate(now_playing+1)
+        widgets.song_list.select(f"END{now_playing % len(songs_paths)}")
     else:
         incorrect_delete_queue_win=ctk.CTkToplevel(widgets.app)
         incorrect_delete_queue_win.resizable(False,False)
         widgets.app.eval(f'tk::PlaceWindow {str(incorrect_delete_queue_win)} center')
         incorrect_delete_queue_win.geometry('200x100')
-        # put the toplevel on top of all windows
-        incorrect_delete_queue_win.focus()
         text_label=ctk.CTkLabel(master=incorrect_delete_queue_win,
                                 text='Incorrect Operation',
                                 image=widgets.information_icon,
                                 compound='left',
                                 anchor='center',)
         text_label.pack(pady=(20,20), padx=(10,10), anchor='center')
+
+        # put the toplevel on top of all windows
+        incorrect_delete_queue_win.attributes('-topmost',True)
+        incorrect_delete_queue_win.focus()
 
 def show_playlist(value):
     import app.widgets as widgets
@@ -752,31 +781,36 @@ def show_playlist(value):
     # if open_playlist:widgets.master_tab.delete(open_playlist)
     if value["column"]!=0 or value["value"]=="Name":pass
     else:
-        playlist_tab=widgets.master_tab.add(value["value"])
-        open_playlist=value["value"]
-        playlist_frame=ctk.CTkFrame(master=playlist_tab)
-        playlist_frame.pack()
-        playlist_listbox = widgets.CTkListbox.CTkListbox(
-            master=playlist_frame,
-            width=700,
-            height=250,
-            border_width=2,
-            border_color='black',
-            corner_radius=10,
-            label_text='Playlists',
-            label_anchor='center',
-            fg_color="orange",
-            text_color="black",
-            hightlight_color='red',
-            hover_color='#7fb8cc',)
+        try:
+            playlist_tab=widgets.master_tab.add(value["value"])
+            open_playlist=value["value"]
+            playlist_frame=ctk.CTkFrame(master=playlist_tab)
+            playlist_frame.pack()
+            playlist_listbox = widgets.CTkListbox.CTkListbox(
+                master=playlist_frame,
+                width=700,
+                height=250,
+                border_width=2,
+                corner_radius=10,
+                label_text='Playlists',
+                label_anchor='center',
+                border_color=widgets.current_theme["color2"],
+                fg_color=widgets.current_theme["color3"],
+                text_color=widgets.current_theme["color2"],
+                hightlight_color=widgets.current_theme["color2"],
+                hover_color=widgets.current_theme["color4"],
+                select_color=widgets.current_theme["color5"],
+    )
 
-       # widgets.playlist_listbox.configure(master=playlist_frame)
-        playlist_listbox.pack()
-        for i in functions.get_playlist_songs(value["value"]):
-            playlist_listbox.insert("END",i,onclick=load_playlist_song)
-        
-        # display the playlist tab
-        widgets.master_tab.set(value['value'])
+            # widgets.playlist_listbox.configure(master=playlist_frame)
+            playlist_listbox.pack()
+            for i in functions.get_playlist_songs(value["value"]):
+                playlist_listbox.insert("END",i,onclick=load_playlist_song)
+            
+            # display the playlist tab
+            widgets.master_tab.set(value['value'])
+        except ValueError:
+            widgets.master_tab.set(value['value'])
 
 
 def show_your_library():

@@ -1,23 +1,30 @@
+import os
+import time
+import tkinter
 import customtkinter as ctk
 import CTkMenuBar
-from httpx import options
-import CTkListbox
-#from app.music import add_songs,search,song_previous,play_pause,song_next,like,slide,main_lyrics,load_liked
-import app.music as music
-import os
-from PIL import Image
-import app.functions as functions
-import app.import_spotify as import_spotify
-import time
 import CTkTable
-app = ctk.CTk()  # create CTk window like you do with the Tk window
+from PIL import Image
+import CTkListbox
+import app.music as music
+import app.functions as functions
+import app.theme as theme
+
+ctk.set_appearance_mode("dark")  # Modes: system (default), light, dark
+master_theme=functions.current_theme #USE LIGHTMODE AT RISK OF BLINDING YOURSELF
+if master_theme=="dark":
+    current_theme=theme.dark_mode
+else:
+    current_theme=theme.light_mode
+
+app = ctk.CTk(fg_color=current_theme["color1"])  # create CTk window like you do with the Tk window
 app.grid_columnconfigure((0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10,), weight=1)
 app.grid_rowconfigure((0, 1, 2, 3, 4, 5, 6, 7, 8), weight=1)
 
 scale_factor=1920/app.winfo_screenwidth()
 
 current_time=time.localtime()
-
+warn_win=None
 # thumbnails folder path
 thumbs_folder_path = os.path.join("thumbs")
 
@@ -29,7 +36,7 @@ icon_folder_path = os.path.join(
 
 )
 garfield_icon = ctk.CTkImage(
-    Image.open(os.path.join(icon_folder_path, "garfield.png")), size=(200//scale_factor, 200//scale_factor)
+    Image.open(os.path.join(icon_folder_path, "garfield.png")), size=(250//scale_factor, 200//scale_factor)
 )
 library_button_icon=ctk.CTkImage(
     Image.open(os.path.join(icon_folder_path, "library_icon.png")), size=(30//scale_factor, 30//scale_factor)
@@ -74,7 +81,7 @@ information_icon=ctk.CTkImage(
     Image.open(os.path.join(icon_folder_path, "info_icon.png")), size=(30, 30)
 )
 volume_full_icon=ctk.CTkImage(
-    Image.open(os.path.join(icon_folder_path, "volume_full.png")), size=(25, 25)
+    Image.open(os.path.join(icon_folder_path, "volume_full.png")), size=(30, 30)
 )
 volume_2bar_icon=ctk.CTkImage(
     Image.open(os.path.join(icon_folder_path, "volume_2bar.png")), size=(30, 30)
@@ -83,7 +90,7 @@ volume_1bar_icon=ctk.CTkImage(
     Image.open(os.path.join(icon_folder_path, "volume_1bar.png")), size=(30, 30)
 )
 mute_icon=ctk.CTkImage(
-    Image.open(os.path.join(icon_folder_path, "mute_icon.png")), size=(25, 25)
+    Image.open(os.path.join(icon_folder_path, "mute_icon.png")), size=(30, 30)
 )
 
 #define top level import window
@@ -109,10 +116,52 @@ def import_win_launch():
 
 # toggling theme
 def toggle_theme(t):
+    global current_theme
+    global warn_win
+    print(current_theme)
     if t=='dark':
+        functions.change_mode("dark")
         ctk.set_appearance_mode('dark')
     else:
+        functions.change_mode("light")
         ctk.set_appearance_mode('light')
+    if warn_win is None:
+        warn_win=ctk.CTkToplevel(app)
+        warn_win.resizable(False,False)
+        app.eval(f'tk::PlaceWindow {str(warn_win)} center')
+        warn_win.geometry('200x100')
+        # put the toplevel on top of all windows
+        warn_win.focus()
+        text_label=ctk.CTkLabel(master=warn_win,
+                                text='Restart Required',
+                                image=information_icon,
+                                compound='left',
+                                anchor='center',)
+        text_label.pack(pady=(20,20), padx=(10,10), anchor='center')
+
+
+# rightclickmenu pops up on calling this function
+def do_popup(event, frame):
+    # print('EVENT IS ', event)
+    x1 = song_list_frame.winfo_rootx()
+    y1 = song_list_frame.winfo_rooty()
+    x2=song_list_frame.winfo_width()+x1
+    y2=song_list_frame.winfo_height()+y1
+    abs_coord_x = app.winfo_pointerx() - app.winfo_vrootx()
+    abs_coord_y = app.winfo_pointery() - app.winfo_vrooty()
+    print(x1,y1,x2,y2,abs_coord_x,abs_coord_y)
+    if (550<=abs_coord_x and abs_coord_x<=1261) and (157<=abs_coord_y and abs_coord_y<=450):
+        try: 
+            frame.tk_popup(abs_coord_x, abs_coord_y)
+            
+            # add_to_playlist_submenu.add_command(label='Playlsit1')
+            # add_to_playlist_submenu.add_command(label='Playlsit2')
+        finally: 
+            frame.grab_release()
+
+def return_pressed(event=None):
+    print(event)
+    print('RETURN PRESSED')
 
 # menu
 menu = CTkMenuBar.CTkMenuBar(app)
@@ -145,10 +194,13 @@ theme_switch=ctk.CTkSwitch(
     command=lambda: toggle_theme(theme_switch.get()),
 )
 theme_switch.pack(pady=(10,10), padx=(10,10), anchor='center',fill='x',)
-
+if master_theme=="dark":
+    theme_switch.select()
+else:
+    theme_switch.deselect()
 #frame for tabview and metadata and misc frame
-big_frame = ctk.CTkFrame(master=app, height=800)
-big_frame.pack(pady=(20, 20), anchor='center', fill='x', ipadx=10,)
+big_frame = ctk.CTkFrame(master=app, height=800,fg_color=current_theme["color1"],border_width=0)
+big_frame.pack(pady=(20, 20), anchor='center', fill='x', ipadx=10)
 big_frame.grid_columnconfigure((0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10), weight=1)
 big_frame.lower()
 
@@ -158,12 +210,12 @@ master_tab = ctk.CTkTabview(
     width=800//scale_factor,
     height=550//scale_factor,
     corner_radius=10,
-    border_width=1,
-    border_color='black',
-    fg_color='#ebd9c8',
-    segmented_button_selected_color='#003f5a',
-    segmented_button_selected_hover_color='#4b85a8',
-    segmented_button_unselected_hover_color='#7fb8cc',
+    border_width=2,
+    border_color=current_theme["color3"],
+    fg_color=current_theme["color2"],
+    segmented_button_selected_color=current_theme["color1"],
+    segmented_button_selected_hover_color=current_theme["color2"],
+    segmented_button_unselected_hover_color=current_theme["color4"],
 )
 master_tab.grid(pady=(10,10), row=0, column=1, columnspan=8, padx=(30,10),)
 master_tab._segmented_button.configure(font=('Helvetica', 22,))
@@ -186,7 +238,7 @@ elif current_time[3] >= 12 and current_time[3] <= 16:
 else:
     greeting_text = 'Good Evening'
 greeting_label = ctk.CTkLabel(
-    master=home_tab, text=greeting_text, font=('Helvetica', 20),text_color="black",width=20,height=20)
+    master=home_tab, text=greeting_text, font=('Helvetica', 20),text_color=current_theme["color3"],width=20,height=20)
 greeting_label.grid(row=0, column=5, sticky='ew', pady=(20, 20), columnspan=3,)
 
 # division home tab into two frames
@@ -196,19 +248,20 @@ home_tab_recently_played.grid(
     row=1, columnspan=3, column=6, rowspan=5, sticky='ew' , padx=(20,10))
 
 recently_played_listbox = CTkListbox.CTkListbox(master=home_tab_recently_played,
-                                                width=600//scale_factor,
-                                                height=300//scale_factor,
+                                                width=500//scale_factor,
+                                                height=200//scale_factor,
                                                 border_width=2,
-                                                border_color='black',
                                                 corner_radius=10,
                                                 label_text='Recently Played',
                                                 label_font=('Helvetica', 22) ,
                                                 font=('Helvetica',18),
                                                 label_anchor='center',
-                                                fg_color="orange",
-                                                text_color="black",
-                                                hightlight_color='red',
-                                                hover_color='#7fb8cc',)
+                                                border_color=current_theme["color2"],
+                                                fg_color=current_theme["color3"],
+                                                text_color=current_theme["color2"],
+                                                hightlight_color=current_theme["color2"],
+                                                hover_color=current_theme["color4"],
+                                                select_color=current_theme["color5"],)
 if functions.get_recents():
     for i in functions.get_recents():
         recently_played_listbox.insert('END', i,onclick=music.load_recents)
@@ -216,7 +269,7 @@ recently_played_listbox.grid(columnspan=5, sticky='ew',)
 
 #buttons on home page
 home_tab_buttons_frame=ctk.CTkFrame(
-    master=home_tab, border_color='black', border_width=2,
+    master=home_tab, border_color='#FDB275', border_width=2,fg_color="#01295F"
 )
 home_tab_buttons_frame.grid(row=1, column=0, columnspan=3, rowspan=5, sticky='ew', padx=(10,10) ,)
 home_tab_buttons_frame.grid_columnconfigure(0, weight=1)
@@ -227,6 +280,11 @@ home_tab_your_library_button=ctk.CTkButton(
     height=50//scale_factor,
     text='Your Library',
     image=library_button_icon,
+    fg_color=current_theme["color4"],
+    hover_color=current_theme["color4"],
+    border_color=current_theme["color3"],
+    border_width=1,
+    text_color=current_theme["color1"],
     anchor='center',
     command=music.show_your_library
 )
@@ -240,6 +298,11 @@ home_tab_liked_songs_button=ctk.CTkButton(
     image=like_button_icon,
     anchor='center',
     command=music.show_liked_songs,
+    fg_color=current_theme["color4"],
+    hover_color=current_theme["color4"],
+    border_color=current_theme["color3"],
+    border_width=1,
+    text_color=current_theme["color1"]
 )
 home_tab_liked_songs_button.grid(row=1, column=0, columnspan=3, padx=(10,10), pady=(10,10), sticky='ew')
 
@@ -249,17 +312,22 @@ discover_button=ctk.CTkButton(
     height=50,
     text='Discover',
     anchor='center',
+    fg_color=current_theme["color4"],
+    hover_color=current_theme["color4"],
+    border_color=current_theme["color3"],
+    border_width=1,
+    text_color=current_theme["color1"]
 )
 discover_button.grid(row=2, column=0, columnspan=3, padx=(10,10), pady=(10,10), sticky='ew')
 # Search Frame
-search_frame = ctk.CTkFrame(search_tab)
+search_frame = ctk.CTkFrame(search_tab,fg_color=current_theme["color1"])
 search_frame.pack(fill='x', expand=True, padx=10, pady=10)
 
 # Create a search bar
-search_bar = ctk.CTkEntry(search_frame)
+search_bar = ctk.CTkEntry(search_frame,fg_color=current_theme["color1"],border_color=current_theme["color4"],text_color=current_theme["color3"],placeholder_text="Search",placeholder_text_color=current_theme["color3"])
 search_bar.pack(fill='x', expand=True, padx=10, pady=10)
 
-search_progress=ctk.CTkProgressBar(search_frame,mode="indeterminate")
+search_progress=ctk.CTkProgressBar(search_frame,mode="indeterminate",fg_color=current_theme["color1"],border_color=current_theme["color2"],progress_color=current_theme["color3"])
 search_progress.pack(fill="x",padx=10)
 
 # open search frame
@@ -268,8 +336,17 @@ search_progress.pack(fill="x",padx=10)
 
 # Create a search button
 search_button = ctk.CTkButton(
-    search_frame, text="Search", command=music.search, image=search_button_icon)
+    search_frame, 
+    text="Search", 
+    command=music.search, 
+    image=search_button_icon,
+    fg_color=current_theme["color4"],
+    hover_color=current_theme["color4"],
+    border_color=current_theme["color3"],
+    border_width=1,
+    text_color=current_theme["color1"],)  
 search_button.pack(fill='x', expand=True, padx=10, pady=10)
+search_button.bind('<Enter>', music.search)
 
 # Create a button to close the search frame and go back to the home screen
 # close_search_frame_button = ctk.CTkButton(search_frame, text="Close Search Frame", command=close_search_frame)
@@ -280,15 +357,15 @@ search_button.pack(fill='x', expand=True, padx=10, pady=10)
 
 
 # song list frame
-song_list_frame = ctk.CTkFrame(master=queue_tab, fg_color='#ebd9c8' , height=500)
+song_list_frame = ctk.CTkFrame(master=queue_tab, height=500,fg_color=current_theme["color2"],border_width=0)
 song_list_frame.grid(row=1, pady=20, sticky='ew', padx=(20, 20))
 
 # Media Controls Frame
-playback_controls_frame = ctk.CTkFrame(master=app, fg_color='black', corner_radius=20 , width=1250//scale_factor)
+playback_controls_frame = ctk.CTkFrame(master=app, fg_color=current_theme["color2"], corner_radius=20 , width=1250//scale_factor)
 playback_controls_frame.pack(side='bottom', pady=(20, 20), ipadx=10, expand=True, anchor='center')  # removed fill='x'
 playback_controls_frame.grid_columnconfigure((0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10,11,12), weight=1)
 # liked songs frame
-liked_songs_frame = ctk.CTkFrame(master=liked_songs_tab)
+liked_songs_frame = ctk.CTkFrame(master=liked_songs_tab,fg_color=current_theme["color2"],border_width=0)
 liked_songs_frame.grid(row=1, pady=(20, 20), padx=(20, 20), sticky='ew')
 
 # song metadata frame
@@ -296,13 +373,15 @@ song_metadata_frame = ctk.CTkFrame(
     master=big_frame,
     width=350//scale_factor,
     height=400//scale_factor,
-    fg_color='black',
+    fg_color=current_theme["color2"],
+    border_color=current_theme["color3"],
+    border_width=2
 )
-song_metadata_frame.grid(row=0, column=7, columnspan=3, rowspan=3, )
+song_metadata_frame.grid(row=0, column=7, columnspan=3, rowspan=3,sticky="e")
 song_metadata_frame.grid_columnconfigure((0, 1, 2, 3, 4, 5), weight=1)
 
 # misc functions frame (add to playlist, delete from queue, add to queue)
-misc_frame=ctk.CTkFrame(master=big_frame, fg_color='black', corner_radius=20)
+misc_frame=ctk.CTkFrame(master=big_frame, fg_color=current_theme["color2"], corner_radius=20,border_width=2,border_color=current_theme["color3"])
 misc_frame.grid(row=0, column=0, columnspan=3, padx=(10,10) )
 misc_frame.grid_columnconfigure(0, weight=1)
 misc_frame.grid_rowconfigure((0,1,2), weight=1)
@@ -318,7 +397,7 @@ your_library_frame=ctk.CTkScrollableFrame(
     corner_radius=10,
     label_text='Playlists',
     label_anchor='center',
-    fg_color="orange",
+    fg_color=current_theme["color3"],
 )
 your_library_frame.grid(row=0, pady=(20,20), padx=(10,10),sticky='ew')
 your_library_frame.grid_columnconfigure((0,1,2,3,4,5),weight=1)
@@ -339,8 +418,8 @@ def open_playlist(value):
 playlists_table=CTkTable.CTkTable(
     master=your_library_frame,
     values=playlist_table_values,
-    header_color='#984447',
-    command=open_playlist
+    command=open_playlist,
+    fg_color=current_theme["color2"]
 )
 playlists_table.grid(row=0, columnspan=9, sticky='ew')
 
@@ -377,6 +456,8 @@ add_to_playlist_menu=ctk.CTkOptionMenu(
     variable=add_to_playlist_label_text,
     values=add_to_playlist_options,
     state='disabled',
+    fg_color=current_theme["color4"],
+    text_color=current_theme["color1"]
 )
 add_to_playlist_menu.grid(row=0, column=0, columnspan=2,  padx=(10,10), pady=(20,10), sticky='ew')
 
@@ -395,13 +476,18 @@ add_to_playlist_menu.grid(row=0, column=0, columnspan=2,  padx=(10,10), pady=(20
 # delete from queue
 delete_from_queue_button=ctk.CTkButton(
     misc_frame,
-    width=200//scale_factor,
+    width=30//scale_factor,
     height=30//scale_factor,
     command=music.delete_from_queue,
     text='Delete from Queue',
-    image=delete_from_queue_button_icon,
+    #image=delete_from_queue_button_icon,
     anchor='center',
     state='disabled',
+    fg_color=current_theme["color4"],
+    hover_color=current_theme["color4"],
+    border_color=current_theme["color3"],
+    border_width=1,
+    text_color=current_theme["color1"]
 )
 delete_from_queue_button.grid(row=1, column=0, columnspan=2, padx=(10,10), pady=(10,20), sticky='ew')
 
@@ -500,9 +586,9 @@ volume_slider = ctk.CTkSlider(
     to=100,
     width=150//scale_factor,
     orientation="horizontal",
-    progress_color='orange',
-    button_color='#003f5a',
-    button_hover_color='blue',
+    progress_color=current_theme["color3"],
+    button_color=current_theme["color4"],
+    button_hover_color=current_theme["color5"],
     command=music.volume,
     state='disabled'
 )
@@ -514,9 +600,9 @@ song_slider = ctk.CTkSlider(
     to=100,
     width=500//scale_factor,
     orientation="horizontal",
-    progress_color='orange',
-    button_color='#003f5a',
-    button_hover_color='blue',
+    progress_color=current_theme["color3"],
+    button_color=current_theme["color4"],
+    button_hover_color=current_theme["color5"],
     command=music.slide,
     state='disabled'
 )
@@ -528,31 +614,48 @@ song_list = CTkListbox.CTkListbox(
     width=700//scale_factor,
     height=120//scale_factor,
     border_width=2,
-    border_color='black',
     corner_radius=10,
     label_text="Songs",
     label_anchor='center',
-    fg_color="orange",
-    text_color="black",
-    hightlight_color='red',
-    hover_color='#7fb8cc',
+    border_color=current_theme["color2"],
+    fg_color=current_theme["color3"],
+    text_color=current_theme["color2"],
+    hightlight_color=current_theme["color2"],
+    hover_color=current_theme["color4"],
+    select_color=current_theme["color5"],
 )
 
 song_list.grid(row=0, columnspan=9, pady=(10, 30), sticky='ew')
 
+
+# context menu to add songs to playlist and delete them from queue
+RightClickMenu = tkinter.Menu(song_list, tearoff=False, background='#565b5e', fg='white', borderwidth=0, bd=0)
+# RightClickMenu.add_command(label="Add to PLAYLSIT", command=add_cascade_for_playlist)
+
+RightClickMenu.add_command(label="Delete From Queue", command=music.delete_from_queue)
+add_to_playlist_submenu=tkinter.Menu(RightClickMenu)
+RightClickMenu.add_cascade(label='Add to Playlist', menu=add_to_playlist_submenu)
+for i in add_to_playlist_options:
+    add_to_playlist_submenu.add_command(label=i,command=lambda: music.add_to_playlist(i))
+
+
+song_list.bind("<Button-3>", lambda event: do_popup(event, frame=RightClickMenu))
+app.bind("<1>", lambda event: event.widget.focus_set())
+
+# liked songs listbox
 liked_songs_listbox = CTkListbox.CTkListbox(
     master=liked_songs_frame,
     width=700//scale_factor,
     height=120//scale_factor,
     border_width=2,
-    border_color='black',
     corner_radius=10,
     label_text='Liked Songs',
     label_anchor='center',
-    fg_color="orange",
-    text_color="black",
-    hightlight_color='red',
-    hover_color='#7fb8cc',
+    fg_color=current_theme["color3"],
+    text_color=current_theme["color2"],
+    hightlight_color=current_theme["color2"],
+    hover_color=current_theme["color4"],
+    select_color=current_theme["color5"],
 )
 
 liked_songs_listbox.grid(row=0, columnspan=9, pady=(20, 20), sticky='ew')

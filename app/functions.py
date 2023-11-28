@@ -14,6 +14,7 @@ with open("data/secrets.dat","rb") as credentials:
     temp_cred=pickle.load(credentials)
     client_credentials_manager = SpotifyClientCredentials(client_id=temp_cred[0], client_secret=temp_cred[1])
     sp = spotipy.Spotify(client_credentials_manager = client_credentials_manager)
+    current_theme=temp_cred[3]
 
 
 
@@ -28,6 +29,17 @@ ydl_opts = {
 }
 
 db.init()
+
+def change_mode(mode):
+    print("changing mode to",mode)
+    f=open("data/secrets.dat","rb")
+    temp_list=pickle.load(f)
+    f.close()
+    temp_list[-1]=mode
+    print(temp_list)
+    f=open("data/secrets.dat","wb")
+    pickle.dump(temp_list,f)
+    f.close()
 
 def check_recents():
     try:
