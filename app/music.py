@@ -120,12 +120,12 @@ def search(event=None):
     global temp_res
     print('EVENTTTT ISSSS',event)
     # check if user gave query or not
-    if widgets.search_bar.get().isspace() or widgets.search_bar.get()=='':
-        incorrect_delete_queue_win=ctk.CTkToplevel(widgets.app)
-        incorrect_delete_queue_win.resizable(False,False)
-        widgets.app.eval(f'tk::PlaceWindow {str(incorrect_delete_queue_win)} center')
-        incorrect_delete_queue_win.geometry('200x100')
-        text_label=ctk.CTkLabel(master=incorrect_delete_queue_win,
+    if widgets.search_bar.get().isspace() or widgets.search_bar.get()=='' or widgets.master_tab.get()!='Search':
+        incorrect_operation_win=ctk.CTkToplevel(widgets.app)
+        incorrect_operation_win.resizable(False,False)
+        widgets.app.eval(f'tk::PlaceWindow {str(incorrect_operation_win)} center')
+        incorrect_operation_win.geometry('200x100')
+        text_label=ctk.CTkLabel(master=incorrect_operation_win,
                                 text='Incorrect Operation',
                                 image=widgets.information_icon,
                                 compound='left',
@@ -133,8 +133,8 @@ def search(event=None):
         text_label.pack(pady=(20,20), padx=(10,10), anchor='center')
 
         # put the toplevel on top of all windows
-        incorrect_delete_queue_win.attributes('-topmost',True)
-        incorrect_delete_queue_win.focus()
+        incorrect_operation_win.attributes('-topmost',True)
+        incorrect_operation_win.focus()
 
     else:
         widgets.search_progress.set(0)
@@ -251,6 +251,7 @@ def load_local(name):
     widgets.song_list.activate(now_playing)
     widgets.song_list.select(f"END{now_playing % len(songs_paths)}")
     widgets.master_tab.set('Queue')
+
 def download_and_load(temp_res):
     import app.widgets as widgets
     """
@@ -289,57 +290,80 @@ def add_songs():
     global now_playing
     global total_song_time
     global master_playing
+    global loaded
 
     # og_songs_paths will be a tuple of filepaths (str)
+    # if no file is selected, og_songs_paths is an empty string!!
     og_songs_paths = widgets.ctk.filedialog.askopenfilenames(
         initialdir=os.path.join(os.getcwd(), "Audio"),
         title="Choose Songs",
     )
 
-    # putting song names into playlist
-    for i in og_songs_paths:
-        widgets.song_list.insert("END", os.path.basename(i))
-        functions.store_local(os.path.basename(i))
+    # check if og_songs_paths is empty string or not
+    if bool(og_songs_paths)!=False:
 
-    print(pygame.mixer.music.get_busy())
+        # putting song names into playlist
+        for i in og_songs_paths:
+            widgets.song_list.insert("END", os.path.basename(i))
+            functions.store_local(os.path.basename(i))
 
-    if pygame.mixer.music.get_busy() or loaded:
-        songs_paths = (songs_paths) + list(og_songs_paths)
+        print(pygame.mixer.music.get_busy())
 
+        if pygame.mixer.music.get_busy() or loaded:
+            songs_paths = (songs_paths) + list(og_songs_paths)
+
+        else:
+            loaded=True
+
+            songs_paths = list(og_songs_paths)
+
+            pygame.mixer.music.load(songs_paths[0])
+            now_playing = 0
+
+            # total length of song
+            with audioread.audio_open(songs_paths[now_playing]) as song_file:
+                total_song_time = song_file.duration
+                print(total_song_time)
+                formatted_total_song_time = time.strftime(
+                    "%M:%S", time.gmtime(total_song_time)
+                )
+
+            # change the highlight to current song
+            widgets.song_list.selection_clear()
+            widgets.song_list.activate(now_playing)
+            widgets.song_list.select(f"END{now_playing % len(songs_paths)}")
+
+            # slider position
+            widgets.song_slider.configure(to=total_song_time)
+            widgets.song_slider.set(0)
+
+            # change status bar to current song name
+            widgets.status_bar.configure(text=f'Paused: {songs_paths[0].split("/")[-1]}')
+
+            # update time labels
+            widgets.time_elapsed_label.configure(
+                text=time.strftime("%M:%S", time.gmtime(0)))
+            widgets.total_time_label.configure(text=f'{formatted_total_song_time}')
+            # update metadata
+            widgets.song_metadata_image_label.configure(image=widgets.garfield_icon)
+            widgets.song_metadata_artist_label.configure(text='Miscellaneous')
+            widgets.song_metadata_image_label.grid(row=0, columnspan=3, sticky='new')
+    
     else:
-        songs_paths = list(og_songs_paths)
+        incorrect_operation_win=ctk.CTkToplevel(widgets.app)
+        incorrect_operation_win.resizable(False,False)
+        widgets.app.eval(f'tk::PlaceWindow {str(incorrect_operation_win)} center')
+        incorrect_operation_win.geometry('200x100')
+        text_label=ctk.CTkLabel(master=incorrect_operation_win,
+                                text='Incorrect Operation',
+                                image=widgets.information_icon,
+                                compound='left',
+                                anchor='center',)
+        text_label.pack(pady=(20,20), padx=(10,10), anchor='center')
 
-        pygame.mixer.music.load(songs_paths[0])
-        now_playing = 0
-
-        # total length of song
-        with audioread.audio_open(songs_paths[now_playing]) as song_file:
-            total_song_time = song_file.duration
-            print(total_song_time)
-            formatted_total_song_time = time.strftime(
-                "%M:%S", time.gmtime(total_song_time)
-            )
-
-        # change the highlight to current song
-        widgets.song_list.selection_clear()
-        widgets.song_list.activate(now_playing)
-        widgets.song_list.select(f"END{now_playing % len(songs_paths)}")
-
-        # slider position
-        widgets.song_slider.configure(to=total_song_time)
-        widgets.song_slider.set(0)
-
-        # change status bar to current song name
-        widgets.status_bar.configure(text=f'Paused: {songs_paths[0].split("/")[-1]}')
-
-        # update time labels
-        widgets.time_elapsed_label.configure(
-            text=time.strftime("%M:%S", time.gmtime(0)))
-        widgets.total_time_label.configure(text=f'{formatted_total_song_time}')
-        # update metadata
-        widgets.song_metadata_image_label.configure(image=widgets.garfield_icon)
-        widgets.song_metadata_artist_label.configure(text='Miscellaneous')
-        widgets.song_metadata_image_label.grid(row=0, columnspan=3, sticky='new')
+        # put the toplevel on top of all windows
+        incorrect_operation_win.attributes('-topmost',True)
+        incorrect_operation_win.focus()
         
     widgets.like_button.configure(state='normal')
     widgets.previous_button.configure(state='normal')
@@ -385,6 +409,8 @@ def play_time():
         widgets.song_slider.set(total_song_time)
         song_next()
 
+    if formatted_time_elapsed=='59:59':
+        song_next()
     #test_label.configure(text=f'slider: {song_slider.get()} and time_elapsed: {time_elapsed//1000}')
 
     widgets.time_elapsed_label.after(1000, play_time)
@@ -757,11 +783,11 @@ def delete_from_queue():
         #widgets.song_list.activate(now_playing+1)
         widgets.song_list.select(f"END{now_playing % len(songs_paths)}")
     else:
-        incorrect_delete_queue_win=ctk.CTkToplevel(widgets.app)
-        incorrect_delete_queue_win.resizable(False,False)
-        widgets.app.eval(f'tk::PlaceWindow {str(incorrect_delete_queue_win)} center')
-        incorrect_delete_queue_win.geometry('200x100')
-        text_label=ctk.CTkLabel(master=incorrect_delete_queue_win,
+        incorrect_operation_win=ctk.CTkToplevel(widgets.app)
+        incorrect_operation_win.resizable(False,False)
+        widgets.app.eval(f'tk::PlaceWindow {str(incorrect_operation_win)} center')
+        incorrect_operation_win.geometry('200x100')
+        text_label=ctk.CTkLabel(master=incorrect_operation_win,
                                 text='Incorrect Operation',
                                 image=widgets.information_icon,
                                 compound='left',
@@ -769,8 +795,8 @@ def delete_from_queue():
         text_label.pack(pady=(20,20), padx=(10,10), anchor='center')
 
         # put the toplevel on top of all windows
-        incorrect_delete_queue_win.attributes('-topmost',True)
-        incorrect_delete_queue_win.focus()
+        incorrect_operation_win.attributes('-topmost',True)
+        incorrect_operation_win.focus()
 
 def show_playlist(value):
     import app.widgets as widgets
