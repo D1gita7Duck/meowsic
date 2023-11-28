@@ -1,7 +1,7 @@
 Note: 
--Intermediate versions are likely
--Version 1.5 is initial "end goal"
--if possible we try 2.0
+-Intermediate versions are likely  
+-Version 1.5 is initial "end goal"  
+-if possible we try 2.0  
 
 Version 0.5[DONE]:  
 -simple customtkinter gui with one search bar and two buttons [DONE]  
@@ -27,10 +27,10 @@ Version 1.0:
 -robust mechanism for play,pause,stop,next and previous song [DONE]  
 -proper queue system [DONE]  
 -settings window to change dark/light mode [DONE] , quality of songs downloaded etc  
--ability for users to delete songs and metadata they dont need anymore
--import songs from spotify playlist to liked songs [DONE]  
--Discover page with curated playlists with top songs and mood songs etc  
--Import spotify playlist into new playlist
+-ability for users to delete songs and metadata they dont need anymore  
+-import songs from spotify playlist to liked songs [DONE]   
+-Discover page with curated playlists with top songs and mood songs etc   
+-Import spotify playlist into new playlist  
 
 Version 1.5:  
 -everything in 1.0 and more  
