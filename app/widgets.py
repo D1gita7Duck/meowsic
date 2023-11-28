@@ -660,8 +660,8 @@ RightClickMenu.add_cascade(
 )
 
 # add all playlists into the cascade
-for i in add_to_playlist_options:
-    add_to_playlist_submenu.add_command(label=i,command=lambda: music.add_to_playlist(i))
+for playlist_name in add_to_playlist_options:
+    add_to_playlist_submenu.add_command(label=playlist_name,command= lambda name=playlist_name:music.add_to_playlist(name))
 
 
 song_list.bind("<Button-3>", lambda event: do_popup(event, frame=RightClickMenu))
