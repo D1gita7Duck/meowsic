@@ -752,7 +752,7 @@ def add_to_playlist(choice):
     print(choice)
     add_to_playlist_var=ctk.StringVar(value='Add to Playlist')
     widgets.add_to_playlist_menu.configure(variable=add_to_playlist_var)
-    if choice=='Create New Playlist...':
+    if choice=='Create New Playlist':
         create_playlist_dialog=ctk.CTkInputDialog(text='Give Playlist Name:', title = 'Creating a Playlist')
         playlist_name=create_playlist_dialog.get_input()
        # print(playlist_name)

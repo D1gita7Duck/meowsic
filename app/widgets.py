@@ -280,7 +280,7 @@ recently_played_listbox.grid(columnspan=5, sticky='ew',)
 
 #buttons on home page
 home_tab_buttons_frame=ctk.CTkFrame(
-    master=home_tab, border_color='#FDB275', border_width=2,fg_color="#01295F"
+    master=home_tab, border_color=current_theme["color3"], border_width=2,fg_color=current_theme["color2"]
 )
 home_tab_buttons_frame.grid(row=1, column=0, columnspan=3, rowspan=5, sticky='ew', padx=(10,10) ,)
 home_tab_buttons_frame.grid_columnconfigure(0, weight=1)
@@ -458,7 +458,7 @@ playlists_table.grid(row=0, columnspan=9, sticky='ew')
 # misc frame buttons
 add_to_playlist_label_text=ctk.StringVar(value='Add to Playlist')
 print(functions.get_playlists())
-add_to_playlist_options=['Create New Playlist...'] + [x[0] for x in functions.get_playlists()]
+add_to_playlist_options=['Create New Playlist'] + [x[0] for x in functions.get_playlists()]
 
 add_to_playlist_menu=ctk.CTkOptionMenu(
     misc_frame,
