@@ -4,7 +4,7 @@ dark_mode={
     "color3":"#FDB275",
     "color4":"#E4B2AD",
     "color5":"#819869",
-    "color6":"#"
+    "color6":"#000000"
 }
 
 light_mode={

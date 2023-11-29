@@ -249,7 +249,7 @@ elif current_time[3] >= 12 and current_time[3] <= 16:
 else:
     greeting_text = 'Good Evening'
 greeting_label = ctk.CTkLabel(
-    master=home_tab, text=greeting_text, font=('Helvetica', 20),text_color=current_theme["color6"],width=20,height=20)
+    master=home_tab, text=greeting_text, font=('Helvetica', 20),text_color=current_theme["color3"],width=20,height=20)
 greeting_label.grid(row=0, column=5, sticky='ew', pady=(20, 20), columnspan=3,)
 
 # division home tab into two frames
@@ -355,7 +355,7 @@ search_button = ctk.CTkButton(
     hover_color=current_theme["color4"],
     border_color=current_theme["color3"],
     border_width=1,
-    text_color=current_theme["color1"],)  
+    text_color=current_theme["color6"],)  
 search_button.pack(fill='x', expand=True, padx=10, pady=10)
 
 # bind enter key to search the song
@@ -394,7 +394,7 @@ song_metadata_frame.grid_columnconfigure((0, 1, 2, 3, 4, 5), weight=1)
 
 # misc functions frame (add to playlist, delete from queue, add to queue)
 misc_frame=ctk.CTkFrame(master=big_frame, fg_color=current_theme["color2"], corner_radius=20,border_width=2,border_color=current_theme["color3"])
-misc_frame.grid(row=0, column=0, columnspan=3, padx=(10,10) )
+#misc_frame.grid(row=0, column=0, columnspan=3, padx=(10,10) )
 misc_frame.grid_columnconfigure(0, weight=1)
 misc_frame.grid_rowconfigure((0,1,2), weight=1)
 your_library_tab.grid_columnconfigure((0,1,2,3,4,5,6,7), weight=1)
@@ -469,7 +469,7 @@ add_to_playlist_menu=ctk.CTkOptionMenu(
     values=add_to_playlist_options,
     state='disabled',
     fg_color=current_theme["color4"],
-    text_color=current_theme["color1"]
+    text_color=current_theme["color6"]
 )
 add_to_playlist_menu.grid(row=0, column=0, columnspan=2,  padx=(10,10), pady=(20,10), sticky='ew')
 
@@ -499,7 +499,7 @@ delete_from_queue_button=ctk.CTkButton(
     hover_color=current_theme["color4"],
     border_color=current_theme["color3"],
     border_width=1,
-    text_color=current_theme["color1"]
+    text_color=current_theme["color6"]
 )
 delete_from_queue_button.grid(row=1, column=0, columnspan=2, padx=(10,10), pady=(10,20), sticky='ew')
 
@@ -631,7 +631,7 @@ song_list = CTkListbox.CTkListbox(
     label_anchor='center',
     border_color=current_theme["color2"],
     fg_color=current_theme["color3"],
-    text_color=current_theme["color2"],
+    text_color=current_theme["color6"],
     hightlight_color=current_theme["color2"],
     hover_color=current_theme["color4"],
     select_color=current_theme["color5"],
@@ -677,7 +677,7 @@ liked_songs_listbox = CTkListbox.CTkListbox(
     label_text='Liked Songs',
     label_anchor='center',
     fg_color=current_theme["color3"],
-    text_color=current_theme["color2"],
+    text_color=current_theme["color6"],
     hightlight_color=current_theme["color2"],
     hover_color=current_theme["color4"],
     select_color=current_theme["color5"],

@@ -852,7 +852,7 @@ def show_playlist(value):
                 label_anchor='center',
                 border_color=widgets.current_theme["color2"],
                 fg_color=widgets.current_theme["color3"],
-                text_color=widgets.current_theme["color2"],
+                text_color=widgets.current_theme["color6"],
                 hightlight_color=widgets.current_theme["color2"],
                 hover_color=widgets.current_theme["color4"],
                 select_color=widgets.current_theme["color5"],
