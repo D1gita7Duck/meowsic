@@ -44,7 +44,7 @@ def load_music(t,pretty_name):
         # update metadata
         # album art
         album_art = widgets.ctk.CTkImage(Image.open(os.path.join(
-            thumbs_folder_path, f'{os.path.basename(t)[:-4]+".png"}')), size=(200, 200))
+            thumbs_folder_path, f'{os.path.basename(t)[:-4]+".png"}')), size=(225, 225))
         widgets.song_metadata_image_label.configure(image=album_art)
 
         # artist name
@@ -70,7 +70,10 @@ def load_music(t,pretty_name):
         widgets.total_time_label.configure(text=f'{formatted_total_song_time}')
 
         # change status bar to current song name
-        widgets.status_bar.configure(text=f'Paused: {widgets.song_list.get()}')
+        widgets.status_bar.configure(state='normal')
+        widgets.status_bar.delete('0.0', 'end')
+        widgets.status_bar.insert('0.0',f"Paused: {widgets.song_list.get()}")
+        widgets.status_bar.configure(state='disabled')
 
         if functions.if_liked(pretty_name):
             liked=True
@@ -225,7 +228,10 @@ def load_local(name):
         widgets.song_slider.set(0)
 
         # change status bar to current song name
-        widgets.status_bar.configure(text=f'Paused: {songs_paths[0].split("/")[-1]}')
+        widgets.status_bar.configure(state='normal')
+        widgets.status_bar.delete('0.0', 'end')
+        widgets.status_bar.insert('0.0',f'Paused: {songs_paths[0].split("/")[-1]}')
+        widgets.status_bar.configure(state='disabled')
 
         # update time labels
         widgets.time_elapsed_label.configure(
@@ -275,9 +281,14 @@ def download_and_load(temp_res):
     widgets.master_tab.set('Queue')
     # update status bar
     print("loaded",loaded)
-    if "None" in widgets.status_bar.cget("text"):
+    if "None" in widgets.status_bar.get('0.0','end'):
         print(temp_res["pretty_name"])
-        widgets.status_bar.configure(text=f'Paused: {temp_res["pretty_name"]}')
+
+        # configure status bar text box 
+        widgets.status_bar.configure(state='normal')
+        widgets.status_bar.delete('0.0', 'end')
+        widgets.status_bar.insert('0.0',f'Paused: {temp_res["pretty_name"]}')
+        widgets.status_bar.configure(state='disabled')
 
 
 def add_songs():
@@ -338,7 +349,10 @@ def add_songs():
             widgets.song_slider.set(0)
 
             # change status bar to current song name
-            widgets.status_bar.configure(text=f'Paused: {songs_paths[0].split("/")[-1]}')
+            widgets.status_bar.configure(state='normal')
+            widgets.status_bar.delete('0.0', 'end')
+            widgets.status_bar.insert('0.0',f'Paused: {songs_paths[0].split("/")[-1]}')
+            widgets.status_bar.configure(state='disabled')
 
             # update time labels
             widgets.time_elapsed_label.configure(
@@ -469,12 +483,15 @@ def song_previous():
         widgets.total_time_label.configure(text=f'{formatted_total_song_time}')
 
         # change status bar to current song name
-        widgets.status_bar.configure(text=f'Now playing: {widgets.song_list.get()}')
+        widgets.status_bar.configure(state='normal')
+        widgets.status_bar.delete('0.0', 'end')
+        widgets.status_bar.insert('0.0',f'Now playing: {widgets.song_list.get()}')
+        widgets.status_bar.configure(state='disabled')
     
         # update metadata
         try:
             # update album art
-            album_art = widgets.ctk.CTkImage(Image.open("thumbs/"+ f'{songs_paths[now_playing][5:-4]+".png"}'), size=(200, 200))
+            album_art = widgets.ctk.CTkImage(Image.open("thumbs/"+ f'{songs_paths[now_playing][5:-4]+".png"}'), size=(225, 225))
             # artist name
             widgets.song_metadata_artist_label.configure(
                 text=f'Artist: {functions.artist_search(widgets.song_list.get())["artists"].split(",")[0]}')
@@ -578,7 +595,10 @@ def song_next():
         widgets.total_time_label.configure(text=f'{formatted_total_song_time}')
 
         # change status bar to current song name
-        widgets.status_bar.configure(text=f'Now playing: {widgets.song_list.get()}')
+        widgets.status_bar.configure(state='normal')
+        widgets.status_bar.delete('0.0', 'end')
+        widgets.status_bar.insert('0.0',f'Now playing: {widgets.song_list.get()}')
+        widgets.status_bar.configure(state='disabled')
 
         if functions.if_liked(widgets.song_list.get()):
             liked=True
@@ -592,7 +612,7 @@ def song_next():
         try:
             # update album art
             #print("album art dir",os.path.join("thumbs/", f'{songs_paths[now_playing][5:-4]+".png"}'))
-            album_art = widgets.ctk.CTkImage(Image.open("thumbs/"+ f'{songs_paths[now_playing][5:-4]+".png"}'), size=(200, 200))
+            album_art = widgets.ctk.CTkImage(Image.open("thumbs/"+ f'{songs_paths[now_playing][5:-4]+".png"}'), size=(225, 225))
             
             # artist name
             print("song list artist get",f'Artist: {functions.artist_search(widgets.song_list.get())["artists"].split(",")[0]}')
@@ -628,7 +648,11 @@ def play_pause(btn: ctk.CTkButton):
         btn.configure(image=widgets.play_button_icon)
 
         # change status bar text
-        widgets.status_bar.configure(text=f"Paused: {widgets.song_list.get()}")
+        widgets.status_bar.configure(state='normal')
+        widgets.status_bar.delete('0.0', 'end')
+        widgets.status_bar.insert('0.0',f"Paused: {widgets.song_list.get()}")
+        widgets.status_bar.configure(state='disabled')
+
         playing = 2
 
     elif playing == 2:
@@ -639,7 +663,10 @@ def play_pause(btn: ctk.CTkButton):
         playing = 1
 
         # change status bar text
-        widgets.status_bar.configure(text=f"Now playing: {widgets.song_list.get()}")
+        widgets.status_bar.configure(state='normal')
+        widgets.status_bar.delete('0.0', 'end')
+        widgets.status_bar.insert('0.0',f"Now playing: {widgets.song_list.get()}")
+        widgets.status_bar.configure(state='disabled')
 
         # change the highlight to current song
         widgets.song_list.selection_clear()
@@ -656,7 +683,10 @@ def play_pause(btn: ctk.CTkButton):
         playing = 1
 
         # change status bar text
-        widgets.status_bar.configure(text=f"Now playing: {widgets.song_list.get()}")
+        widgets.status_bar.configure(state='normal')
+        widgets.status_bar.delete('0.0', 'end')
+        widgets.status_bar.insert('0.0',f"Now playing: {widgets.song_list.get()}")
+        widgets.status_bar.configure(state='disabled')
 
         # change the highlight to current song
         widgets.song_list.selection_clear()
