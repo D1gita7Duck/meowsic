@@ -8,11 +8,11 @@ dark_mode={
 }
 
 light_mode={
-    "color1":"#CFBFF7",
+    "color1":"#BABCD3",
     "color2":"#8BAFE5",
     "color3":"#E8A15E",
-    "color4":"#FF99CC",
-    "color5":"#E5FFDE",
-    "color6":"#"
+    "color4":"#EECA3A",
+    "color5":"#EECA3A",
+    "color6":"#000000"
 
 }

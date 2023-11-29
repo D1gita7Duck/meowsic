@@ -238,7 +238,7 @@ elif current_time[3] >= 12 and current_time[3] <= 16:
 else:
     greeting_text = 'Good Evening'
 greeting_label = ctk.CTkLabel(
-    master=home_tab, text=greeting_text, font=('Helvetica', 20),text_color=current_theme["color3"],width=20,height=20)
+    master=home_tab, text=greeting_text, font=('Helvetica', 20),text_color=current_theme["color6"],width=20,height=20)
 greeting_label.grid(row=0, column=5, sticky='ew', pady=(20, 20), columnspan=3,)
 
 # division home tab into two frames
@@ -256,10 +256,10 @@ recently_played_listbox = CTkListbox.CTkListbox(master=home_tab_recently_played,
                                                 label_font=('Helvetica', 22) ,
                                                 font=('Helvetica',18),
                                                 label_anchor='center',
-                                                border_color=current_theme["color2"],
+                                                border_color=current_theme["color3"],
                                                 fg_color=current_theme["color3"],
-                                                text_color=current_theme["color2"],
-                                                hightlight_color=current_theme["color2"],
+                                                text_color=current_theme["color6"],
+                                                hightlight_color=current_theme["color6"],
                                                 hover_color=current_theme["color4"],
                                                 select_color=current_theme["color5"],)
 if functions.get_recents():
@@ -269,7 +269,7 @@ recently_played_listbox.grid(columnspan=5, sticky='ew',)
 
 #buttons on home page
 home_tab_buttons_frame=ctk.CTkFrame(
-    master=home_tab, border_color='#FDB275', border_width=2,fg_color="#01295F"
+    master=home_tab, border_color=current_theme["color3"], border_width=2,fg_color=current_theme["color2"]
 )
 home_tab_buttons_frame.grid(row=1, column=0, columnspan=3, rowspan=5, sticky='ew', padx=(10,10) ,)
 home_tab_buttons_frame.grid_columnconfigure(0, weight=1)
@@ -282,9 +282,9 @@ home_tab_your_library_button=ctk.CTkButton(
     image=library_button_icon,
     fg_color=current_theme["color4"],
     hover_color=current_theme["color4"],
-    border_color=current_theme["color3"],
+    border_color=current_theme["color6"],
     border_width=1,
-    text_color=current_theme["color1"],
+    text_color=current_theme["color6"],
     anchor='center',
     command=music.show_your_library
 )
@@ -300,9 +300,9 @@ home_tab_liked_songs_button=ctk.CTkButton(
     command=music.show_liked_songs,
     fg_color=current_theme["color4"],
     hover_color=current_theme["color4"],
-    border_color=current_theme["color3"],
+    border_color=current_theme["color6"],
     border_width=1,
-    text_color=current_theme["color1"]
+    text_color=current_theme["color6"]
 )
 home_tab_liked_songs_button.grid(row=1, column=0, columnspan=3, padx=(10,10), pady=(10,10), sticky='ew')
 
@@ -314,9 +314,9 @@ discover_button=ctk.CTkButton(
     anchor='center',
     fg_color=current_theme["color4"],
     hover_color=current_theme["color4"],
-    border_color=current_theme["color3"],
+    border_color=current_theme["color6"],
     border_width=1,
-    text_color=current_theme["color1"]
+    text_color=current_theme["color6"]
 )
 discover_button.grid(row=2, column=0, columnspan=3, padx=(10,10), pady=(10,10), sticky='ew')
 # Search Frame

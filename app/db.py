@@ -2,24 +2,68 @@ import sqlite3
 import os
 con=sqlite3.connect("data/database.db",check_same_thread=False)
 
+def create_table(table_name_in, create_table_statement):
+   try:
+      # Check if table exists 
+      print (table_name_in)
+      res = cur.execute("SELECT name FROM sqlite_master \
+              where name = (?)",(table_name_in, ))
+      # creates a table if the table does not exist.
+      if (res.fetchone() is None):
+         print("creating new table: ", table_name_in)
+         con.execute(create_table_statement)
+   except Exception as e:
+      print("Database error:", str(e))
+   
+def create_all_tables():
+   create_song_table()
+   create_liked_song_table()
+   create_playlist_header_table()
+   create_playlist_details_table()
+
+def create_song_table():
+   # call the create table with name of the table and the sql statement
+   create_stmt = "Create table songs\
+         (path varchar(100) not null primary key,\
+         url varchar(500) not null,\
+         duration int not null,\
+         pretty_name varchar(100) not null ,\
+         thumbnail varchar(100),\
+         artists varchar(500))"
+   create_table("songs", create_stmt)
+   
+def create_liked_song_table():
+   # call the create table with name of the table and the sql statement
+   create_stmt="Create table liked_songs\
+      (path varchar(100) not null primary key,\
+      url varchar(500) not null,\
+      duration int not null,\
+      pretty_name varchar(100) not null,\
+      thumbnail varchar(100),\
+      artists varchar(500))"
+   create_table("liked_songs", create_stmt)
+   
+
+def create_playlist_header_table():
+   # call the create hdr table with name of the table and 
+   create_stmt="Create table playlist_header\
+      (playlist_name varchar(100) not null primary key,\
+       playlist_art_location varchar(100) not null,\
+       date_of_creation date not null)" 
+   create_table("playlist_header", create_stmt)
+
+def create_playlist_details_table():
+   # call the create detail table with name of the table and 
+   create_stmt="Create table playlist_details \
+      (playlist_name varchar(100) not null,\
+      song_name varchar(100) not null,\
+      date_of_addition date not null)  "
+   create_table("playlist_details", create_stmt)
+
 def init():
    global cur
    cur=con.cursor()
-   res = cur.execute("SELECT name FROM sqlite_master where name = 'songs'")
-
-   if (res.fetchone() is None):
-      print("creating new songs table")
-      con.execute("Create table songs(path varchar(50),url varchar(100),duration int,pretty_name varchar(30),thumbnail varchar(50),artists varchar(20))")
-
-   if not(cur.execute("SELECT name FROM sqlite_master where name = 'liked_songs'").fetchone()):
-      print("creating new liked_songs table")
-      con.execute("Create table liked_songs(path varchar(50),url varchar(100),duration int,pretty_name varchar(30),thumbnail varchar(50),artists varchar(20))")
-   if not(cur.execute("SELECT name FROM sqlite_master where name = 'playlist_header'").fetchone()):
-      print("creating playlist_header")
-      con.execute("Create table playlist_header (playlist_name varchar(100), playlist_art_location varchar(100), date_of_creation date)")
-   if not(cur.execute("SELECT name FROM sqlite_master where name = 'playlist_details'").fetchone()):
-      print("creating playlist_details")
-      con.execute("Create table playlist_details (playlist_name varchar(100),song_name varchar(100),date_of_addition date)")
+   create_all_tables()
 
 # Function to search a song and store it in the database
 def song_insert(song_list):
@@ -103,6 +147,7 @@ def get_liked_songs():
       res=cur.execute("select * from liked_songs")
       liked_list=res.fetchall()
       desc=cur.description
+      print (cur.description)
       column_names=[col[0] for col in desc]
       liked_dict=[dict(zip(column_names,row))for row in liked_list]
    except Exception as e:
