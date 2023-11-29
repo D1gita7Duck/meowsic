@@ -164,9 +164,6 @@ def do_popup(_event, frame):
     if (550<=abs_coord_x and abs_coord_x<=1261) and (157<=abs_coord_y and abs_coord_y<=450) and master_tab.get()=='Queue':
         try: 
             frame.tk_popup(abs_coord_x, abs_coord_y)
-            
-            # add_to_playlist_submenu.add_command(label='Playlsit1')
-            # add_to_playlist_submenu.add_command(label='Playlsit2')
         finally: 
             frame.grab_release()
 
@@ -341,9 +338,6 @@ search_bar.pack(fill='x', expand=True, padx=10, pady=10)
 search_progress=ctk.CTkProgressBar(search_frame,mode="indeterminate",fg_color=current_theme["color1"],border_color=current_theme["color2"],progress_color=current_theme["color3"])
 search_progress.pack(fill="x",padx=10)
 
-# open search frame
-# open_search_frame_button = ctk.CTkButton(search_frame, text="Open Search Frame" , command=open_search_frame)
-# open_search_frame_button.pack()
 
 # Create a search button
 search_button = ctk.CTkButton(
@@ -360,12 +354,7 @@ search_button.pack(fill='x', expand=True, padx=10, pady=10)
 
 # bind enter key to search the song
 app.bind('<Return>', lambda event: music.search())
-# Create a button to close the search frame and go back to the home screen
-# close_search_frame_button = ctk.CTkButton(search_frame, text="Close Search Frame", command=close_search_frame)
-# close_search_frame_button.pack(fill='x', expand=True, padx=10, pady=10)
 
-# # Hide the search frame by default
-# search_frame.pack_forget()
 
 
 # song list frame
@@ -393,13 +382,24 @@ song_metadata_frame.grid(row=0, column=7, columnspan=3, rowspan=3,sticky="e")
 song_metadata_frame.grid_columnconfigure((0, 1, 2, 3, 4, 5), weight=1)
 
 # misc functions frame (add to playlist, delete from queue, add to queue)
-misc_frame=ctk.CTkFrame(master=big_frame, fg_color=current_theme["color2"], corner_radius=20,border_width=2,border_color=current_theme["color3"])
-#misc_frame.grid(row=0, column=0, columnspan=3, padx=(10,10) )
+misc_frame=ctk.CTkFrame(
+    master=big_frame,
+    fg_color=current_theme["color2"],
+    corner_radius=20,
+    border_width=2,
+    border_color=current_theme["color3"],
+)
+
+misc_frame.grid(row=0, column=0, columnspan=3, padx=(10,10) )
 misc_frame.grid_columnconfigure(0, weight=1)
 misc_frame.grid_rowconfigure((0,1,2), weight=1)
-your_library_tab.grid_columnconfigure((0,1,2,3,4,5,6,7), weight=1)
+
+# unmap misc_frame, add to playlist and delete from queue are available in context menu
+misc_frame.grid_forget()
 
 # your library stuff
+your_library_tab.grid_columnconfigure((0,1,2,3,4,5,6,7), weight=1)
+
 your_library_frame=ctk.CTkScrollableFrame(
     master=your_library_tab,
     width=700,
@@ -422,7 +422,7 @@ for i in functions.get_playlists():
     t=functions.get_playlist_details(i)
     print('playlist_details',t,i)
     playlist_table_values.append(t)
-#print("VALUES",playlist_table_values)
+
 def open_playlist(value):
     #value is dictionary of kwargs of CTkTable
     music.show_playlist(value)
@@ -434,25 +434,6 @@ playlists_table=CTkTable.CTkTable(
     fg_color=current_theme["color2"]
 )
 playlists_table.grid(row=0, columnspan=9, sticky='ew')
-
-# your_library_playlists_listbox=CTkListbox.CTkListbox(
-#     master=your_library_tab,
-#     width=700,
-#     height=250,
-#     border_width=2,
-#     border_color='black',
-#     corner_radius=10,
-#     label_text='Playlists',
-#     label_anchor='center',
-#     fg_color="orange",
-#     text_color="black",
-#     hightlight_color='red',
-#     hover_color='#7fb8cc',
-# )
-# your_library_playlists_listbox.grid(row=0, columnspan=9, pady=(20, 20), padx=(10,10), sticky='ew')
-# # add existing playlists into listbox
-# for i in [x[0] for x in functions.get_playlists()]:
-#     your_liblirary_playlists_listbox.insert('END', i, onclick=music.show_playlist)
 
 
 # misc frame buttons
@@ -578,6 +559,7 @@ lyrics_button=ctk.CTkButton(
     state='disabled'
 )
 lyrics_button.grid(row=0,column=9,padx=(10,30),sticky="ew")
+
 volume_button=ctk.CTkButton(
     playback_controls_frame,
     text="",
@@ -592,6 +574,7 @@ volume_button=ctk.CTkButton(
     state='disabled'
 )
 volume_button.grid(row=0,column=11,padx=(10,10),sticky="ew")
+
 volume_slider = ctk.CTkSlider(
     master=playback_controls_frame,
     from_=0,
@@ -606,6 +589,7 @@ volume_slider = ctk.CTkSlider(
 )
 volume_slider.grid(row=0, column=12, columnspan=3, pady=5, sticky='ew', padx=(10,30))
 volume_slider.set(100)
+
 song_slider = ctk.CTkSlider(
     master=playback_controls_frame,
     from_=0,
@@ -649,8 +633,10 @@ RightClickMenu.add_command(
     image=delete_from_queue_tk_button_icon,
     compound='left',
 )
+
 # submenu for add to playlist commands
 add_to_playlist_submenu=tkinter.Menu(RightClickMenu)
+
 # create a cascade for adding to playlist
 RightClickMenu.add_cascade(
     label=' Add to Playlist',
@@ -687,11 +673,6 @@ liked_songs_listbox.grid(row=0, columnspan=9, pady=(20, 20), sticky='ew')
 
 for i in functions.get_liked_songs():
     liked_songs_listbox.insert("END",i["pretty_name"],onclick=music.load_liked)
-# now playing label
-# status_bar = ctk.CTkLabel(
-#     master=queue_tab, text="status bar", justify="center")
-# status_bar.grid(row=3, pady=(40, 20), sticky='ew')
-
 
 
 # time labels
