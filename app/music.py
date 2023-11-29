@@ -44,7 +44,7 @@ def load_music(t,pretty_name):
         # update metadata
         # album art
         album_art = widgets.ctk.CTkImage(Image.open(os.path.join(
-            thumbs_folder_path, f'{os.path.basename(t)[:-4]+".png"}')), size=(200, 200))
+            thumbs_folder_path, f'{os.path.basename(t)[:-4]+".png"}')), size=(225, 225))
         widgets.song_metadata_image_label.configure(image=album_art)
 
         # artist name
@@ -70,7 +70,10 @@ def load_music(t,pretty_name):
         widgets.total_time_label.configure(text=f'{formatted_total_song_time}')
 
         # change status bar to current song name
-        widgets.status_bar.configure(text=f'Paused: {widgets.song_list.get()}')
+        widgets.status_bar.configure(state='normal')
+        widgets.status_bar.delete('0.0', 'end')
+        widgets.status_bar.insert('0.0',f"Paused: {widgets.song_list.get()}")
+        widgets.status_bar.configure(state='disabled')
 
         if functions.if_liked(pretty_name):
             liked=True
@@ -120,12 +123,12 @@ def search(event=None):
     global temp_res
     print('EVENTTTT ISSSS',event)
     # check if user gave query or not
-    if widgets.search_bar.get().isspace() or widgets.search_bar.get()=='':
-        incorrect_delete_queue_win=ctk.CTkToplevel(widgets.app)
-        incorrect_delete_queue_win.resizable(False,False)
-        widgets.app.eval(f'tk::PlaceWindow {str(incorrect_delete_queue_win)} center')
-        incorrect_delete_queue_win.geometry('200x100')
-        text_label=ctk.CTkLabel(master=incorrect_delete_queue_win,
+    if widgets.search_bar.get().isspace() or widgets.search_bar.get()=='' or widgets.master_tab.get()!='Search':
+        incorrect_operation_win=ctk.CTkToplevel(widgets.app)
+        incorrect_operation_win.resizable(False,False)
+        widgets.app.eval(f'tk::PlaceWindow {str(incorrect_operation_win)} center')
+        incorrect_operation_win.geometry('200x100')
+        text_label=ctk.CTkLabel(master=incorrect_operation_win,
                                 text='Incorrect Operation',
                                 image=widgets.information_icon,
                                 compound='left',
@@ -133,8 +136,8 @@ def search(event=None):
         text_label.pack(pady=(20,20), padx=(10,10), anchor='center')
 
         # put the toplevel on top of all windows
-        incorrect_delete_queue_win.attributes('-topmost',True)
-        incorrect_delete_queue_win.focus()
+        incorrect_operation_win.attributes('-topmost',True)
+        incorrect_operation_win.focus()
 
     else:
         widgets.search_progress.set(0)
@@ -225,7 +228,10 @@ def load_local(name):
         widgets.song_slider.set(0)
 
         # change status bar to current song name
-        widgets.status_bar.configure(text=f'Paused: {songs_paths[0].split("/")[-1]}')
+        widgets.status_bar.configure(state='normal')
+        widgets.status_bar.delete('0.0', 'end')
+        widgets.status_bar.insert('0.0',f'Paused: {songs_paths[0].split("/")[-1]}')
+        widgets.status_bar.configure(state='disabled')
 
         # update time labels
         widgets.time_elapsed_label.configure(
@@ -251,6 +257,7 @@ def load_local(name):
     widgets.song_list.activate(now_playing)
     widgets.song_list.select(f"END{now_playing % len(songs_paths)}")
     widgets.master_tab.set('Queue')
+
 def download_and_load(temp_res):
     import app.widgets as widgets
     """
@@ -274,9 +281,14 @@ def download_and_load(temp_res):
     widgets.master_tab.set('Queue')
     # update status bar
     print("loaded",loaded)
-    if "None" in widgets.status_bar.cget("text"):
+    if "None" in widgets.status_bar.get('0.0','end'):
         print(temp_res["pretty_name"])
-        widgets.status_bar.configure(text=f'Paused: {temp_res["pretty_name"]}')
+
+        # configure status bar text box 
+        widgets.status_bar.configure(state='normal')
+        widgets.status_bar.delete('0.0', 'end')
+        widgets.status_bar.insert('0.0',f'Paused: {temp_res["pretty_name"]}')
+        widgets.status_bar.configure(state='disabled')
 
 
 def add_songs():
@@ -289,57 +301,83 @@ def add_songs():
     global now_playing
     global total_song_time
     global master_playing
+    global loaded
 
     # og_songs_paths will be a tuple of filepaths (str)
+    # if no file is selected, og_songs_paths is an empty string!!
     og_songs_paths = widgets.ctk.filedialog.askopenfilenames(
         initialdir=os.path.join(os.getcwd(), "Audio"),
         title="Choose Songs",
     )
 
-    # putting song names into playlist
-    for i in og_songs_paths:
-        widgets.song_list.insert("END", os.path.basename(i))
-        functions.store_local(os.path.basename(i))
+    # check if og_songs_paths is empty string or not
+    if bool(og_songs_paths)!=False:
 
-    print(pygame.mixer.music.get_busy())
+        # putting song names into playlist
+        for i in og_songs_paths:
+            widgets.song_list.insert("END", os.path.basename(i))
+            functions.store_local(os.path.basename(i))
 
-    if pygame.mixer.music.get_busy() or loaded:
-        songs_paths = (songs_paths) + list(og_songs_paths)
+        print(pygame.mixer.music.get_busy())
 
+        if pygame.mixer.music.get_busy() or loaded:
+            songs_paths = (songs_paths) + list(og_songs_paths)
+
+        else:
+            loaded=True
+
+            songs_paths = list(og_songs_paths)
+
+            pygame.mixer.music.load(songs_paths[0])
+            now_playing = 0
+
+            # total length of song
+            with audioread.audio_open(songs_paths[now_playing]) as song_file:
+                total_song_time = song_file.duration
+                print(total_song_time)
+                formatted_total_song_time = time.strftime(
+                    "%M:%S", time.gmtime(total_song_time)
+                )
+
+            # change the highlight to current song
+            widgets.song_list.selection_clear()
+            widgets.song_list.activate(now_playing)
+            widgets.song_list.select(f"END{now_playing % len(songs_paths)}")
+
+            # slider position
+            widgets.song_slider.configure(to=total_song_time)
+            widgets.song_slider.set(0)
+
+            # change status bar to current song name
+            widgets.status_bar.configure(state='normal')
+            widgets.status_bar.delete('0.0', 'end')
+            widgets.status_bar.insert('0.0',f'Paused: {songs_paths[0].split("/")[-1]}')
+            widgets.status_bar.configure(state='disabled')
+
+            # update time labels
+            widgets.time_elapsed_label.configure(
+                text=time.strftime("%M:%S", time.gmtime(0)))
+            widgets.total_time_label.configure(text=f'{formatted_total_song_time}')
+            # update metadata
+            widgets.song_metadata_image_label.configure(image=widgets.garfield_icon)
+            widgets.song_metadata_artist_label.configure(text='Miscellaneous')
+            widgets.song_metadata_image_label.grid(row=0, columnspan=3, sticky='new')
+    
     else:
-        songs_paths = list(og_songs_paths)
+        incorrect_operation_win=ctk.CTkToplevel(widgets.app)
+        incorrect_operation_win.resizable(False,False)
+        widgets.app.eval(f'tk::PlaceWindow {str(incorrect_operation_win)} center')
+        incorrect_operation_win.geometry('200x100')
+        text_label=ctk.CTkLabel(master=incorrect_operation_win,
+                                text='Incorrect Operation',
+                                image=widgets.information_icon,
+                                compound='left',
+                                anchor='center',)
+        text_label.pack(pady=(20,20), padx=(10,10), anchor='center')
 
-        pygame.mixer.music.load(songs_paths[0])
-        now_playing = 0
-
-        # total length of song
-        with audioread.audio_open(songs_paths[now_playing]) as song_file:
-            total_song_time = song_file.duration
-            print(total_song_time)
-            formatted_total_song_time = time.strftime(
-                "%M:%S", time.gmtime(total_song_time)
-            )
-
-        # change the highlight to current song
-        widgets.song_list.selection_clear()
-        widgets.song_list.activate(now_playing)
-        widgets.song_list.select(f"END{now_playing % len(songs_paths)}")
-
-        # slider position
-        widgets.song_slider.configure(to=total_song_time)
-        widgets.song_slider.set(0)
-
-        # change status bar to current song name
-        widgets.status_bar.configure(text=f'Paused: {songs_paths[0].split("/")[-1]}')
-
-        # update time labels
-        widgets.time_elapsed_label.configure(
-            text=time.strftime("%M:%S", time.gmtime(0)))
-        widgets.total_time_label.configure(text=f'{formatted_total_song_time}')
-        # update metadata
-        widgets.song_metadata_image_label.configure(image=widgets.garfield_icon)
-        widgets.song_metadata_artist_label.configure(text='Miscellaneous')
-        widgets.song_metadata_image_label.grid(row=0, columnspan=3, sticky='new')
+        # put the toplevel on top of all windows
+        incorrect_operation_win.attributes('-topmost',True)
+        incorrect_operation_win.focus()
         
     widgets.like_button.configure(state='normal')
     widgets.previous_button.configure(state='normal')
@@ -385,6 +423,8 @@ def play_time():
         widgets.song_slider.set(total_song_time)
         song_next()
 
+    if formatted_time_elapsed=='59:59':
+        song_next()
     #test_label.configure(text=f'slider: {song_slider.get()} and time_elapsed: {time_elapsed//1000}')
 
     widgets.time_elapsed_label.after(1000, play_time)
@@ -443,12 +483,15 @@ def song_previous():
         widgets.total_time_label.configure(text=f'{formatted_total_song_time}')
 
         # change status bar to current song name
-        widgets.status_bar.configure(text=f'Now playing: {widgets.song_list.get()}')
+        widgets.status_bar.configure(state='normal')
+        widgets.status_bar.delete('0.0', 'end')
+        widgets.status_bar.insert('0.0',f'Now playing: {widgets.song_list.get()}')
+        widgets.status_bar.configure(state='disabled')
     
         # update metadata
         try:
             # update album art
-            album_art = widgets.ctk.CTkImage(Image.open("thumbs/"+ f'{songs_paths[now_playing][5:-4]+".png"}'), size=(200, 200))
+            album_art = widgets.ctk.CTkImage(Image.open("thumbs/"+ f'{songs_paths[now_playing][5:-4]+".png"}'), size=(225, 225))
             # artist name
             widgets.song_metadata_artist_label.configure(
                 text=f'Artist: {functions.artist_search(widgets.song_list.get())["artists"].split(",")[0]}')
@@ -552,7 +595,10 @@ def song_next():
         widgets.total_time_label.configure(text=f'{formatted_total_song_time}')
 
         # change status bar to current song name
-        widgets.status_bar.configure(text=f'Now playing: {widgets.song_list.get()}')
+        widgets.status_bar.configure(state='normal')
+        widgets.status_bar.delete('0.0', 'end')
+        widgets.status_bar.insert('0.0',f'Now playing: {widgets.song_list.get()}')
+        widgets.status_bar.configure(state='disabled')
 
         if functions.if_liked(widgets.song_list.get()):
             liked=True
@@ -566,7 +612,7 @@ def song_next():
         try:
             # update album art
             #print("album art dir",os.path.join("thumbs/", f'{songs_paths[now_playing][5:-4]+".png"}'))
-            album_art = widgets.ctk.CTkImage(Image.open("thumbs/"+ f'{songs_paths[now_playing][5:-4]+".png"}'), size=(200, 200))
+            album_art = widgets.ctk.CTkImage(Image.open("thumbs/"+ f'{songs_paths[now_playing][5:-4]+".png"}'), size=(225, 225))
             
             # artist name
             print("song list artist get",f'Artist: {functions.artist_search(widgets.song_list.get())["artists"].split(",")[0]}')
@@ -602,7 +648,11 @@ def play_pause(btn: ctk.CTkButton):
         btn.configure(image=widgets.play_button_icon)
 
         # change status bar text
-        widgets.status_bar.configure(text=f"Paused: {widgets.song_list.get()}")
+        widgets.status_bar.configure(state='normal')
+        widgets.status_bar.delete('0.0', 'end')
+        widgets.status_bar.insert('0.0',f"Paused: {widgets.song_list.get()}")
+        widgets.status_bar.configure(state='disabled')
+
         playing = 2
 
     elif playing == 2:
@@ -613,7 +663,10 @@ def play_pause(btn: ctk.CTkButton):
         playing = 1
 
         # change status bar text
-        widgets.status_bar.configure(text=f"Now playing: {widgets.song_list.get()}")
+        widgets.status_bar.configure(state='normal')
+        widgets.status_bar.delete('0.0', 'end')
+        widgets.status_bar.insert('0.0',f"Now playing: {widgets.song_list.get()}")
+        widgets.status_bar.configure(state='disabled')
 
         # change the highlight to current song
         widgets.song_list.selection_clear()
@@ -630,7 +683,10 @@ def play_pause(btn: ctk.CTkButton):
         playing = 1
 
         # change status bar text
-        widgets.status_bar.configure(text=f"Now playing: {widgets.song_list.get()}")
+        widgets.status_bar.configure(state='normal')
+        widgets.status_bar.delete('0.0', 'end')
+        widgets.status_bar.insert('0.0',f"Now playing: {widgets.song_list.get()}")
+        widgets.status_bar.configure(state='disabled')
 
         # change the highlight to current song
         widgets.song_list.selection_clear()
@@ -726,7 +782,7 @@ def add_to_playlist(choice):
     print(choice)
     add_to_playlist_var=ctk.StringVar(value='Add to Playlist')
     widgets.add_to_playlist_menu.configure(variable=add_to_playlist_var)
-    if choice=='Create New Playlist...':
+    if choice=='Create New Playlist':
         create_playlist_dialog=ctk.CTkInputDialog(text='Give Playlist Name:', title = 'Creating a Playlist')
         playlist_name=create_playlist_dialog.get_input()
        # print(playlist_name)
@@ -757,11 +813,11 @@ def delete_from_queue():
         #widgets.song_list.activate(now_playing+1)
         widgets.song_list.select(f"END{now_playing % len(songs_paths)}")
     else:
-        incorrect_delete_queue_win=ctk.CTkToplevel(widgets.app)
-        incorrect_delete_queue_win.resizable(False,False)
-        widgets.app.eval(f'tk::PlaceWindow {str(incorrect_delete_queue_win)} center')
-        incorrect_delete_queue_win.geometry('200x100')
-        text_label=ctk.CTkLabel(master=incorrect_delete_queue_win,
+        incorrect_operation_win=ctk.CTkToplevel(widgets.app)
+        incorrect_operation_win.resizable(False,False)
+        widgets.app.eval(f'tk::PlaceWindow {str(incorrect_operation_win)} center')
+        incorrect_operation_win.geometry('200x100')
+        text_label=ctk.CTkLabel(master=incorrect_operation_win,
                                 text='Incorrect Operation',
                                 image=widgets.information_icon,
                                 compound='left',
@@ -769,8 +825,8 @@ def delete_from_queue():
         text_label.pack(pady=(20,20), padx=(10,10), anchor='center')
 
         # put the toplevel on top of all windows
-        incorrect_delete_queue_win.attributes('-topmost',True)
-        incorrect_delete_queue_win.focus()
+        incorrect_operation_win.attributes('-topmost',True)
+        incorrect_operation_win.focus()
 
 def show_playlist(value):
     import app.widgets as widgets

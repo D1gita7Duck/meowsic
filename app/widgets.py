@@ -4,7 +4,7 @@ import tkinter
 import customtkinter as ctk
 import CTkMenuBar
 import CTkTable
-from PIL import Image
+from PIL import Image, ImageTk
 import CTkListbox
 import app.music as music
 import app.functions as functions
@@ -36,7 +36,7 @@ icon_folder_path = os.path.join(
 
 )
 garfield_icon = ctk.CTkImage(
-    Image.open(os.path.join(icon_folder_path, "garfield.png")), size=(250//scale_factor, 200//scale_factor)
+    Image.open(os.path.join(icon_folder_path, "garfield.png")), size=(225//scale_factor, 225//scale_factor)
 )
 library_button_icon=ctk.CTkImage(
     Image.open(os.path.join(icon_folder_path, "library_icon.png")), size=(30//scale_factor, 30//scale_factor)
@@ -77,6 +77,16 @@ add_to_queue_button_icon= ctk.CTkImage(
 delete_from_queue_button_icon=ctk.CTkImage(
     Image.open(os.path.join(icon_folder_path, "delete_queue_btn.png")), size=(30, 30)
 )
+delete_from_queue_tk_button_icon=ImageTk.PhotoImage(
+    Image.open(os.path.join(icon_folder_path, "delete_queue_btn.png")).resize((30,30))
+)
+add_to_playlist_button_icon=ctk.CTkImage(
+    Image.open(os.path.join(icon_folder_path, "add_to_playlist_icon.png")), size=(30, 30)
+)
+add_to_playlist_tk_button_icon=ImageTk.PhotoImage(
+    Image.open(os.path.join(icon_folder_path, "add_to_playlist_icon.png")).resize((30,30))
+)
+
 information_icon=ctk.CTkImage(
     Image.open(os.path.join(icon_folder_path, "info_icon.png")), size=(30, 30)
 )
@@ -130,8 +140,6 @@ def toggle_theme(t):
         warn_win.resizable(False,False)
         app.eval(f'tk::PlaceWindow {str(warn_win)} center')
         warn_win.geometry('200x100')
-        # put the toplevel on top of all windows
-        warn_win.focus()
         text_label=ctk.CTkLabel(master=warn_win,
                                 text='Restart Required',
                                 image=information_icon,
@@ -139,9 +147,12 @@ def toggle_theme(t):
                                 anchor='center',)
         text_label.pack(pady=(20,20), padx=(10,10), anchor='center')
 
+        # put the toplevel on top of all windows
+        warn_win.attributes('-topmost',True)
+        warn_win.focus()
 
 # rightclickmenu pops up on calling this function
-def do_popup(event, frame):
+def do_popup(_event, frame):
     # print('EVENT IS ', event)
     x1 = song_list_frame.winfo_rootx()
     y1 = song_list_frame.winfo_rooty()
@@ -150,7 +161,7 @@ def do_popup(event, frame):
     abs_coord_x = app.winfo_pointerx() - app.winfo_vrootx()
     abs_coord_y = app.winfo_pointery() - app.winfo_vrooty()
     print(x1,y1,x2,y2,abs_coord_x,abs_coord_y)
-    if (550<=abs_coord_x and abs_coord_x<=1261) and (157<=abs_coord_y and abs_coord_y<=450):
+    if (550<=abs_coord_x and abs_coord_x<=1261) and (157<=abs_coord_y and abs_coord_y<=450) and master_tab.get()=='Queue':
         try: 
             frame.tk_popup(abs_coord_x, abs_coord_y)
             
@@ -308,8 +319,8 @@ home_tab_liked_songs_button.grid(row=1, column=0, columnspan=3, padx=(10,10), pa
 
 discover_button=ctk.CTkButton(
     master=home_tab_buttons_frame,
-    width=200,
-    height=50,
+    width=200//scale_factor,
+    height=50//scale_factor,
     text='Discover',
     anchor='center',
     fg_color=current_theme["color4"],
@@ -346,8 +357,9 @@ search_button = ctk.CTkButton(
     border_width=1,
     text_color=current_theme["color1"],)  
 search_button.pack(fill='x', expand=True, padx=10, pady=10)
-search_button.bind('<Enter>', music.search)
 
+# bind enter key to search the song
+app.bind('<Return>', lambda event: music.search())
 # Create a button to close the search frame and go back to the home screen
 # close_search_frame_button = ctk.CTkButton(search_frame, text="Close Search Frame", command=close_search_frame)
 # close_search_frame_button.pack(fill='x', expand=True, padx=10, pady=10)
@@ -446,7 +458,7 @@ playlists_table.grid(row=0, columnspan=9, sticky='ew')
 # misc frame buttons
 add_to_playlist_label_text=ctk.StringVar(value='Add to Playlist')
 print(functions.get_playlists())
-add_to_playlist_options=['Create New Playlist...'] + [x[0] for x in functions.get_playlists()]
+add_to_playlist_options=['Create New Playlist'] + [x[0] for x in functions.get_playlists()]
 
 add_to_playlist_menu=ctk.CTkOptionMenu(
     misc_frame,
@@ -630,13 +642,26 @@ song_list.grid(row=0, columnspan=9, pady=(10, 30), sticky='ew')
 
 # context menu to add songs to playlist and delete them from queue
 RightClickMenu = tkinter.Menu(song_list, tearoff=False, background='#565b5e', fg='white', borderwidth=0, bd=0)
-# RightClickMenu.add_command(label="Add to PLAYLSIT", command=add_cascade_for_playlist)
-
-RightClickMenu.add_command(label="Delete From Queue", command=music.delete_from_queue)
+# adding delete from queue command
+RightClickMenu.add_command(
+    label=" Delete From Queue",
+    command=music.delete_from_queue,
+    image=delete_from_queue_tk_button_icon,
+    compound='left',
+)
+# submenu for add to playlist commands
 add_to_playlist_submenu=tkinter.Menu(RightClickMenu)
-RightClickMenu.add_cascade(label='Add to Playlist', menu=add_to_playlist_submenu)
-for i in add_to_playlist_options:
-    add_to_playlist_submenu.add_command(label=i,command=lambda: music.add_to_playlist(i))
+# create a cascade for adding to playlist
+RightClickMenu.add_cascade(
+    label=' Add to Playlist',
+    menu=add_to_playlist_submenu,
+    image=add_to_playlist_tk_button_icon,
+    compound='left',
+)
+
+# add all playlists into the cascade
+for playlist_name in add_to_playlist_options:
+    add_to_playlist_submenu.add_command(label=playlist_name,command= lambda name=playlist_name:music.add_to_playlist(name))
 
 
 song_list.bind("<Button-3>", lambda event: do_popup(event, frame=RightClickMenu))
@@ -693,7 +718,16 @@ song_metadata_artist_label = ctk.CTkLabel(
 song_metadata_artist_label.grid(row=1, columnspan=3, sticky='ew', pady=(20, 10))
 
 # now playing label
-status_bar = ctk.CTkLabel(master=song_metadata_frame, text='Status Bar', justify="center", text_color='white')
-status_bar.grid(row=2, columnspan=3, pady=(10, 20), padx=(10, 10), sticky='ew')
+status_bar = ctk.CTkTextbox(
+    master=song_metadata_frame,
+    height=40,
+    text_color='white',
+    wrap='none',
+    fg_color = current_theme["color2"],
+)
 
+status_bar.grid(row=2, columnspan=3, pady=(10, 20), padx=(10, 10), sticky='ew')
+status_bar.tag_config('center', justify='center')
+status_bar.insert('end', 'Status Bar', 'center')
+status_bar.configure(state='disabled')
 
