@@ -352,9 +352,6 @@ search_button = ctk.CTkButton(
     text_color=current_theme["color6"],)  
 search_button.pack(fill='x', expand=True, padx=10, pady=10)
 
-# bind enter key to search the song
-app.bind('<Return>', lambda event: music.search())
-
 
 
 # song list frame
@@ -650,9 +647,6 @@ for playlist_name in add_to_playlist_options:
     add_to_playlist_submenu.add_command(label=playlist_name,command= lambda name=playlist_name:music.add_to_playlist(name))
 
 
-song_list.bind("<Button-3>", lambda event: do_popup(event, frame=RightClickMenu))
-app.bind("<1>", lambda event: event.widget.focus_set())
-
 # liked songs listbox
 liked_songs_listbox = CTkListbox.CTkListbox(
     master=liked_songs_frame,
@@ -712,3 +706,19 @@ status_bar.tag_config('center', justify='center')
 status_bar.insert('end', 'Status Bar', 'center')
 status_bar.configure(state='disabled')
 
+
+'''Key Bindings'''
+
+# bind buttons
+app.bind("<1>", lambda event: event.widget.focus_set())
+
+# bind space key to play/pause
+app.bind('<space>', lambda event: music.play_pause(play_button, _event=event) if type(app.focus_get())!=tkinter.Entry else print('Focus in EntryBox'))
+# bind f8 to song_next
+app.bind('<F8>', lambda event: music.song_next(_event=event))
+# bind f6 to song_previous
+app.bind('<F6>', lambda event: music.song_previous(_event=event))
+# bind enter key to search the song
+app.bind('<Return>', lambda event: music.search())
+# bind mouserightclick to popup the context menu
+song_list.bind("<Button-3>", lambda event: do_popup(event, frame=RightClickMenu))
