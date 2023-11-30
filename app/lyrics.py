@@ -33,6 +33,11 @@ def show_lyrics(song,artist,app):
     Label_lyrics.configure(text=lyrics)
     Label_lyrics.pack()
     scrollable_frame.pack()
+
+    # make the toplevel appear on top
+    root.attributes('-topmost', True)
+    root.focus()
+    
     widgets.lyrics_button.configure(image=widgets.lyrics_button_icon_orange)
 
     root.protocol('WM_DELETE_WINDOW', kill_and_change_icon)
