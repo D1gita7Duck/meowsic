@@ -188,6 +188,31 @@ def return_pressed(event=None):
     print(event)
     print('RETURN PRESSED')
 
+def on_mouse_click(_event=None):
+    '''
+    Focusses the widget that is clicked (mouse1). 
+    Deletes all playlist tabs (if open)
+    '''
+    _event.widget.focus_set()
+
+    current_focus=(str(app.focus_get()).split('.'))
+
+    # print(master_tab._tab_dict)
+
+    # check if currently focussed widget is not a playlist tab
+    if current_focus[-3]=='!ctksegmentedbutton' and current_focus[-2] in ['!ctkbutton5','!ctkbutton4','!ctkbutton3','!ctkbutton2','!ctkbutton']:
+        try:
+            # try to delete the playlist tab
+            for name in master_tab._tab_dict:
+                if name not in ['Home', 'Queue', 'Search', 'Your Library', 'Liked Songs']:
+                    master_tab._name_list.remove(name)
+                    master_tab._tab_dict[name].grid_forget()
+                    master_tab._tab_dict.pop(name)
+                    master_tab._segmented_button.delete(name)
+        except RuntimeError: 
+            # runtime error is flashed as the master_tab._tab_dict changes size while the function is called
+            pass
+
 # menu
 menu = CTkMenuBar.CTkMenuBar(app)
 menu.lift()
@@ -368,9 +393,6 @@ search_button = ctk.CTkButton(
     border_width=1,
     text_color=current_theme["color6"],)  
 search_button.pack(fill='x', expand=True, padx=10, pady=10)
-
-# bind enter key to search the song
-app.bind('<Return>', lambda event: music.search())
 
 
 
@@ -667,9 +689,6 @@ for playlist_name in add_to_playlist_options:
     add_to_playlist_submenu.add_command(label=playlist_name,command= lambda name=playlist_name:music.add_to_playlist(name))
 
 
-song_list.bind("<Button-3>", lambda event: do_popup(event, frame=RightClickMenu))
-app.bind("<1>", lambda event: event.widget.focus_set())
-
 # liked songs listbox
 liked_songs_listbox = CTkListbox.CTkListbox(
     master=liked_songs_frame,
@@ -729,3 +748,20 @@ status_bar.tag_config('center', justify='center')
 status_bar.insert('end', 'Status Bar', 'center')
 status_bar.configure(state='disabled')
 
+
+'''Key Bindings'''
+
+# bind mouse1
+# <1> is a synonym for <ButtonPress-1> (aka left mouse button)
+app.bind("<1>", lambda event: on_mouse_click(_event=event))
+
+# bind space key to play/pause
+app.bind('<space>', lambda event: music.play_pause(play_button, _event=event) if type(app.focus_get())!=tkinter.Entry else print('Focus in EntryBox'))
+# bind f8 to song_next
+app.bind('<F8>', lambda event: music.song_next(_event=event))
+# bind f6 to song_previous
+app.bind('<F6>', lambda event: music.song_previous(_event=event))
+# bind enter key to search the song
+app.bind('<Return>', lambda event: music.search())
+# bind mouserightclick to popup the context menu
+song_list.bind("<Button-3>", lambda event: do_popup(event, frame=RightClickMenu))

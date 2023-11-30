@@ -3,7 +3,6 @@ import os
 import time
 from datetime import datetime
 import threading
-from tkinter import W
 import pygame.mixer
 import customtkinter as ctk
 from PIL import Image
@@ -132,7 +131,7 @@ def search(event=None):
     global songs_paths
     global playing
     global temp_res
-    print('EVENTTTT ISSSS',event)
+    
     # check if user gave query or not
     if widgets.search_bar.get().isspace() or widgets.search_bar.get()=='' or widgets.master_tab.get()!='Search':
         incorrect_operation_win=ctk.CTkToplevel(widgets.app)
@@ -447,7 +446,7 @@ def slide(x):
     play_time()
 
 
-def song_previous():
+def song_previous(_event=None):
     """
     Rewinds song if song has been playing for more than 2 seconds.
     Else loads previous song into queue
@@ -558,7 +557,7 @@ def song_previous():
 
 
 
-def song_next():
+def song_next(_event=None):
     """
     loads next song in queue 
     """
@@ -644,10 +643,10 @@ def song_next():
             widgets.song_metadata_image_label.grid(row=0, columnspan=3, sticky='new', )
 
 
-def play_pause(btn: ctk.CTkButton):
+def play_pause(btn: ctk.CTkButton, _event=None):
     """
-    Accepts ctkbutton as argument and changes button icon wrt playing state.
-    Also pauses and unpauses current song.
+    Pauses/unpauses current song
+    Accepts ctkbutton as argument and changes button icon with respect to playing state.
     """
     import app.widgets as widgets
     global playing
