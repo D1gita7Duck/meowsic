@@ -1,5 +1,5 @@
-Note: 
--Intermediate versions are likely  
+Note:   
+-Intermediate versions are likely    
 -Version 1.5 is initial "end goal"  
 -if possible we try 2.0  
 
@@ -30,7 +30,9 @@ Version 1.0:
 -ability for users to delete songs and metadata they dont need anymore  
 -import songs from spotify playlist to liked songs [DONE]   
 -Discover page with curated playlists with top songs and mood songs etc   
--Import spotify playlist into new playlist  
+-Import spotify playlist into new playlist  [DONE]
+-Add a button to import all songs from playlist into queue [DONE]
+-Shuffle songs in queue  
 
 Version 1.5:  
 -everything in 1.0 and more  

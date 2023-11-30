@@ -109,21 +109,38 @@ def import_win_launch():
     global import_window
     global import_progress
     
-    import_window=ctk.CTkToplevel(app)
+    import_window=ctk.CTkToplevel(app,fg_color=current_theme["color1"])
     import_window.geometry("300x300")
     import_window.title('Import tracks from Spotify playlist')
 
-
-    import_entry=ctk.CTkEntry(import_window,placeholder_text="Enter playlist URL")
+    import_entry=ctk.CTkEntry(import_window,placeholder_text="Enter playlist URL",fg_color=current_theme["color1"],border_color=current_theme["color4"],text_color=current_theme["color3"],placeholder_text_color=current_theme["color3"])
     import_entry.pack(pady=20)
 
-    import_progress=ctk.CTkProgressBar(import_window,mode="indeterminate")
+    import_progress=ctk.CTkProgressBar(import_window,mode="indeterminate",fg_color=current_theme["color1"],border_color=current_theme["color2"],progress_color=current_theme["color3"])
     import_progress.pack(fill="x",padx=20)
 
 
-    import_button=ctk.CTkButton(import_window,text="Import",command=music.import_sp_playlist)
+    import_button=ctk.CTkButton(
+        import_window,
+        text="Import to Queue",
+        command=music.import_sp_playlist,
+        fg_color=current_theme["color4"],
+        hover_color=current_theme["color4"],
+        border_color=current_theme["color3"],
+        border_width=1,
+        text_color=current_theme["color6"],)
+    
     import_button.pack(pady=20)
-
+    import_button=ctk.CTkButton(
+        import_window,
+        text="Import to Playlist",
+        command=music.import_sp_playlist_to_new_playlist,
+        fg_color=current_theme["color4"],
+        hover_color=current_theme["color4"],
+        border_color=current_theme["color3"],
+        border_width=1,
+        text_color=current_theme["color6"],)
+    import_button.pack(pady=20)
 # toggling theme
 def toggle_theme(t):
     global current_theme
@@ -161,7 +178,7 @@ def do_popup(_event, frame):
     abs_coord_x = app.winfo_pointerx() - app.winfo_vrootx()
     abs_coord_y = app.winfo_pointery() - app.winfo_vrooty()
     print(x1,y1,x2,y2,abs_coord_x,abs_coord_y)
-    if (550<=abs_coord_x and abs_coord_x<=1261) and (157<=abs_coord_y and abs_coord_y<=450) and master_tab.get()=='Queue':
+    if (550<=abs_coord_x and abs_coord_x<=1261) and (157<=abs_coord_y and abs_coord_y<=450) and master_tab.get()=='Queue' and music.loaded:
         try: 
             frame.tk_popup(abs_coord_x, abs_coord_y)
         finally: 

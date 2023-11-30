@@ -123,9 +123,6 @@ def search(stringy):
     Accepts song name and uses youtube and spotify API to get metadata.
     Returns a dictionary of url, duration, prettyname and thumbnail url.
     """
-    videos_search = VideosSearch(stringy, limit = 1)
-    videos=videos_search.result()
-    url="https://www.youtube.com/watch?v="+videos["result"][0]["id"]
     details=sp.search(q=stringy,limit=1,type="track")
     duration=details["tracks"]["items"][0]["duration_ms"]//1000 #returns in ms
     pretty_name=details["tracks"]["items"][0]["name"]
@@ -135,6 +132,9 @@ def search(stringy):
     for i in temp_artists:
         artists+=i["name"]+", "
     artists=artists.rstrip(", ")
+    videos_search = VideosSearch(pretty_name, limit = 1)
+    videos=videos_search.result()
+    url="https://www.youtube.com/watch?v="+videos["result"][0]["id"]
     db_search=db.song_search(pretty_name)
     if db_search:
         print("found in db")
@@ -142,10 +142,10 @@ def search(stringy):
     else:
         print("not found in db downloading thumb")
         thumbnail_path=thumbs(better_name(pretty_name),thumbnail_url)
-        db.song_insert([stringy,url,duration,pretty_name,thumbnail_path,artists])
+        db.song_insert(["Audio/"+better_name(pretty_name)+".mp3",url,duration,pretty_name,thumbnail_path,artists])
         print("added record to db")
     
-    return {"path":stringy,"url":url,"duration":duration,"pretty_name":pretty_name,"thumbnail_path":thumbnail_path,"artists":artists}
+    return {"path":"Audio/"+better_name(pretty_name)+".mp3","url":url,"duration":duration,"pretty_name":pretty_name,"thumbnail_path":thumbnail_path,"artists":artists}
 
 def artist_search(pretty_name):
     search_res=db.song_search(pretty_name)

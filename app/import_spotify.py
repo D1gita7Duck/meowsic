@@ -15,9 +15,9 @@ def get_spotify_playlist_tracks(playlist_link):
     print(playlist_id)
     # Get the playlist tracks
     results = sp.playlist_tracks(playlist_id)
-
+    playlist_name=sp.playlist(playlist_id)["name"]
     # Extract song names and add them to a list
-    song_names = [track['track']['name'] for track in results['items']]
+    song_names = [(track['track']['name'],track["track"]["artists"][0]["name"]) for track in results['items']]
 
-    return song_names
+    return song_names,playlist_name
 

@@ -67,10 +67,7 @@ class CTkListbox(customtkinter.CTkScrollableFrame):
     def select(self, index):
         """ select the option """
         #print("selecting",index)
-        temp_buttons = {}
-        for i, key in enumerate(sorted(self.buttons.keys())):
-            temp_buttons[f"END{i}"] = self.buttons[key]
-        self.buttons = temp_buttons
+
         for options in self.buttons.values():
             options.configure(fg_color="transparent")
         #print(self.buttons)
@@ -91,7 +88,10 @@ class CTkListbox(customtkinter.CTkScrollableFrame):
         
         if self.command:
             self.command(self.get())
-
+        # temp_buttons = {}
+        # for i, key in enumerate(sorted(self.buttons.keys())):
+        #     temp_buttons[f"END{i}"] = self.buttons[key]
+        # self.buttons = temp_buttons
 
         #print(self.buttons)
     def load_select(self,index,onclick):
@@ -167,10 +167,10 @@ class CTkListbox(customtkinter.CTkScrollableFrame):
     def insert(self, index, option,onclick=None,**args):
         """ add new option in the listbox """
         
-        temp_buttons = {}
-        for i, key in enumerate(sorted(self.buttons.keys())):
-            temp_buttons[f"END{i}"] = self.buttons[key]
-        self.buttons = temp_buttons
+        # temp_buttons = {}
+        # for i, key in enumerate(sorted(self.buttons.keys())):
+        #     temp_buttons[f"END{i}"] = self.buttons[key]
+        # self.buttons = temp_buttons
 
         if str(index).lower()=="end":
             index = f"END{self.end_num}"
@@ -191,6 +191,10 @@ class CTkListbox(customtkinter.CTkScrollableFrame):
             self.buttons[index].configure(command=lambda num=index: self.load_select(num, onclick))
 
         self.buttons[index].pack(padx=0, pady=(0,5), fill="x", expand=True)
+        # temp_buttons = {}
+        # for i, key in enumerate(sorted(self.buttons.keys())):
+        #     temp_buttons[f"END{i}"] = self.buttons[key]
+        # self.buttons = temp_buttons
 
         #print(self.buttons)
     def delete(self, index, last=None):
@@ -234,9 +238,9 @@ class CTkListbox(customtkinter.CTkScrollableFrame):
             temp_buttons[f"END{i}"] = self.buttons[key]
         self.buttons = temp_buttons
         # Now, regenerate the buttons
-        for i, key in enumerate(list(self.buttons.keys())):
-            self.buttons[key].pack_forget()  # Unpack the button
-            self.insert("END"+str(i), option=self.buttons[key].cget("text"))  # Regenerate the button
+        # for i, key in enumerate(list(self.buttons.keys())):
+        #     self.buttons[key].pack_forget()  # Unpack the button
+        #     self.insert("END"+str(i), option=self.buttons[key].cget("text"))  # Regenerate the button
         self.end_num-=1
 
     def size(self):
