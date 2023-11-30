@@ -36,7 +36,8 @@ def load_music(t,pretty_name,event=None,index=None):
     global loaded
     global master_playing
     global now_playing
-    
+    global songs_paths
+        
     if playing == 2 or playing == 1 or loaded:
         pass
     else:
@@ -98,7 +99,7 @@ def load_music(t,pretty_name,event=None,index=None):
 
     master_playing=True
     # inserting into list_box
-    if index==None:widgets.song_list.insert("END", pretty_name)
+    if index==None:widgets.song_list.insert(f"END{len(songs_paths)-1}", pretty_name)
     else:
         print("inserting",f"{index}", pretty_name)
         widgets.song_list.insert(f"{index}", pretty_name)
@@ -279,7 +280,7 @@ def download_and_load(temp_res,event=None,index=None):
         temp_res["url"], functions.better_name(temp_res["pretty_name"]))
     temp_paths = os.path.join("Audio/", song_name_temp)
     songs_paths += (temp_paths,)
-
+    print("songs paths",songs_paths)
     # Stop the search progress bar
     widgets.search_progress.stop()
 

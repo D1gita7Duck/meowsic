@@ -168,7 +168,7 @@ class CTkListbox(customtkinter.CTkScrollableFrame):
         """ add new option in the listbox """
         
         # temp_buttons = {}
-        # for i, key in enumerate(sorted(self.buttons.keys())):
+        # for i, key in enumerate((self.buttons.keys())):
         #     temp_buttons[f"END{i}"] = self.buttons[key]
         # self.buttons = temp_buttons
 
@@ -234,13 +234,14 @@ class CTkListbox(customtkinter.CTkScrollableFrame):
             self.buttons[index].destroy()
             del self.buttons[index]
         temp_buttons = {}
-        for i, key in enumerate(sorted(self.buttons.keys())):
+        for i, key in enumerate((self.buttons.keys())):
             temp_buttons[f"END{i}"] = self.buttons[key]
         self.buttons = temp_buttons
-        # Now, regenerate the buttons
-        # for i, key in enumerate(list(self.buttons.keys())):
-        #     self.buttons[key].pack_forget()  # Unpack the button
-        #     self.insert("END"+str(i), option=self.buttons[key].cget("text"))  # Regenerate the button
+        #Now, regenerate the buttons
+        for i, key in enumerate(list(self.buttons.keys())):
+            self.buttons[key].pack_forget()  # Unpack the button
+            print("END"+str(i),self.buttons[key].cget("text"))
+            self.insert("END"+str(i), option=self.buttons[key].cget("text"))  # Regenerate the button
         self.end_num-=1
 
     def size(self):
