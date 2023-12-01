@@ -204,7 +204,7 @@ def on_mouse_click(_event=None):
         try:
             # try to delete the playlist tab
             for name in master_tab._tab_dict:
-                if name not in ['Home', 'Queue', 'Search', 'Your Library', 'Liked Songs']:
+                if name not in ['Home', 'Queue', 'Search', 'Your Library', 'Liked Songs',"Discover"]:
                     master_tab._name_list.remove(name)
                     master_tab._tab_dict[name].grid_forget()
                     master_tab._tab_dict.pop(name)
@@ -276,7 +276,7 @@ queue_tab = master_tab.add('Queue')
 search_tab = master_tab.add('Search')
 liked_songs_tab = master_tab.add('Liked Songs')
 your_library_tab=master_tab.add('Your Library')
-
+discover_tab=master_tab.add("Discover")
 # home tab stuff
 home_tab.grid_columnconfigure((0, 1, 2, 3, 4, 5,), weight=1)
 
@@ -362,6 +362,7 @@ discover_button=ctk.CTkButton(
     height=50//scale_factor,
     text='Discover',
     anchor='center',
+    command=music.show_discover,
     fg_color=current_theme["color4"],
     hover_color=current_theme["color4"],
     border_color=current_theme["color6"],
@@ -474,6 +475,37 @@ playlists_table=CTkTable.CTkTable(
 )
 playlists_table.grid(row=0, columnspan=9, sticky='ew')
 
+discover_tab.grid_columnconfigure((0,1,2,3,4,5,6,7), weight=1)
+
+discover_frame=ctk.CTkScrollableFrame(
+    master=discover_tab,
+    width=700,
+    height=250,
+    border_width=0,
+    border_color='black',
+    corner_radius=10,
+    label_text='Recommended Playlists',
+    label_anchor='center',
+    fg_color=current_theme["color3"],
+)
+discover_frame.grid(row=0, pady=(20,20), padx=(10,10),sticky='ew')
+discover_frame.grid_columnconfigure((0,1,2,3,4,5),weight=1)
+
+discover_table_values=[] 
+rec_playlists=functions.get_recommmended_playlist()
+for name in rec_playlists.keys():
+    discover_table_values.append([name])
+
+def open_discover_playlist(value):
+    music.show_discover_playlist(value)
+
+discover_table=CTkTable.CTkTable(
+    master=discover_frame,
+    values=discover_table_values,
+    command=open_discover_playlist,
+    fg_color=current_theme["color2"]
+)
+discover_table.grid(row=0, columnspan=9, sticky='ew')
 
 # misc frame buttons
 add_to_playlist_label_text=ctk.StringVar(value='Add to Playlist')

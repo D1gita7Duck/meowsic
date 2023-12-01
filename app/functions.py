@@ -189,6 +189,28 @@ def store_local(name):
     duration=int(TinyTag.get("Audio/"+name).duration)
     db.song_insert([name,"None",duration,name,"None","Miscellaneous"])
 
+def get_recommmended_playlist():
+    ''' list of dictionaries of key value pairs where key is playlist name and value is a list of song names'''
+    #INDIA 
+    featured_playlists = sp.featured_playlists(locale=None,limit=5,offset=5)
+    recommended_playlist={}
+    for playlist in featured_playlists['playlists']['items']:
+        playlist_name=playlist["name"]
+        songs = sp.playlist_tracks(playlist['id'], limit=15)
+        song_names = [song['track']['name'] for song in songs["items"]]
+        recommended_playlist[playlist_name] = song_names
+    #WorldWide (US)
+    us_recommended={}
+    featured_playlists = sp.featured_playlists(country="US",limit=5,offset=5)
+    for playlist in featured_playlists['playlists']['items']:
+        playlist_name=playlist["name"]
+        songs = sp.playlist_tracks(playlist['id'], limit=15)
+        song_names = [song['track']['name'] for song in songs["items"]]
+        us_recommended[playlist_name] = song_names
+    recommended_playlist.update(us_recommended)
+    print(recommended_playlist,len(recommended_playlist))
+    return recommended_playlist
+
 def download(url,name):
     """
     Function to download song and convert it to mp3.

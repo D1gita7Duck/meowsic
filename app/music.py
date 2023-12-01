@@ -174,20 +174,29 @@ def search(event=None):
             download_thread = threading.Thread(target=download_and_load, args=(temp_res,))
             download_thread.start()
 
-def load_playlist_song(event=None,index=None):
+def load_playlist_song(event=None,index=None,listbox=1):
     """
     load fn for playlist songs
     """
+
     import app.widgets as widgets
     print("load playlist called")
-    print("loading",playlist_listbox.get())
-    if ".mp3" in playlist_listbox.get():
-        load_local(playlist_listbox.get())
-    else:
-        temp_res = functions.artist_search(playlist_listbox.get())
+    if listbox==1:
+        print("loading",playlist_listbox.get())
+        if ".mp3" in playlist_listbox.get():
+            load_local(playlist_listbox.get())
+        else:
+            temp_res = functions.artist_search(playlist_listbox.get())
+            # Download the song in a separate thread
+            download_thread = threading.Thread(target=download_and_load, args=(temp_res,event,index))
+            download_thread.start()
+    elif listbox==2:
+        print("loading",discover_playlist_listbox.get())
+        temp_res = functions.artist_search(discover_playlist_listbox.get())
         # Download the song in a separate thread
         download_thread = threading.Thread(target=download_and_load, args=(temp_res,event,index))
         download_thread.start()
+
 
 def load_liked():
     """
@@ -916,6 +925,63 @@ def add_all_playlist_songs_to_queue_in_diff_thread(name):
 def show_your_library():
     import app.widgets as widgets
     widgets.master_tab.set('Your Library')
+
+def show_discover():
+    import app.widgets as widgets
+    widgets.master_tab.set("Discover")
+
+
+def show_discover_playlist(value):
+    import app.widgets as widgets
+    global discover_playlist_frame
+    global discover_playlist_listbox
+    #global open_playlist
+    print("show discover playlist called")
+    #if open_playlist:widgets.master_tab.delete(open_playlist)
+    #if value["column"]!=0 or value["value"]=="Name":pass
+
+    try:
+        discover_playlist_tab=widgets.master_tab.add(value["value"])
+        #open_playlist=value["value"]
+        discover_playlist_frame=ctk.CTkFrame(master=discover_playlist_tab)
+        discover_playlist_frame.pack()
+        discover_playlist_listbox = widgets.CTkListbox.CTkListbox(
+            master=discover_playlist_frame,
+            width=700,
+            height=250,
+            border_width=2,
+            corner_radius=10,
+            label_text='Recommended Playlist',
+            label_anchor='center',
+            border_color=widgets.current_theme["color2"],
+            fg_color=widgets.current_theme["color3"],
+            text_color=widgets.current_theme["color6"],
+            hightlight_color=widgets.current_theme["color2"],
+            hover_color=widgets.current_theme["color4"],
+            select_color=widgets.current_theme["color5"],
+)
+
+        # widgets.playlist_listbox.configure(master=playlist_frame)
+        discover_playlist_listbox.pack()
+        discover_playlist_songs=widgets.rec_playlists.get(value["value"])
+        for i in discover_playlist_songs:
+            print("ADDING TO DISCOVER PLAYLIST LIST",i,f"END{discover_playlist_songs.index(i)%len(discover_playlist_songs)}")
+            discover_playlist_listbox.insert(f"END{discover_playlist_songs.index(i)%len(discover_playlist_songs)}",i,onclick=lambda :load_playlist_song(listbox=2))
+        # all_songs_button = ctk.CTkButton(
+        #     discover_playlist_frame, 
+        #     text="Play All Songs", 
+        #     command=lambda name=value: add_all_playlist_songs_to_queue(name),
+        #     fg_color=widgets.current_theme["color4"],
+        #     hover_color=widgets.current_theme["color4"],
+        #     border_color=widgets.current_theme["color3"],
+        #     border_width=1,
+        #     text_color=widgets.current_theme["color6"],)  
+        # all_songs_button.pack(fill='x', expand=True, padx=10, pady=10)
+        
+        # display the playlist tab
+        widgets.master_tab.set(value['value'])
+    except ValueError:
+        widgets.master_tab.set(value['value'])
 
 
 
