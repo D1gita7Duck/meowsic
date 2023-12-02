@@ -86,6 +86,10 @@ add_to_playlist_button_icon=ctk.CTkImage(
 add_to_playlist_tk_button_icon=ImageTk.PhotoImage(
     Image.open(os.path.join(icon_folder_path, "add_to_playlist_icon.png")).resize((30,30))
 )
+discover_button_icon=ctk.CTkImage(
+    Image.open(os.path.join(icon_folder_path, "discover_btn.png")), size=(30, 30)
+)
+
 
 information_icon=ctk.CTkImage(
     Image.open(os.path.join(icon_folder_path, "info_icon.png")), size=(30, 30)
@@ -200,7 +204,7 @@ def on_mouse_click(_event=None):
     # print(master_tab._tab_dict)
 
     # check if currently focussed widget is not a playlist tab
-    if current_focus[-3]=='!ctksegmentedbutton' and current_focus[-2] in ['!ctkbutton5','!ctkbutton4','!ctkbutton3','!ctkbutton2','!ctkbutton']:
+    if current_focus[-3]=='!ctksegmentedbutton' and current_focus[-2] in ['!ctkbutton6','!ctkbutton5','!ctkbutton4','!ctkbutton3','!ctkbutton2','!ctkbutton']:
         try:
             # try to delete the playlist tab
             for name in master_tab._tab_dict:
@@ -360,7 +364,8 @@ discover_button=ctk.CTkButton(
     master=home_tab_buttons_frame,
     width=200//scale_factor,
     height=50//scale_factor,
-    text='Discover',
+    text='Discover     ',
+    image=discover_button_icon,
     anchor='center',
     command=music.show_discover,
     fg_color=current_theme["color4"],
