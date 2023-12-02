@@ -10,10 +10,14 @@ pillow = "*"
 audioread = "*"
 ctklistbox = "*"
 packaging = "*"
+lyricsgenius = "*"
 flask = "*"
 youtube-search-python = "*"
-yt-dlp = "*"
 spotipy = "*"
+yt_dlp = "*"
+ctkmenubar = "*"
+ctktable = "*"
+tinytag = "*"
 
 [dev-packages]
 

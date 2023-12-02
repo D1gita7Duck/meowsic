@@ -6,7 +6,9 @@
 </head>
 <body bgcolor="orange">
     <h1>Meowsic Web Interface</h1>
-
+    <script>
+            var ip = location.host
+    </script>
     <div id="buttons-container">
         <button id="previousButton">
             <img src="{{ url_for('static',filename='previous_btn.png') }}" alt="Previous">
@@ -22,7 +24,7 @@
     <script>
         // Function to send a POST request to the server
         function sendControlAction(action) {
-            fetch('http://192.168.29.45:5000/control', {
+            fetch('http://'+ip+':5000/control', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',

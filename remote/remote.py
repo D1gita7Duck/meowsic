@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request
-app = Flask(__name__,static_folder=r"C:\Users\santm\Documents\proj\mysic\remote\templates")
+app = Flask(__name__,static_folder=r"templates")
 
 
 @app.route('/')
