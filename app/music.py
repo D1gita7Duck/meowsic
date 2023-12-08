@@ -1,4 +1,3 @@
-from multiprocessing import dummy
 import os
 import time
 from datetime import datetime
@@ -7,7 +6,6 @@ import pygame.mixer
 import customtkinter as ctk
 from PIL import Image
 import audioread
-from urllib.parse import quote
 import app.functions as functions
 import app.lyrics as lyrics
 import app.import_spotify as import_spotify

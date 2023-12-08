@@ -1,5 +1,4 @@
 import os
-import customtkinter as ctk
 import pygame.mixer
 import remote.server as server
 from app.widgets import app
