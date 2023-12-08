@@ -6,6 +6,7 @@ import CTkMenuBar
 import CTkTable
 from PIL import Image, ImageTk
 import CTkListbox
+import CTkToolTip
 import app.music as music
 import app.functions as functions
 import app.theme as theme
@@ -790,6 +791,15 @@ status_bar.tag_config('center', justify='center')
 status_bar.insert('end', 'Status Bar', 'center')
 status_bar.configure(state='disabled')
 
+
+'''ToolTips for Widgets'''
+play_tooltip=CTkToolTip.CTkToolTip(play_button, delay=0.2 ,message='Play', justify='center', alpha=0.85, x_offset=10,)
+previous_tooltip=CTkToolTip.CTkToolTip(previous_button, delay=0.2 ,message='Previous Song', justify='center',alpha=0.85, x_offset=10,)
+next_tooltip=CTkToolTip.CTkToolTip(next_button, delay=0.2 ,message='Next Song', justify='center',alpha=0.85, x_offset=10,)
+volume_slider_tooltip=CTkToolTip.CTkToolTip(volume_slider, delay=0.2 ,message='Volume', justify='center',alpha=0.85, x_offset=10,)
+volume_button_tooltip=CTkToolTip.CTkToolTip(volume_button, delay=0.2, message='Mute', justify='center',alpha=0.85, x_offset=10,)
+lyrics_tooltip=CTkToolTip.CTkToolTip(lyrics_button, delay=0.2 ,message='Show Lyrics', justify='center',alpha=0.85, x_offset=10,)
+like_button_tooltip=CTkToolTip.CTkToolTip(like_button, delay=0.2 ,message='Like Song', justify='center',alpha=0.85, x_offset=10,)
 
 '''Key Bindings'''
 
