@@ -674,6 +674,9 @@ def play_pause(btn: ctk.CTkButton, _event=None):
         widgets.status_bar.insert('0.0',f"Paused: {widgets.song_list.get()}")
         widgets.status_bar.configure(state='disabled')
 
+        # change tooltip text
+        widgets.play_tooltip.configure(message='Play')
+
         playing = 2
 
     elif playing == 2:
@@ -688,6 +691,9 @@ def play_pause(btn: ctk.CTkButton, _event=None):
         widgets.status_bar.delete('0.0', 'end')
         widgets.status_bar.insert('0.0',f"Now playing: {widgets.song_list.get()}")
         widgets.status_bar.configure(state='disabled')
+
+        # change tooltip text
+        widgets.play_tooltip.configure(message='Pause')
 
         # change the highlight to current song
         widgets.song_list.selection_clear()
@@ -708,6 +714,9 @@ def play_pause(btn: ctk.CTkButton, _event=None):
         widgets.status_bar.delete('0.0', 'end')
         widgets.status_bar.insert('0.0',f"Now playing: {widgets.song_list.get()}")
         widgets.status_bar.configure(state='disabled')
+
+        # change tooltip text
+        widgets.play_tooltip.configure(message='Pause')
 
         # change the highlight to current song
         widgets.song_list.selection_clear()
@@ -744,6 +753,8 @@ def like(btn: ctk.CTkButton):
             "END", widgets.song_list.get())
 
         print(f'liked')
+        # change tooltip text
+        widgets.like_button_tooltip.configure(message='Dislike Song')
     else:
         # change button image
         btn.configure(image=widgets.disliked_button_icon)
@@ -754,6 +765,9 @@ def like(btn: ctk.CTkButton):
         widgets.liked_songs_listbox.delete("all")
         for i in functions.get_liked_songs():
             widgets.liked_songs_listbox.insert("END",i["pretty_name"])
+
+        # change tooltip text
+        widgets.like_button_tooltip.configure(message='Like Song')
 
         print(f'disliked')
 
@@ -769,6 +783,10 @@ def volume(value):
     '''
     import app.widgets as widgets
     pygame.mixer.music.set_volume(value/100)
+    
+    # change tooltip text
+    widgets.volume_slider_tooltip.configure(message=f'{int(value)}')
+    
     if widgets.volume_slider.get()>66:
         widgets.volume_button.configure(image=widgets.volume_full_icon)
     elif widgets.volume_slider.get()>33:
@@ -779,10 +797,14 @@ def volume(value):
 def mute_unmute():
     import app.widgets as widgets
     if pygame.mixer.music.get_volume()!=0:
-        pygame.mixer.music.set_volume(0)
+        pygame.mixer.music.set_volume(0)        
+        # change tooltip text
+        widgets.volume_button_tooltip.configure(message='Unmute')
         widgets.volume_button.configure(image=widgets.mute_icon)
     else:
         pygame.mixer.music.set_volume(widgets.volume_slider.get())
+        # change tooltip text
+        widgets.volume_button_tooltip.configure(message='Mute')
         if widgets.volume_slider.get()>66:
             widgets.volume_button.configure(image=widgets.volume_full_icon)
         elif widgets.volume_slider.get()>33:
@@ -795,7 +817,7 @@ def main_lyrics():
     Searches for and Displays lyrics
     """
     import app.widgets as widgets
-    res=functions.search(widgets.song_list.get())
+    res=functions.search(widgets.song_list.get()+(widgets.song_metadata_artist_label.cget('text')[8:]))
     lyrics.show_lyrics(res["pretty_name"],res["artists"].split(",")[0],widgets.app)
 
 def add_to_playlist(choice):
@@ -806,10 +828,15 @@ def add_to_playlist(choice):
     if choice=='Create New Playlist':
         create_playlist_dialog=ctk.CTkInputDialog(text='Give Playlist Name:', title = 'Creating a Playlist')
         playlist_name=create_playlist_dialog.get_input()
+
        # print(playlist_name)
         functions.add_playlist({"name":playlist_name,"art_location":"nothing","date":datetime.today().strftime('%Y-%m-%d')})
         widgets.add_to_playlist_menu.configure(values=widgets.add_to_playlist_options)
-        functions.add_to_playlist(widgets.song_list.get(),playlist_name)
+        if widgets.master_tab.get()=='Queue':
+            functions.add_to_playlist(widgets.song_list.get(),choice)
+        elif widgets.master_tab.get()=='Liked Songs':
+            functions.add_to_playlist(widgets.liked_songs_listbox.get(),choice)
+
        #print("TUPLE",(playlist_name,))
         widgets.add_to_playlist_options.append(playlist_name)
         widgets.add_to_playlist_submenu.add_command(label=playlist_name,command= lambda name=playlist_name:add_to_playlist(name))
@@ -819,7 +846,10 @@ def add_to_playlist(choice):
         widgets.playlists_table.update_values(widgets.playlist_table_values)
        # print("valuessss",widgets.playlist_table_values)
     else:
-        functions.add_to_playlist(widgets.song_list.get(),choice)
+        if widgets.master_tab.get()=='Queue':
+            functions.add_to_playlist(widgets.song_list.get(),choice)
+        elif widgets.master_tab.get()=='Liked Songs':
+            functions.add_to_playlist(widgets.liked_songs_listbox.get(),choice)
 
 def delete_from_queue():
     import app.widgets as widgets

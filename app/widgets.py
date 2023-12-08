@@ -183,7 +183,7 @@ def do_popup(_event, frame):
     abs_coord_x = app.winfo_pointerx() - app.winfo_vrootx()
     abs_coord_y = app.winfo_pointery() - app.winfo_vrooty()
     print(x1,y1,x2,y2,abs_coord_x,abs_coord_y)
-    if (550<=abs_coord_x and abs_coord_x<=1261) and (157<=abs_coord_y and abs_coord_y<=450) and master_tab.get()=='Queue' and music.loaded:
+    if (550<=abs_coord_x and abs_coord_x<=1261) and (157<=abs_coord_y and abs_coord_y<=450) and (master_tab.get()=='Queue' or master_tab.get()=='Liked Songs') and music.loaded:
         try: 
             frame.tk_popup(abs_coord_x, abs_coord_y)
         finally: 
