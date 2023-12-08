@@ -811,6 +811,8 @@ app.bind_all("<1>", lambda event: on_mouse_click(_event=event), add=True)
 app.bind('<space>', lambda event: music.play_pause(play_button, _event=event) if type(app.focus_get())!=tkinter.Entry else print('Focus in EntryBox'))
 # bind f8 to song_next
 app.bind('<F8>', lambda event: music.song_next(_event=event))
+# bind f7 to play_pause
+app.bind('<F7>', lambda event: music.play_pause(play_button, _event=event) if type(app.focus_get())!=tkinter.Entry else print('Focus in EntryBox'))
 # bind f6 to song_previous
 app.bind('<F6>', lambda event: music.song_previous(_event=event))
 # bind enter key to search the song
