@@ -6,9 +6,11 @@ import CTkMenuBar
 import CTkTable
 from PIL import Image, ImageTk
 import CTkListbox
+import CTkToolTip
 import app.music as music
 import app.functions as functions
 import app.theme as theme
+import remote.server as server
 
 ctk.set_appearance_mode("dark")  # Modes: system (default), light, dark
 master_theme=functions.current_theme #USE LIGHTMODE AT RISK OF BLINDING YOURSELF
@@ -20,6 +22,7 @@ else:
 app = ctk.CTk(fg_color=current_theme["color1"])  # create CTk window like you do with the Tk window
 app.grid_columnconfigure((0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10,), weight=1)
 app.grid_rowconfigure((0, 1, 2, 3, 4, 5, 6, 7, 8), weight=1)
+app.attributes('-alpha', 0.9)
 
 scale_factor=1920/app.winfo_screenwidth()
 
@@ -33,8 +36,14 @@ thumbs_folder_path = os.path.join("thumbs")
 icon_folder_path = os.path.join(
     os.path.join(os.path.dirname(
         os.path.realpath(__file__)), "assets", "icons")
+    )
 
-)
+# db folder path
+db_folder_path = os.path.join(
+    os.path.join(os.path.dirname(
+        os.path.realpath(__file__)),)
+    ).replace('app','data')
+
 garfield_icon = ctk.CTkImage(
     Image.open(os.path.join(icon_folder_path, "garfield.png")), size=(225//scale_factor, 225//scale_factor)
 )
@@ -107,6 +116,14 @@ mute_icon=ctk.CTkImage(
     Image.open(os.path.join(icon_folder_path, "mute_icon.png")), size=(30, 30)
 )
 
+# kill all
+def _kill_all():
+    """
+    destroys app and kills flask
+    """
+    app.destroy()
+    server.kill_app()
+
 #define top level import window
 def import_win_launch():
     global import_entry
@@ -134,6 +151,11 @@ def import_win_launch():
         border_width=1,
         text_color=current_theme["color6"],)
     import_button.pack(pady=20)
+
+    # put the toplevel on top of all windows
+    import_window.attributes('-topmost',True)
+    import_window.focus()
+    
 # toggling theme
 def toggle_theme(t):
     global current_theme
@@ -171,7 +193,7 @@ def do_popup(_event, frame):
     abs_coord_x = app.winfo_pointerx() - app.winfo_vrootx()
     abs_coord_y = app.winfo_pointery() - app.winfo_vrooty()
     print(x1,y1,x2,y2,abs_coord_x,abs_coord_y)
-    if (550<=abs_coord_x and abs_coord_x<=1261) and (157<=abs_coord_y and abs_coord_y<=450) and master_tab.get()=='Queue' and music.loaded:
+    if (550<=abs_coord_x and abs_coord_x<=1261) and (157<=abs_coord_y and abs_coord_y<=450) and (master_tab.get()=='Queue' or master_tab.get()=='Liked Songs') and music.loaded:
         try: 
             frame.tk_popup(abs_coord_x, abs_coord_y)
         finally: 
@@ -181,18 +203,40 @@ def return_pressed(event=None):
     print(event)
     print('RETURN PRESSED')
 
+def show_keyboard_shortcuts():
+    keyboard_shortcuts_win=ctk.CTkToplevel(master=app, fg_color=current_theme["color1"])
+    app.eval(f'tk::PlaceWindow {str(keyboard_shortcuts_win)} center')
+    keyboard_shortcuts_textbox=ctk.CTkTextbox(
+        master=keyboard_shortcuts_win,
+        text_color='white',
+        fg_color = current_theme["color2"],
+    )
+    keyboard_shortcuts_textbox.tag_config('center', justify='center')
+    keyboard_shortcuts_textbox.insert('end', 'Play \t Space/F7\n', 'center')
+    keyboard_shortcuts_textbox.insert('end', 'Previous \t F6\n', 'center')
+    keyboard_shortcuts_textbox.insert('end', 'Next \t F8\n', 'center')
+    keyboard_shortcuts_textbox.configure(state='disabled')
+
+    keyboard_shortcuts_textbox.pack(padx=(20,20), pady=(20,20))
+    
+    # put the window on top
+    keyboard_shortcuts_win.attributes('-topmost', True)
+    keyboard_shortcuts_win.focus_set()
+
 def on_mouse_click(_event=None):
     '''
     Focusses the widget that is clicked (mouse1). 
     Deletes all playlist tabs (if open)
     '''
-    _event.widget.focus_set()
-
-    current_focus=(str(app.focus_get()).split('.'))
+    
 
     # print(master_tab._tab_dict)
     
     try:
+        _event.widget.focus_set()
+
+        current_focus=(str(app.focus_get()).split('.'))
+
         # check if currently focussed widget is not a playlist tab
         if current_focus[-3]=='!ctksegmentedbutton' and current_focus[-2] in ['!ctkbutton6','!ctkbutton5','!ctkbutton4','!ctkbutton3','!ctkbutton2','!ctkbutton']:
             # try to delete the playlist tab
@@ -217,22 +261,24 @@ menu.lift()
 file_button = menu.add_cascade("File")
 edit_button = menu.add_cascade("Edit")
 options_button = menu.add_cascade("Options")
-about_button = menu.add_cascade("About")
+help_button = menu.add_cascade("Help")
 
 # file tab
 file_dropdown = CTkMenuBar.CustomDropdownMenu(widget=file_button)
 file_dropdown.add_option(option="Open", command=music.add_songs)
 file_dropdown.add_option(option="Import Spotify Playlist", command=import_win_launch)
-file_dropdown.add_option(option="Save")
 
 file_dropdown.add_separator()
 
-sub_menu = file_dropdown.add_submenu("Export As")
-sub_menu.add_option(option=".TXT")
-sub_menu.add_option(option=".PDF")
+file_dropdown.add_option(option="Exit", command=_kill_all)
+
+# sub_menu = file_dropdown.add_submenu("Export As")
+# sub_menu.add_option(option=".TXT")
+# sub_menu.add_option(option=".PDF")
 
 # options tab
 options_dropdown=CTkMenuBar.CustomDropdownMenu(widget=options_button)
+
 # light and dark mode toggle button
 theme_switch=ctk.CTkSwitch(
     master=options_dropdown,
@@ -246,6 +292,12 @@ if master_theme=="dark":
     theme_switch.select()
 else:
     theme_switch.deselect()
+
+# help tab stuff
+help_dropdown=CTkMenuBar.CustomDropdownMenu(widget=help_button,)
+# add option of keyboard shortcuts
+help_dropdown.add_option(option='Keyboard Shortcuts', command=show_keyboard_shortcuts)
+
 #frame for tabview and metadata and misc frame
 big_frame = ctk.CTkFrame(master=app, height=800,fg_color=current_theme["color1"],border_width=0)
 big_frame.pack(pady=(20, 20), anchor='center', fill='x', ipadx=10)
@@ -780,6 +832,15 @@ status_bar.insert('end', 'Status Bar', 'center')
 status_bar.configure(state='disabled')
 
 
+'''ToolTips for Widgets'''
+play_tooltip=CTkToolTip.CTkToolTip(play_button, delay=0.2 ,message='Play', justify='center', alpha=0.85, x_offset=10,)
+previous_tooltip=CTkToolTip.CTkToolTip(previous_button, delay=0.2 ,message='Previous Song', justify='center',alpha=0.85, x_offset=10,)
+next_tooltip=CTkToolTip.CTkToolTip(next_button, delay=0.2 ,message='Next Song', justify='center',alpha=0.85, x_offset=10,)
+volume_slider_tooltip=CTkToolTip.CTkToolTip(volume_slider, delay=0.2 ,message='Volume', justify='center',alpha=0.85, x_offset=10,)
+volume_button_tooltip=CTkToolTip.CTkToolTip(volume_button, delay=0.2, message='Mute', justify='center',alpha=0.85, x_offset=10,)
+lyrics_tooltip=CTkToolTip.CTkToolTip(lyrics_button, delay=0.2 ,message='Show Lyrics', justify='center',alpha=0.85, x_offset=10,)
+like_button_tooltip=CTkToolTip.CTkToolTip(like_button, delay=0.2 ,message='Like Song', justify='center',alpha=0.85, x_offset=10,)
+
 '''Key Bindings'''
 
 # bind mouse1
@@ -790,6 +851,8 @@ app.bind_all("<1>", lambda event: on_mouse_click(_event=event), add=True)
 app.bind('<space>', lambda event: music.play_pause(play_button, _event=event) if type(app.focus_get())!=tkinter.Entry else print('Focus in EntryBox'))
 # bind f8 to song_next
 app.bind('<F8>', lambda event: music.song_next(_event=event))
+# bind f7 to play_pause
+app.bind('<F7>', lambda event: music.play_pause(play_button, _event=event) if type(app.focus_get())!=tkinter.Entry else print('Focus in EntryBox'))
 # bind f6 to song_previous
 app.bind('<F6>', lambda event: music.song_previous(_event=event))
 # bind enter key to search the song
