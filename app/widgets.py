@@ -126,17 +126,6 @@ def import_win_launch():
 
     import_button=ctk.CTkButton(
         import_window,
-        text="Import to Queue",
-        command=music.import_sp_playlist,
-        fg_color=current_theme["color4"],
-        hover_color=current_theme["color4"],
-        border_color=current_theme["color3"],
-        border_width=1,
-        text_color=current_theme["color6"],)
-    
-    import_button.pack(pady=20)
-    import_button=ctk.CTkButton(
-        import_window,
         text="Import to Playlist",
         command=music.import_sp_playlist_to_new_playlist,
         fg_color=current_theme["color4"],

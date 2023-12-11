@@ -985,20 +985,6 @@ def show_discover_playlist(value):
 
 
 
-def import_from_spotify(playlist):
-    import app.widgets as widgets
-    L=import_spotify.get_spotify_playlist_tracks(playlist)[0]
-    for j in L:
-        i=j[0]
-        i=i.lstrip("123456789. ")
-        print("syncing",i)
-        temp_res=functions.search(i)
-        functions.like_song(temp_res["pretty_name"])
-        widgets.liked_songs_listbox.insert(
-            "END", temp_res["pretty_name"],onclick=load_liked)
-        print("liked",i)
-    print("all songs imported to liked songs")
-
 def import_from_spotify_2(playlist):
     import app.widgets as widgets
     sp_playlist=import_spotify.get_spotify_playlist_tracks(playlist)
@@ -1017,22 +1003,7 @@ def import_from_spotify_2(playlist):
     widgets.playlists_table.add_row(values='abcd')
     widgets.playlists_table.update_values(widgets.playlist_table_values)
     print("all songs imported to a new playlist")
-
-
-def import_sp_playlist():
-    # Import the necessary module
-    import app.widgets as widgets
-    # Get the url from the import entry
-    url = widgets.import_entry.get()
-    # Create an Event object to signal the completion of the import process
-    done_event = threading.Event()
-    # Create a new thread to handle the import process
-    import_thread = threading.Thread(target=run_import, args=[url,import_from_spotify])
-    # Start the import progress bar
-    widgets.import_progress.start()
-    # Start the import thread
-    import_thread.start()
-    
+   
 def import_sp_playlist_to_new_playlist():
     # Import the necessary module
     import app.widgets as widgets
