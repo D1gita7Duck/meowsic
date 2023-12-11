@@ -131,6 +131,7 @@ def import_win_launch():
     global import_progress
     
     import_window=ctk.CTkToplevel(app,fg_color=current_theme["color1"])
+    import_window.title('Import Playlist')
     import_window.geometry("300x300")
     import_window.title('Import tracks from Spotify playlist')
 
@@ -169,6 +170,7 @@ def toggle_theme(t):
         ctk.set_appearance_mode('light')
     if warn_win is None:
         warn_win=ctk.CTkToplevel(app)
+        warn_win.title('Warning')
         warn_win.resizable(False,False)
         app.eval(f'tk::PlaceWindow {str(warn_win)} center')
         warn_win.geometry('200x100')
@@ -199,12 +201,12 @@ def do_popup(_event, frame):
         finally: 
             frame.grab_release()
 
-def return_pressed(event=None):
-    print(event)
-    print('RETURN PRESSED')
+def adjust_transparency(value):
+    app.attributes('-alpha', value)    
 
 def show_keyboard_shortcuts():
     keyboard_shortcuts_win=ctk.CTkToplevel(master=app, fg_color=current_theme["color1"])
+    keyboard_shortcuts_win.title('Keyboard Shortcuts')
     app.eval(f'tk::PlaceWindow {str(keyboard_shortcuts_win)} center')
     keyboard_shortcuts_textbox=ctk.CTkTextbox(
         master=keyboard_shortcuts_win,
@@ -222,6 +224,38 @@ def show_keyboard_shortcuts():
     # put the window on top
     keyboard_shortcuts_win.attributes('-topmost', True)
     keyboard_shortcuts_win.focus_set()
+
+def show_about_page():
+    about_win=ctk.CTkToplevel(master=app, fg_color=current_theme["color1"])
+    about_win.title('About')
+    about_win.geometry('550x450')
+    about_textbox=ctk.CTkTextbox(
+        master=about_win,
+        text_color='white',
+        fg_color = current_theme["color2"],
+        width=400,
+        height=450,
+        wrap='word',
+        font=('Helvetica', 20)
+    )
+    about_textbox.tag_config('center', justify='center')
+    about_textbox.tag_config('heading', justify='center', relief='raised', underline=1)
+    about_textbox.insert('end', 'Meowsic\n', 'heading')
+    about_textbox.insert('end', '\nA Free, Open-Source, and Feature-Rich Music Streaming App built in Python\n', 'center')
+    about_textbox.insert('end', '\nDisclaimer!\n', 'heading')
+    about_textbox.insert('end', '''\nMeowsic does not own or have any affiliation with the songs and other content available through the app.
+    All songs and other content are the property of their respective owners and are protected by copyright law.
+    Meowsic is not responsible for any infringement of copyright or other intellectual property rights that may result from the use of the songs and other content available through the app. 
+    By using the app, you agree to use the songs and other content only for personal, non-commercial purposes and in compliance with all applicable laws and regulations.\n
+                        ''', 'center')
+    about_textbox.insert('end', '\nFor more information, visit \nhttps://github.com/D1gita7Duck/meowsic', 'center')
+    about_textbox.configure(state='disabled')
+
+    about_textbox.pack(pady=(20,20), padx=(20,20))
+
+    # put the window on top
+    about_win.attributes('-topmost', True)
+    about_win.focus_set()
 
 def on_mouse_click(_event=None):
     '''
@@ -293,10 +327,31 @@ if master_theme=="dark":
 else:
     theme_switch.deselect()
 
+options_dropdown.add_separator()
+
+options_dropdown.add_option(option='Adjust Transparency')
+transparency_slider=ctk.CTkSlider(
+    master=options_dropdown,
+    from_=0,
+    to=1,
+    state='normal',
+    progress_color=current_theme["color3"],
+    button_color=current_theme["color4"],
+    button_hover_color=current_theme["color5"],
+    orientation="horizontal",
+    command=adjust_transparency,
+    width=100,
+)
+transparency_slider.set(0.9)
+transparency_slider.pack(pady=(0,10), padx=(10,10), anchor='center', fill='x')
+
+
 # help tab stuff
 help_dropdown=CTkMenuBar.CustomDropdownMenu(widget=help_button,)
 # add option of keyboard shortcuts
 help_dropdown.add_option(option='Keyboard Shortcuts', command=show_keyboard_shortcuts)
+# add option of About
+help_dropdown.add_option(option='About', command=show_about_page)
 
 #frame for tabview and metadata and misc frame
 big_frame = ctk.CTkFrame(master=app, height=800,fg_color=current_theme["color1"],border_width=0)

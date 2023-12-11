@@ -133,6 +133,7 @@ def search(event=None):
     # check if user gave query or not
     if widgets.search_bar.get().isspace() or widgets.search_bar.get()=='' or widgets.master_tab.get()!='Search':
         incorrect_operation_win=ctk.CTkToplevel(widgets.app)
+        incorrect_operation_win.title('Warning')
         incorrect_operation_win.resizable(False,False)
         widgets.app.eval(f'tk::PlaceWindow {str(incorrect_operation_win)} center')
         incorrect_operation_win.geometry('200x100')
@@ -383,6 +384,7 @@ def add_songs():
     
     else:
         incorrect_operation_win=ctk.CTkToplevel(widgets.app)
+        incorrect_operation_win.title('Warning')
         incorrect_operation_win.resizable(False,False)
         widgets.app.eval(f'tk::PlaceWindow {str(incorrect_operation_win)} center')
         incorrect_operation_win.geometry('200x100')
@@ -866,6 +868,7 @@ def delete_from_queue():
         widgets.song_list.select(f"END{now_playing % len(songs_paths)}")
     else:
         incorrect_operation_win=ctk.CTkToplevel(widgets.app)
+        incorrect_operation_win.title('Warning')
         incorrect_operation_win.resizable(False,False)
         widgets.app.eval(f'tk::PlaceWindow {str(incorrect_operation_win)} center')
         incorrect_operation_win.geometry('200x100')
