@@ -146,6 +146,11 @@ def import_win_launch():
         border_width=1,
         text_color=current_theme["color6"],)
     import_button.pack(pady=20)
+
+    # put the toplevel on top of all windows
+    import_window.attributes('-topmost',True)
+    import_window.focus()
+    
 # toggling theme
 def toggle_theme(t):
     global current_theme
