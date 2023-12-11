@@ -485,15 +485,16 @@ def song_previous(_event=None):
             formatted_total_song_time = time.strftime(
                 "%M:%S", time.gmtime(total_song_time)
             )
+        
+        # slider position
+        widgets.song_slider.configure(to=total_song_time)
+        widgets.song_slider.set(0)
 
         # change the highlight to current song
         widgets.song_list.selection_clear()
         widgets.song_list.activate(now_playing)
         widgets.song_list.select(f"END{now_playing % len(songs_paths)}")
         functions.store_recents(widgets.song_list.get())
-        # slider position
-        widgets.song_slider.configure(to=total_song_time)
-        widgets.song_slider.set(0)
 
         # update time labels
         widgets.time_elapsed_label.configure(
@@ -597,6 +598,10 @@ def song_next(_event=None):
             formatted_total_song_time = time.strftime(
                 "%M:%S", time.gmtime(total_song_time)
             )
+        
+        # slider position
+        widgets.song_slider.configure(to=total_song_time)
+        widgets.song_slider.set(0)
 
         # change the highlight to current song
         widgets.song_list.selection_clear()
@@ -604,9 +609,6 @@ def song_next(_event=None):
         widgets.song_list.select(f"END{now_playing % len(songs_paths)}")
         print("nEXT SELEcting",f"END{now_playing % len(songs_paths)}")
         functions.store_recents(widgets.song_list.get())
-        # slider position
-        widgets.song_slider.configure(to=total_song_time)
-        widgets.song_slider.set(0)
 
         # update time labels
         widgets.time_elapsed_label.configure(
