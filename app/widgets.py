@@ -22,7 +22,7 @@ else:
 app = ctk.CTk(fg_color=current_theme["color1"])  # create CTk window like you do with the Tk window
 app.grid_columnconfigure((0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10,), weight=1)
 app.grid_rowconfigure((0, 1, 2, 3, 4, 5, 6, 7, 8), weight=1)
-app.attributes('-alpha', 0.9)
+app.attributes('-alpha', 0.87)
 
 scale_factor=1920/app.winfo_screenwidth()
 
@@ -342,7 +342,7 @@ transparency_slider=ctk.CTkSlider(
     command=adjust_transparency,
     width=100,
 )
-transparency_slider.set(0.9)
+transparency_slider.set(0.87)
 transparency_slider.pack(pady=(0,10), padx=(10,10), anchor='center', fill='x')
 
 
