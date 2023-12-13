@@ -22,7 +22,8 @@ else:
 app = ctk.CTk(fg_color=current_theme["color1"])  # create CTk window like you do with the Tk window
 app.grid_columnconfigure((0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10,), weight=1)
 app.grid_rowconfigure((0, 1, 2, 3, 4, 5, 6, 7, 8), weight=1)
-app.attributes('-alpha', 0.9)
+transparency=functions.transparency
+app.attributes('-alpha', transparency)
 
 scale_factor=1920/app.winfo_screenwidth()
 
@@ -123,6 +124,7 @@ def _kill_all():
     """
     app.destroy()
     server.kill_app()
+    functions.change_transparency(transparency)
 
 #define top level import window
 def import_win_launch():
@@ -202,7 +204,9 @@ def do_popup(_event, frame):
             frame.grab_release()
 
 def adjust_transparency(value):
-    app.attributes('-alpha', value)    
+    global transparency
+    app.attributes('-alpha', value)
+    transparency=value
 
 def show_keyboard_shortcuts():
     keyboard_shortcuts_win=ctk.CTkToplevel(master=app, fg_color=current_theme["color1"])
@@ -342,7 +346,7 @@ transparency_slider=ctk.CTkSlider(
     command=adjust_transparency,
     width=100,
 )
-transparency_slider.set(0.9)
+transparency_slider.set(transparency)
 transparency_slider.pack(pady=(0,10), padx=(10,10), anchor='center', fill='x')
 
 

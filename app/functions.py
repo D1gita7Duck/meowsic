@@ -14,9 +14,17 @@ with open("data/secrets.dat","rb") as credentials:
     temp_cred=pickle.load(credentials)
     client_credentials_manager = SpotifyClientCredentials(client_id=temp_cred[0], client_secret=temp_cred[1])
     sp = spotipy.Spotify(client_credentials_manager = client_credentials_manager)
-    current_theme=temp_cred[3]
-
-
+ 
+if os.path.exists("data/settings.dat"):
+    with open("data/settings.dat","rb") as settings:
+        temp_sett=pickle.load(settings)
+        current_theme=temp_sett[0]
+        transparency=temp_sett[1]
+else:
+    with open("data/settings.dat","wb") as settings:
+        current_theme="dark"
+        transparency=1
+        pickle.dump([current_theme,transparency],settings)
 
 ydl_opts = {
     'outtmpl': "new",
@@ -32,14 +40,21 @@ db.init()
 
 def change_mode(mode):
     print("changing mode to",mode)
-    f=open("data/secrets.dat","rb")
-    temp_list=pickle.load(f)
-    f.close()
-    temp_list[-1]=mode
+    with open("data/settings.dat","rb") as f:
+        temp_list=pickle.load(f)
+        temp_list[0]=mode
     print(temp_list)
-    f=open("data/secrets.dat","wb")
-    pickle.dump(temp_list,f)
-    f.close()
+    with open("data/settings.dat","wb") as f:
+        pickle.dump(temp_list,f)
+
+
+def change_transparency(alpha):
+    print("setting trans to",alpha)
+    with open("data/settings.dat","rb") as f:
+        temp_list=pickle.load(f)
+    with open("data/settings.dat","wb") as f:
+        temp_list[-1]=alpha
+        pickle.dump(temp_list,f)
 
 def check_recents():
     try:
@@ -132,7 +147,7 @@ def search(stringy):
     for i in temp_artists:
         artists+=i["name"]+", "
     artists=artists.rstrip(", ")
-    videos_search = VideosSearch(pretty_name, limit = 1)
+    videos_search = VideosSearch(pretty_name+" by "+artists.split(",")[0], limit = 1)
     videos=videos_search.result()
     url="https://www.youtube.com/watch?v="+videos["result"][0]["id"]
     db_search=db.song_search(pretty_name)

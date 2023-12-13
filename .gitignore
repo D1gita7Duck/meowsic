@@ -2,7 +2,9 @@
 *.pyc
 .vscode/settings.json
 .cache
-data/
+data/database.db
+data/recents.dat
+data/secrets.dat
 Audio/
 thumbs/
 testing.py

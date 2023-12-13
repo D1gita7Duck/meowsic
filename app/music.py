@@ -20,6 +20,7 @@ songs_paths = list()
 liked_songs_paths = dict()
 liked = False
 loaded=False
+playlist_listbox=None
 #open_playlist=None
 def load_music(t,pretty_name,event=None,index=None):
     """
@@ -825,34 +826,72 @@ def main_lyrics():
 def add_to_playlist(choice):
     import app.widgets as widgets
     print(choice)
-    add_to_playlist_var=ctk.StringVar(value='Add to Playlist')
+    add_to_playlist_var = ctk.StringVar(value='Add to Playlist')
     widgets.add_to_playlist_menu.configure(variable=add_to_playlist_var)
-    if choice=='Create New Playlist':
-        create_playlist_dialog=ctk.CTkInputDialog(text='Give Playlist Name:', title = 'Creating a Playlist')
-        playlist_name=create_playlist_dialog.get_input()
 
-       # print(playlist_name)
-        functions.add_playlist({"name":playlist_name,"art_location":"nothing","date":datetime.today().strftime('%Y-%m-%d')})
-        widgets.add_to_playlist_menu.configure(values=widgets.add_to_playlist_options)
-        if widgets.master_tab.get()=='Queue':
-            functions.add_to_playlist(widgets.song_list.get(),choice)
-        elif widgets.master_tab.get()=='Liked Songs':
-            functions.add_to_playlist(widgets.liked_songs_listbox.get(),choice)
+    if choice == 'Create New Playlist':
+        playlist_name = create_new_playlist()
+        if playlist_name:
+            update_playlist_menu(playlist_name)
+            update_playlist_table(playlist_name)
 
-       #print("TUPLE",(playlist_name,))
-        widgets.add_to_playlist_options.append(playlist_name)
-        widgets.add_to_playlist_submenu.add_command(label=playlist_name,command= lambda name=playlist_name:add_to_playlist(name))
-        widgets.playlist_table_values.append(functions.get_playlist_details((playlist_name,)))
-        widgets.playlists_table.configure(values=widgets.playlist_table_values)
-        widgets.playlists_table.add_row(values='abcd')
-        widgets.playlists_table.update_values(widgets.playlist_table_values)
-       # print("valuessss",widgets.playlist_table_values)
     else:
-        if widgets.master_tab.get()=='Queue':
-            functions.add_to_playlist(widgets.song_list.get(),choice)
-        elif widgets.master_tab.get()=='Liked Songs':
-            functions.add_to_playlist(widgets.liked_songs_listbox.get(),choice)
+        playlist_name = choice
+        update_existing_playlist(playlist_name)
 
+    update_playlists_table()
+
+def create_new_playlist():
+    import app.widgets as widgets
+    create_playlist_dialog = ctk.CTkInputDialog(text='Give Playlist Name:', title='Creating a Playlist')
+    playlist_name = create_playlist_dialog.get_input()
+    
+    if playlist_name:
+        functions.add_playlist({"name": playlist_name, "art_location": "nothing", "date": datetime.today().strftime('%Y-%m-%d')})
+        return playlist_name
+    return None
+
+def update_playlist_menu(playlist_name):
+    import app.widgets as widgets
+    widgets.add_to_playlist_menu.configure(values=widgets.add_to_playlist_options)
+    widgets.add_to_playlist_options.append(playlist_name)
+    widgets.add_to_playlist_submenu.add_command(label=playlist_name, command=lambda name=playlist_name: add_to_playlist(name))
+
+def update_playlist_table(playlist_name):
+    import app.widgets as widgets
+    if widgets.master_tab.get() == 'Queue':
+        functions.add_to_playlist(widgets.song_list.get(), playlist_name)
+        update_playlist_listbox(widgets.song_list.get())
+    elif widgets.master_tab.get() == 'Liked Songs':
+        functions.add_to_playlist(widgets.liked_songs_listbox.get(), playlist_name)
+        update_playlist_listbox(widgets.liked_songs_listbox.get())
+    
+    widgets.playlist_table_values.append(functions.get_playlist_details((playlist_name,)))
+    widgets.playlists_table.add_row(values='abcd')
+
+def update_existing_playlist(playlist_name):
+    import app.widgets as widgets
+    old_details = functions.get_playlist_details((playlist_name,))
+    
+    if widgets.master_tab.get() == 'Queue':
+        functions.add_to_playlist(widgets.song_list.get(), playlist_name)
+        update_playlist_listbox(widgets.song_list.get())
+    elif widgets.master_tab.get() == 'Liked Songs':
+        functions.add_to_playlist(widgets.liked_songs_listbox.get(), playlist_name)
+        update_playlist_listbox(widgets.liked_songs_listbox.get())
+    
+    widgets.playlist_table_values[widgets.playlist_table_values.index(old_details)] = functions.get_playlist_details((playlist_name,))
+
+def update_playlist_listbox(song):
+    if playlist_listbox:
+        playlist_listbox.insert("END", song)
+
+def update_playlists_table():
+    import app.widgets as widgets
+    widgets.playlists_table.configure(values=widgets.playlist_table_values)
+    widgets.playlists_table.update_values(widgets.playlist_table_values)
+
+        
 def delete_from_queue():
     import app.widgets as widgets
     global now_playing
