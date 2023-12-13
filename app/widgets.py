@@ -96,10 +96,15 @@ add_to_playlist_button_icon=ctk.CTkImage(
 add_to_playlist_tk_button_icon=ImageTk.PhotoImage(
     Image.open(os.path.join(icon_folder_path, "add_to_playlist_icon.png")).resize((30,30))
 )
+delete_playlist_button_icon=ctk.CTkImage(
+    Image.open(os.path.join(icon_folder_path, "delete_playlist_btn.png")), size=(30, 30)
+)
 discover_button_icon=ctk.CTkImage(
     Image.open(os.path.join(icon_folder_path, "discover_btn.png")), size=(30, 30)
 )
-
+queue_all_songs_button_icon=ctk.CTkImage(
+    Image.open(os.path.join(icon_folder_path, "queue_all_songs_btn.png")), size=(30, 30)
+)
 
 information_icon=ctk.CTkImage(
     Image.open(os.path.join(icon_folder_path, "info_icon.png")), size=(30, 30)
@@ -189,7 +194,8 @@ def toggle_theme(t):
 
 # rightclickmenu pops up on calling this function
 def do_popup(_event, frame):
-    # print('EVENT IS ', event)
+    # print('EVENT IS ', _event)
+    # print(app.focus_displayof())
     x1 = song_list_frame.winfo_rootx()
     y1 = song_list_frame.winfo_rooty()
     x2=song_list_frame.winfo_width()+x1
@@ -197,7 +203,7 @@ def do_popup(_event, frame):
     abs_coord_x = app.winfo_pointerx() - app.winfo_vrootx()
     abs_coord_y = app.winfo_pointery() - app.winfo_vrooty()
     print(x1,y1,x2,y2,abs_coord_x,abs_coord_y)
-    if (550<=abs_coord_x and abs_coord_x<=1261) and (157<=abs_coord_y and abs_coord_y<=450) and (master_tab.get()=='Queue' or master_tab.get()=='Liked Songs') and music.loaded:
+    if (x1<=abs_coord_x and abs_coord_x<=x2) and (y1<=abs_coord_y and abs_coord_y<=y2) and (master_tab.get() not in ['Home', 'Search', 'Discover',]) and music.loaded:
         try: 
             frame.tk_popup(abs_coord_x, abs_coord_y)
         finally: 
@@ -804,33 +810,6 @@ song_list = CTkListbox.CTkListbox(
 
 song_list.grid(row=0, columnspan=9, pady=(10, 30), sticky='ew')
 
-
-# context menu to add songs to playlist and delete them from queue
-RightClickMenu = tkinter.Menu(song_list, tearoff=False, background='#565b5e', fg='white', borderwidth=0, bd=0)
-# adding delete from queue command
-RightClickMenu.add_command(
-    label=" Delete From Queue",
-    command=music.delete_from_queue,
-    image=delete_from_queue_tk_button_icon,
-    compound='left',
-)
-
-# submenu for add to playlist commands
-add_to_playlist_submenu=tkinter.Menu(RightClickMenu)
-
-# create a cascade for adding to playlist
-RightClickMenu.add_cascade(
-    label=' Add to Playlist',
-    menu=add_to_playlist_submenu,
-    image=add_to_playlist_tk_button_icon,
-    compound='left',
-)
-
-# add all playlists into the cascade
-for playlist_name in add_to_playlist_options:
-    add_to_playlist_submenu.add_command(label=playlist_name,command= lambda name=playlist_name:music.add_to_playlist(name))
-
-
 # liked songs listbox
 liked_songs_listbox = CTkListbox.CTkListbox(
     master=liked_songs_frame,
@@ -863,7 +842,6 @@ total_time_label = ctk.CTkLabel(
     master=playback_controls_frame, text="--:--", text_color='white')
 total_time_label.grid(row=0, column=5, sticky='e', padx=(20, 50))
 
-
 # song metadata labels
 
 # album art label
@@ -879,7 +857,7 @@ song_metadata_artist_label.grid(row=1, columnspan=3, sticky='ew', pady=(20, 10))
 # now playing label
 status_bar = ctk.CTkTextbox(
     master=song_metadata_frame,
-    height=40,
+    height=40//scale_factor,
     text_color='white',
     wrap='none',
     fg_color = current_theme["color2"],
@@ -889,6 +867,31 @@ status_bar.grid(row=2, columnspan=3, pady=(10, 20), padx=(10, 10), sticky='ew')
 status_bar.tag_config('center', justify='center')
 status_bar.insert('end', 'Status Bar', 'center')
 status_bar.configure(state='disabled')
+
+# context menu to add songs to playlist and delete them from queue
+RightClickMenu = tkinter.Menu(song_list, tearoff=False, background='#565b5e', fg='white', borderwidth=0, bd=0)
+# adding delete from queue command
+RightClickMenu.add_command(
+    label=" Delete From Queue",
+    command=music.delete_from_queue,
+    image=delete_from_queue_tk_button_icon,
+    compound='left',
+)
+
+# submenu for add to playlist commands
+add_to_playlist_submenu=tkinter.Menu(RightClickMenu)
+
+# create a cascade for adding to playlist
+RightClickMenu.add_cascade(
+    label=' Add to Playlist',
+    menu=add_to_playlist_submenu,
+    image=add_to_playlist_tk_button_icon,
+    compound='left',
+)
+
+# add all playlists into the cascade
+for playlist_name in add_to_playlist_options:
+    add_to_playlist_submenu.add_command(label=playlist_name,command= lambda name=playlist_name:music.add_to_playlist(name))
 
 
 '''ToolTips for Widgets'''
@@ -900,8 +903,8 @@ volume_button_tooltip=CTkToolTip.CTkToolTip(volume_button, delay=0.2, message='M
 lyrics_tooltip=CTkToolTip.CTkToolTip(lyrics_button, delay=0.2 ,message='Show Lyrics', justify='center',alpha=0.85, x_offset=10,)
 like_button_tooltip=CTkToolTip.CTkToolTip(like_button, delay=0.2 ,message='Like Song', justify='center',alpha=0.85, x_offset=10,)
 
-'''Key Bindings'''
 
+'''Key Bindings'''
 # bind mouse1
 # <1> is a synonym for <ButtonPress-1> (aka left mouse button)
 app.bind_all("<1>", lambda event: on_mouse_click(_event=event), add=True)
