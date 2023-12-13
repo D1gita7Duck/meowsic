@@ -192,6 +192,9 @@ def add_to_playlist(song_name,playlist_name):
     db.insert_playlist_details([playlist_name,song_name,datetime.today().strftime('%Y-%m-%d')])
     print("after",[playlist_name,song_name,datetime.today().strftime('%Y-%m-%d')])
 
+def delete_playlist(playlist_name):
+    db.delete_playlist((playlist_name,))
+    
 def get_playlist_songs(name):
     names=[]
     L=db.get_playlist_detail(name)

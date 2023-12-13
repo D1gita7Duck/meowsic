@@ -1015,6 +1015,7 @@ def delete_playlist(playlist_name):
                 break
         update_playlists_table()
         widgets.playlists_table.delete_row(-1)
+        functions.delete_playlist(playlist_name)
     except:
         print('Error handled while deleting playlist')
     finally:
