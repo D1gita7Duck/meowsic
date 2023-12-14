@@ -139,7 +139,7 @@ def search(event=None):
         widgets.app.eval(f'tk::PlaceWindow {str(incorrect_operation_win)} center')
         incorrect_operation_win.geometry('200x100')
         text_label=ctk.CTkLabel(master=incorrect_operation_win,
-                                text='Incorrect Operation',
+                                text='  Incorrect Operation',
                                 image=widgets.information_icon,
                                 compound='left',
                                 anchor='center',)
@@ -388,7 +388,7 @@ def add_songs():
         widgets.app.eval(f'tk::PlaceWindow {str(incorrect_operation_win)} center')
         incorrect_operation_win.geometry('200x100')
         text_label=ctk.CTkLabel(master=incorrect_operation_win,
-                                text='Incorrect Operation',
+                                text='  Incorrect Operation',
                                 image=widgets.information_icon,
                                 compound='left',
                                 anchor='center',)
@@ -515,7 +515,7 @@ def song_previous(_event=None):
         else:
             liked=False
             widgets.like_button.configure(image=widgets.disliked_button_icon)
-            
+
         # update metadata
         try:
             # update album art
@@ -916,7 +916,7 @@ def delete_from_queue():
         widgets.app.eval(f'tk::PlaceWindow {str(incorrect_operation_win)} center')
         incorrect_operation_win.geometry('200x100')
         text_label=ctk.CTkLabel(master=incorrect_operation_win,
-                                text='Incorrect Operation',
+                                text='  Incorrect Operation',
                                 image=widgets.information_icon,
                                 compound='left',
                                 anchor='center',)
