@@ -267,37 +267,6 @@ def show_about_page():
     about_win.attributes('-topmost', True)
     about_win.focus_set()
 
-def on_mouse_click(_event=None):
-    '''
-    Focusses the widget that is clicked (mouse1). 
-    Deletes all playlist tabs (if open)
-    '''
-    
-
-    # print(master_tab._tab_dict)
-    
-    try:
-        _event.widget.focus_set()
-
-        current_focus=(str(app.focus_get()).split('.'))
-
-        # check if currently focussed widget is not a playlist tab
-        if current_focus[-3]=='!ctksegmentedbutton' and current_focus[-2] in ['!ctkbutton6','!ctkbutton5','!ctkbutton4','!ctkbutton3','!ctkbutton2','!ctkbutton']:
-            # try to delete the playlist tab
-            for name in master_tab._tab_dict:
-                if name not in ['Home', 'Queue', 'Search', 'Your Library', 'Liked Songs',"Discover"]:
-                    master_tab._name_list.remove(name)
-                    master_tab._tab_dict[name].grid_forget()
-                    master_tab._tab_dict.pop(name)
-                    master_tab._segmented_button.delete(name)
-    except RuntimeError: 
-        # runtime error is flashed as the master_tab._tab_dict changes size while the function is called
-        pass
-    except IndexError:
-        # index error is flashed when list index of current_focus is out of range
-        pass
-    except:
-        print('Unknown Error while handling mouse_click1')
 
 # menu
 menu = CTkMenuBar.CTkMenuBar(app)
@@ -907,8 +876,9 @@ like_button_tooltip=CTkToolTip.CTkToolTip(like_button, delay=0.2 ,message='Like 
 '''Key Bindings'''
 # bind mouse1
 # <1> is a synonym for <ButtonPress-1> (aka left mouse button)
-app.bind_all("<1>", lambda event: on_mouse_click(_event=event), add=True)
-
+app.bind_all('<1>', lambda event: music.on_single_mouse_click(_event=event), add=True)
+# bind mouse1 double-click to play a song
+app.bind_all('<Double-Button-1>', lambda event: music.on_double_mouse_click(_event=event), add=True)
 # bind space key to play/pause
 app.bind('<space>', lambda event: music.play_pause(play_button, _event=event) if type(app.focus_get())!=tkinter.Entry else print('Focus in EntryBox'))
 # bind f8 to song_next

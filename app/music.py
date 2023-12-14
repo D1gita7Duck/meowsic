@@ -480,6 +480,12 @@ def song_previous(_event=None):
         playing = 1
         widgets.play_button.configure(image=widgets.pause_button_icon)
 
+        # change the highlight to current song
+        widgets.song_list.selection_clear()
+        widgets.song_list.activate(now_playing)
+        widgets.song_list.select(f"END{now_playing % len(songs_paths)}")
+        functions.store_recents(widgets.song_list.get())
+
         # total length of song
         with audioread.audio_open(songs_paths[now_playing]) as song_file:
             total_song_time = song_file.duration
@@ -491,12 +497,6 @@ def song_previous(_event=None):
         widgets.song_slider.configure(to=total_song_time)
         widgets.song_slider.set(0)
 
-        # change the highlight to current song
-        widgets.song_list.selection_clear()
-        widgets.song_list.activate(now_playing)
-        widgets.song_list.select(f"END{now_playing % len(songs_paths)}")
-        functions.store_recents(widgets.song_list.get())
-
         # update time labels
         widgets.time_elapsed_label.configure(
             text=f'{time.strftime("%M:%S", time.gmtime(0))}')
@@ -506,8 +506,16 @@ def song_previous(_event=None):
         widgets.status_bar.configure(state='normal')
         widgets.status_bar.delete('0.0', 'end')
         widgets.status_bar.insert('0.0',f'Now playing: {widgets.song_list.get()}')
-        widgets.status_bar.configure(state='disabled')
-    
+        widgets.status_bar.configure(state='disabled') 
+            
+        if functions.if_liked(widgets.song_list.get()):
+            liked=True
+            widgets.like_button.configure(image=widgets.like_button_icon)
+
+        else:
+            liked=False
+            widgets.like_button.configure(image=widgets.disliked_button_icon)
+            
         # update metadata
         try:
             # update album art
@@ -526,14 +534,6 @@ def song_previous(_event=None):
         else:
             widgets.song_metadata_image_label.configure(image=album_art)
             widgets.song_metadata_image_label.grid(row=0, columnspan=3, sticky='new', )
-            
-        if functions.if_liked(widgets.song_list.get()):
-            liked=True
-            widgets.like_button.configure(image=widgets.like_button_icon)
-
-        else:
-            liked=False
-            widgets.like_button.configure(image=widgets.disliked_button_icon)
 
 
     else:
@@ -543,17 +543,18 @@ def song_previous(_event=None):
         playing = 1
         widgets.play_button.configure(image=widgets.pause_button_icon)
 
+
+        # change the highlight to current song
+        widgets.song_list.selection_clear()
+        widgets.song_list.activate(now_playing)
+        widgets.song_list.select(f"END{now_playing % len(songs_paths)}")
+
         # total length of song
         with audioread.audio_open(songs_paths[now_playing]) as song_file:
             total_song_time = song_file.duration
             formatted_total_song_time = time.strftime(
                 "%M:%S", time.gmtime(total_song_time)
             )
-
-        # change the highlight to current song
-        widgets.song_list.selection_clear()
-        widgets.song_list.activate(now_playing)
-        widgets.song_list.select(f"END{now_playing % len(songs_paths)}")
 
         # slider position
         widgets.song_slider.configure(to=total_song_time)
@@ -576,7 +577,6 @@ def song_next(_event=None):
     global formatted_total_song_time
     global songs_paths
     global total_song_time
-    global liked_songs_paths
     global liked
 
     try:
@@ -593,6 +593,13 @@ def song_next(_event=None):
         playing = 1
         widgets.play_button.configure(image=widgets.pause_button_icon)
 
+        # change the highlight to current song
+        widgets.song_list.selection_clear()
+        widgets.song_list.activate(now_playing)
+        widgets.song_list.select(f"END{now_playing % len(songs_paths)}")
+        print("nEXT SELEcting",f"END{now_playing % len(songs_paths)}")
+        functions.store_recents(widgets.song_list.get())
+
         # total length of song
         with audioread.audio_open(songs_paths[now_playing]) as song_file:
             total_song_time = song_file.duration
@@ -603,13 +610,6 @@ def song_next(_event=None):
         # slider position
         widgets.song_slider.configure(to=total_song_time)
         widgets.song_slider.set(0)
-
-        # change the highlight to current song
-        widgets.song_list.selection_clear()
-        widgets.song_list.activate(now_playing)
-        widgets.song_list.select(f"END{now_playing % len(songs_paths)}")
-        print("nEXT SELEcting",f"END{now_playing % len(songs_paths)}")
-        functions.store_recents(widgets.song_list.get())
 
         # update time labels
         widgets.time_elapsed_label.configure(
@@ -1149,3 +1149,132 @@ icon_folder_path = os.path.join(
     os.path.join(os.path.dirname(
         os.path.realpath(__file__)), "assets", "icons")
 )
+
+# mouse bindings
+def on_single_mouse_click(_event=None):
+    '''
+    Focusses the widget that is clicked (mouse1). 
+    Deletes all playlist tabs (if open)
+    '''
+    import app.widgets as widgets
+    try:
+        _event.widget.focus_set()
+
+        current_focus=(str(widgets.app.focus_get()).split('.'))
+
+        # check if currently focussed widget is not a playlist tab
+        if current_focus[-3]=='!ctksegmentedbutton' and current_focus[-2] in ['!ctkbutton6','!ctkbutton5','!ctkbutton4','!ctkbutton3','!ctkbutton2','!ctkbutton']:
+            # try to delete the playlist tab
+            for name in widgets.master_tab._tab_dict:
+                if name not in ['Home', 'Queue', 'Search', 'Your Library', 'Liked Songs',"Discover"]:
+                    widgets.master_tab._name_list.remove(name)
+                    widgets.master_tab._tab_dict[name].grid_forget()
+                    widgets.master_tab._tab_dict.pop(name)
+                    widgets.master_tab._segmented_button.delete(name)
+    except RuntimeError: 
+        # runtime error is flashed as the master_tab._tab_dict changes size while the function is called
+        pass
+    except IndexError:
+        # index error is flashed when list index of current_focus is out of range
+        pass
+    except:
+        print('Unknown Error while handling mouse_click1')
+
+
+def on_double_mouse_click(_event):
+    import app.widgets as widgets
+
+    global songs_paths
+    global now_playing
+    global playing
+    global liked
+    global total_song_time
+    global formatted_total_song_time
+
+    _event.widget.focus_set()
+
+    current_focus=(str(widgets.app.focus_get()).split('.'))
+    print(current_focus)
+
+    try:
+        if widgets.master_tab.get()=='Queue' and '!ctklistbox' in current_focus:
+            selected_song=widgets.song_list.get()
+            selected_song_index=widgets.song_list.curselection()
+            print('PRINTING IMPORTTANT',selected_song, selected_song_index)
+            # change now_playing to selected_song_index
+            now_playing=(selected_song_index) % len(songs_paths)
+            # change current song to selected song
+            song = songs_paths[(now_playing) % len(songs_paths)]
+
+            # change song in pygame mixer
+            pygame.mixer.music.stop()
+            pygame.mixer.music.unload()
+            pygame.mixer.music.load(song)
+            pygame.mixer.music.play(loops=0)
+
+            # update playing and play button
+            playing = 1
+            widgets.play_button.configure(image=widgets.pause_button_icon)
+            
+    except:
+        print('Unknown Error occured while handling double mouse1 click'.upper())
+    
+    else:
+        # alter other widgets
+        # change the highlight to current song
+        # widgets.song_list.selection_clear()
+        # widgets.song_list.activate(now_playing)
+        # widgets.song_list.select(now_playing)
+        # functions.store_recents(widgets.song_list.get())
+        
+        # total length of song
+        with audioread.audio_open(songs_paths[now_playing]) as song_file:
+            total_song_time = song_file.duration
+            formatted_total_song_time = time.strftime(
+                "%M:%S", time.gmtime(total_song_time)
+            )
+        
+        # slider position
+        widgets.song_slider.configure(to=total_song_time)
+        widgets.song_slider.set(0)
+
+        # update time labels
+        widgets.time_elapsed_label.configure(
+            text=f'{time.strftime("%M:%S", time.gmtime(0))}')
+        widgets.total_time_label.configure(text=f'{formatted_total_song_time}')
+
+        # change status bar to current song name
+        widgets.status_bar.configure(state='normal')
+        widgets.status_bar.delete('0.0', 'end')
+        widgets.status_bar.insert('0.0',f'Now playing: {widgets.song_list.get()}')
+        widgets.status_bar.configure(state='disabled')
+
+        if functions.if_liked(widgets.song_list.get()):
+            liked=True
+            widgets.like_button.configure(image=widgets.like_button_icon)
+
+        else:
+            liked=False
+            widgets.like_button.configure(image=widgets.disliked_button_icon)
+
+        # update metadata
+        try:
+            # update album art
+            #print("album art dir",os.path.join("thumbs/", f'{songs_paths[now_playing][5:-4]+".png"}'))
+            album_art = widgets.ctk.CTkImage(Image.open("thumbs/"+ f'{songs_paths[now_playing][5:-4]+".png"}'), size=(225, 225))
+            
+            # artist name
+            print("song list artist get",f'Artist: {functions.artist_search(widgets.song_list.get())["artists"].split(",")[0]}')
+            widgets.song_metadata_artist_label.configure(
+                text=f'Artist: {functions.artist_search(widgets.song_list.get())["artists"].split(",")[0]}')
+        except KeyError:
+            print(f'No artist given')
+            widgets.song_metadata_artist_label.configure(text='Miscellaneous')
+        except:
+            print(f'no album art')
+            widgets.song_metadata_image_label.configure(image=widgets.garfield_icon)
+            widgets.song_metadata_artist_label.configure(text='Miscellaneous')
+            widgets.song_metadata_image_label.grid(row=0, columnspan=3, sticky='new', )
+        else:
+            widgets.song_metadata_image_label.configure(image=album_art)
+            widgets.song_metadata_image_label.grid(row=0, columnspan=3, sticky='new', )
