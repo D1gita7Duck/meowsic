@@ -97,10 +97,10 @@ def load_music(t,pretty_name,event=None,index=None):
 
     master_playing=True
     # inserting into list_box
-    if index==None:widgets.song_list.insert(f"END{len(songs_paths)-1}", pretty_name)
+    if index==None:widgets.song_list.insert("END", pretty_name)
     else:
         print("inserting",f"{index}", pretty_name)
-        widgets.song_list.insert(f"{index}", pretty_name)
+        widgets.song_list.insert('END', pretty_name)
         if index=="END0":
             widgets.song_list.selection_clear()
             widgets.song_list.activate(0)
@@ -337,8 +337,6 @@ def add_songs():
         for i in og_songs_paths:
             widgets.song_list.insert("END", os.path.basename(i))
             functions.store_local(os.path.basename(i))
-
-        print(pygame.mixer.music.get_busy())
 
         if pygame.mixer.music.get_busy() or loaded:
             songs_paths = (songs_paths) + list(og_songs_paths)
