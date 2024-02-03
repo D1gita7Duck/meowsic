@@ -1,6 +1,5 @@
 import sqlite3
 import os
-con=sqlite3.connect("data/database.db",check_same_thread=False)
 
 def create_table(table_name_in, create_table_statement):
    try:
@@ -16,13 +15,18 @@ def create_table(table_name_in, create_table_statement):
       print("Database error:", str(e))
    
 def create_all_tables():
+   """
+   wrapper fn to call all necessary functions
+   """
    create_song_table()
    create_liked_song_table()
    create_playlist_header_table()
    create_playlist_details_table()
 
 def create_song_table():
-   # call the create table with name of the table and the sql statement
+   """
+   call the create table with name of the table and the sql statement
+   """
    create_stmt = "Create table songs\
          (path varchar(100) not null primary key,\
          url varchar(500) not null,\
@@ -33,7 +37,9 @@ def create_song_table():
    create_table("songs", create_stmt)
    
 def create_liked_song_table():
-   # call the create table with name of the table and the sql statement
+   """
+   call the create table with name of the table and the sql statement
+   """
    create_stmt="Create table liked_songs\
       (path varchar(100) not null primary key,\
       url varchar(500) not null,\
@@ -45,7 +51,9 @@ def create_liked_song_table():
    
 
 def create_playlist_header_table():
-   # call the create hdr table with name of the table and 
+   """
+   call the create table fn with name of the header table
+   """
    create_stmt="Create table playlist_header\
       (playlist_name varchar(100) not null primary key,\
        playlist_art_location varchar(100) not null,\
@@ -53,7 +61,9 @@ def create_playlist_header_table():
    create_table("playlist_header", create_stmt)
 
 def create_playlist_details_table():
-   # call the create detail table with name of the table and 
+   """
+   call the create table fn with name of the details table
+   """
    create_stmt="Create table playlist_details \
       (playlist_name varchar(100) not null,\
       song_name varchar(100) not null,\
@@ -61,12 +71,21 @@ def create_playlist_details_table():
    create_table("playlist_details", create_stmt)
 
 def init():
+   """
+   initialises the db if it exists.
+   creates db if it doesnt exist and creates all necessary tables.
+   """
    global cur
+   global con
+   con=sqlite3.connect("data/database.db",check_same_thread=False)
    cur=con.cursor()
    create_all_tables()
 
-# Function to search a song and store it in the database
+
 def song_insert(song_list):
+   """
+   Function to search a song and store it in the database
+   """
    try:
       con.execute("BEGIN TRANSACTION")
       con.execute("INSERT INTO songs\
@@ -81,8 +100,10 @@ def song_insert(song_list):
       con.execute("COMMIT")
       print("add operation done")
 
-# Function to insert into playlist_header
 def insert_playlist_header(playlist_header_list):
+   """
+   # Function to insert into playlist_header table
+   """
    try:
       con.execute("BEGIN TRANSACTION")
       con.execute("INSERT INTO playlist_header\
@@ -95,8 +116,12 @@ def insert_playlist_header(playlist_header_list):
    else:
       con.execute("COMMIT")
       print("add operation done",playlist_header_list)
-#Function to insert into playlist_details
+
+
 def insert_playlist_details(playlist_details_list):
+   """
+   Function to insert into playlist_details table
+   """
    try:
       con.execute("BEGIN TRANSACTION")
       con.execute("INSERT INTO playlist_details\
@@ -110,8 +135,11 @@ def insert_playlist_details(playlist_details_list):
       con.execute("COMMIT")
       print("add operation done",playlist_details_list)
 
-# Function to like a song
+
 def like_song(song_list):
+   """
+   Function to like a song given details
+   """
    try:
       con.execute("BEGIN TRANSACTION")
       con.execute("INSERT INTO liked_songs\
@@ -125,8 +153,11 @@ def like_song(song_list):
       con.execute("COMMIT")
       print("like operation done")
 
-#  Function to delete a liked  song 
+
 def dislike_song(song_list):
+   """
+   Function to delete a liked song 
+   """
    try:
       con.execute("BEGIN TRANSACTION")
       con.execute("delete from liked_songs \
@@ -141,8 +172,11 @@ def dislike_song(song_list):
       print("dislike operation done")
 
 
-# Function to get liked  songs 
+
 def get_liked_songs():
+   """
+   # Function to get liked songs 
+   """
    try:
       res=cur.execute("select * from liked_songs")
       liked_list=res.fetchall()
@@ -157,8 +191,11 @@ def get_liked_songs():
    print("liked dict",liked_dict)
    return liked_dict
 
-# Function to search a song 
+
 def song_search(song):
+   """
+   # Function to search song details with song name
+   """
    print("searching")
    try:
       res1 = cur.execute("SELECT * FROM songs where pretty_name = :song",[song])
@@ -178,8 +215,11 @@ def song_search(song):
             Error Message: ", str(e))
    return False
 
-# Function to get all songs for a playlist
+
 def get_playlist_detail(playlist_name_in):
+   """
+   Function to get all songs in a playlist given playlist name
+   """
    try:
       res=cur.execute("select pretty_name , duration, artists , date_of_addition from songs, playlist_details where songs.pretty_name= playlist_details.song_name and playlist_details.playlist_name=(?)", (playlist_name_in,))
       playlist_details_list=res.fetchall()
@@ -193,8 +233,11 @@ def get_playlist_detail(playlist_name_in):
       playlist_details_dict={}
    return playlist_details_dict
 
-# Function to fetch all playlists
+
 def get_all_playlists():
+   """
+   Function to fetch all playlists
+   """
    try:
       res=cur.execute("select playlist_name from playlist_header")
       list_playlists=res.fetchall()
@@ -204,8 +247,11 @@ def get_all_playlists():
       list_playlists=[]
    return list_playlists
 
-# Function to fetch playlist summary information
+
 def get_playlist_header(playlist_name_in):
+   """
+   Function to fetch playlist summary information
+   """
    try:
       #Check if  songs exists with songs
       res=cur.execute("select d.playlist_name, d.song_name from playlist_details d join songs s where d.playlist_name=(?) and d.song_name= s.pretty_name;", (playlist_name_in))
@@ -237,8 +283,11 @@ def get_playlist_header(playlist_name_in):
 
    return playlist_header_dict
 
-# Function to Delete a playlist
+
 def delete_playlist(playlist_name):
+   """
+   Function to Delete a playlist
+   """
    try:
       con.execute("BEGIN TRANSACTION")
       cur.execute("DELETE from playlist_details where playlist_name=(?)", (playlist_name))
@@ -251,8 +300,11 @@ def delete_playlist(playlist_name):
       con.execute("COMMIT")
       print("Deleted playlist")
 
-# Function to Delete a song from a playlist
+
 def delete_song_from_playlist(song_name, playlist_name):
+   """
+   Function to Delete a song from a playlist
+   """
    try:
       con.execute("BEGIN TRANSACTION")
       cur.execute("DELETE from playlist_details where song_name=(?) and playlist_name=(?)", (song_name, playlist_name))
@@ -264,10 +316,12 @@ def delete_song_from_playlist(song_name, playlist_name):
       con.execute("COMMIT")
       print("Deleted from the playlist")
 
-# Function to close cursor, connection
+
 def close():
+   """
+   Function to close cursor, connection
+   """
    cur.close()
    con.close()
 
-#init()
-#song_search("XX")
+

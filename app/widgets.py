@@ -131,8 +131,11 @@ def _kill_all():
     server.kill_app()
     functions.change_transparency(transparency)
 
-#define top level import window
+
 def import_win_launch():
+    """
+    define top level import window
+    """
     global import_entry
     global import_window
     global import_progress
@@ -164,8 +167,12 @@ def import_win_launch():
     import_window.attributes('-topmost',True)
     import_window.focus()
     
-# toggling theme
+
 def toggle_theme(t):
+    """
+    function to toggle theme.
+    takes str "dark"/"light" as argument
+    """
     global current_theme
     global warn_win
     print(current_theme)
@@ -192,10 +199,11 @@ def toggle_theme(t):
         warn_win.attributes('-topmost',True)
         warn_win.focus()
 
-# rightclickmenu pops up on calling this function
+
 def do_popup(_event, frame):
-    # print('EVENT IS ', _event)
-    # print(app.focus_displayof())
+    """
+    # rightclickmenu pops up on calling this function
+    """
     x1 = song_list_frame.winfo_rootx()
     y1 = song_list_frame.winfo_rooty()
     x2=song_list_frame.winfo_width()+x1
@@ -210,11 +218,19 @@ def do_popup(_event, frame):
             frame.grab_release()
 
 def adjust_transparency(value):
+    """
+    small fn to set transparency attribute.
+    value taken as argument
+    """
     global transparency
     app.attributes('-alpha', value)
     transparency=value
 
 def show_keyboard_shortcuts():
+    """
+    shows pop up window to display all keyboard shortcuts
+    (more to be added later)
+    """
     keyboard_shortcuts_win=ctk.CTkToplevel(master=app, fg_color=current_theme["color1"])
     keyboard_shortcuts_win.title('Keyboard Shortcuts')
     app.eval(f'tk::PlaceWindow {str(keyboard_shortcuts_win)} center')
@@ -236,6 +252,9 @@ def show_keyboard_shortcuts():
     keyboard_shortcuts_win.focus_set()
 
 def show_about_page():
+    """
+    shows a pop up window with general info about the app
+    """
     about_win=ctk.CTkToplevel(master=app, fg_color=current_theme["color1"])
     about_win.title('About')
     about_win.geometry('550x450')
@@ -479,7 +498,21 @@ search_button = ctk.CTkButton(
     border_width=1,
     text_color=current_theme["color6"],)  
 search_button.pack(fill='x', expand=True, padx=10, pady=10)
-
+search_listbox = CTkListbox.CTkListbox(master=search_frame,
+                                                width=500//scale_factor,
+                                                height=200//scale_factor,
+                                                border_width=2,
+                                                corner_radius=10,
+                                                label_text='Search Results',
+                                                label_font=('Helvetica', 22) ,
+                                                font=('Helvetica',18),
+                                                label_anchor='center',
+                                                border_color=current_theme["color3"],
+                                                fg_color=current_theme["color3"],
+                                                text_color=current_theme["color6"],
+                                                hightlight_color=current_theme["color6"],
+                                                hover_color=current_theme["color4"],
+                                                select_color=current_theme["color5"],)
 
 
 # song list frame

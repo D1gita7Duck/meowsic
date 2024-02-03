@@ -22,6 +22,7 @@ liked = False
 loaded=False
 playlist_listbox=None
 #open_playlist=None
+
 def load_music(t,pretty_name,event=None,index=None):
     """
     Loads music into queue. Accepts filename, pretty_name of song.
@@ -118,8 +119,14 @@ def load_music(t,pretty_name,event=None,index=None):
     print("now playing", now_playing)
 
     
-
-
+def download_selected():
+    import app.widgets as widgets
+    res=widgets.search_listbox.get()
+    temp_res=functions.search(res)
+#   Download the song in a separate thread
+    widgets.search_progress.start()
+    download_thread = threading.Thread(target=download_and_load, args=(temp_res,))
+    download_thread.start()
 
 
 def search(event=None):
@@ -151,16 +158,22 @@ def search(event=None):
 
     else:
         widgets.search_progress.set(0)
-
+        widgets.search_listbox.delete("all")
         if songs_paths:
             search_text = widgets.search_bar.get()
             print(search_text)
             widgets.search_progress.start()
-            temp_res = functions.search(search_text)
-
+            # temp_res = functions.search(search_text)
+            results=functions.search_results(search_text)
+            widgets.search_listbox.pack(fill='x', expand=True, padx=10, pady=10)
+            for song,artist in results:
+                details=song+" by "+artist
+                print("DETAILS",details)
+                widgets.search_listbox.insert("END",details,onclick=download_selected)
+            widgets.search_progress.stop()
             # Download the song in a separate thread
-            download_thread = threading.Thread(target=download_and_load, args=(temp_res,))
-            download_thread.start()
+            # download_thread = threading.Thread(target=download_and_load, args=(temp_res,))
+            # download_thread.start()
 
         else:
             # Reset the songs_paths tuple
@@ -168,11 +181,17 @@ def search(event=None):
             search_text = widgets.search_bar.get()
             print(search_text)
             widgets.search_progress.start()
-            temp_res = functions.search(search_text)
-
+            # temp_res = functions.search(search_text)
+            results=functions.search_results(search_text)
+            widgets.search_listbox.pack(fill='x', expand=True, padx=10, pady=10)
+            for song,artist in results:
+                details=song+" by "+artist
+                print("DETAILS",details)
+                widgets.search_listbox.insert("END",details,onclick=download_selected)
+            widgets.search_progress.stop()
             # Download the song in a separate thread
-            download_thread = threading.Thread(target=download_and_load, args=(temp_res,))
-            download_thread.start()
+            # download_thread = threading.Thread(target=download_and_load, args=(temp_res,))
+            # download_thread.start()
 
 def load_playlist_song(event=None,index=None,listbox=1):
     """
@@ -221,6 +240,9 @@ def load_recents():
     download_thread.start()
 
 def load_local(name):
+    """
+    load fn for local songs
+    """
     import app.widgets as widgets
     global loaded
     global songs_paths
@@ -291,7 +313,8 @@ def download_and_load(temp_res,event=None,index=None):
     print("songs paths",songs_paths)
     # Stop the search progress bar
     widgets.search_progress.stop()
-
+    widgets.search_listbox.delete("all")
+    widgets.search_listbox.pack_forget()
     # Load the downloaded song
     load_music(temp_paths, temp_res["pretty_name"],event=event,index=index)
     widgets.search_bar.delete(0, 'end')
@@ -773,7 +796,10 @@ def like(btn: ctk.CTkButton):
         print(f'disliked')
 
 def show_liked_songs():
-    #called from liked songs btn on homepage of application
+    '''
+    called from liked songs btn on homepage of application
+    '''
+
     import app.widgets as widgets
     widgets.master_tab.set('Liked Songs')
 
@@ -796,6 +822,9 @@ def volume(value):
         widgets.volume_button.configure(image=widgets.volume_1bar_icon)
 
 def mute_unmute():
+    '''
+    fn that unmutes/mutes playback based on current state
+    '''
     import app.widgets as widgets
     if pygame.mixer.music.get_volume()!=0:
         pygame.mixer.music.set_volume(0)        
@@ -818,10 +847,15 @@ def main_lyrics():
     Searches for and Displays lyrics
     """
     import app.widgets as widgets
-    res=functions.search(widgets.song_list.get()+(widgets.song_metadata_artist_label.cget('text')[8:]))
-    lyrics.show_lyrics(res["pretty_name"],res["artists"].split(",")[0],widgets.app)
+    res=[widgets.song_list.get(),widgets.song_metadata_artist_label.cget('text')[8:]]
+    print(res)
+    lyrics.show_lyrics(res[0],res[1],widgets.app)
 
 def add_to_playlist(choice):
+    """
+    fn to add a selected song to a playlist.
+    accepts choice (new playlist/name of existing playlist) as argument.
+    """
     import app.widgets as widgets
     print(choice)
     add_to_playlist_var = ctk.StringVar(value='Add to Playlist')
@@ -840,6 +874,10 @@ def add_to_playlist(choice):
     update_playlists_table()
 
 def create_new_playlist():
+    """
+    fn to create a new playlist.
+    opens a pop up window
+    """
     import app.widgets as widgets
     create_playlist_dialog = ctk.CTkInputDialog(text='Give Playlist Name:', title='Creating a Playlist')
     playlist_name = create_playlist_dialog.get_input()
@@ -897,6 +935,11 @@ def update_playlists_table():
 
         
 def delete_from_queue():
+    """
+    fn to delete a selected song from queue
+    gives warning to user if selected song==currently playing song
+    """
+
     import app.widgets as widgets
     global now_playing
     global songs_paths
@@ -927,6 +970,10 @@ def delete_from_queue():
         incorrect_operation_win.focus()
 
 def show_playlist(value):
+    """
+    fn to show a selected playlist
+    opens a new tab with a listbox
+    """
     import app.widgets as widgets
     global playlist_frame
     global playlist_listbox
@@ -999,6 +1046,11 @@ def show_playlist(value):
             widgets.master_tab.set(value['value'])
 
 def delete_playlist(playlist_name):
+    """
+    fn to delete a playlist from db.
+    also deletes the playlist tab if open.
+    accepts playlist_name as argument
+    """
     import app.widgets as widgets
     # delete the playlist tab
     try:
@@ -1020,11 +1072,17 @@ def delete_playlist(playlist_name):
         widgets.master_tab.set('Your Library')
 
 def add_all_playlist_songs_to_queue(name):
+    """
+    fn to run the target fn in a new thread
+    """
     import app.widgets as widgets
     download_thread = threading.Thread(target=add_all_playlist_songs_to_queue_in_diff_thread, args=(name,))
     download_thread.start()
  
 def add_all_playlist_songs_to_queue_in_diff_thread(name):
+    """
+    target thread fn to add all songs to queue
+    """
     import app.widgets as widgets
     global songs_paths
    # print("ALL SONGS",functions.get_playlist_songs(name["value"]))
@@ -1050,6 +1108,9 @@ def show_discover():
 
 
 def show_discover_playlist(value):
+    """
+    shows songs from a recommended playlist from the discover tab.
+    """
     import app.widgets as widgets
     global discover_playlist_frame
     global discover_playlist_listbox
@@ -1103,7 +1164,10 @@ def show_discover_playlist(value):
 
 
 
-def import_from_spotify_2(playlist):
+def import_from_spotify(playlist):
+    """
+    target fn to import songs from spotify and add to a new playlust
+    """
     import app.widgets as widgets
     sp_playlist=import_spotify.get_spotify_playlist_tracks(playlist)
     functions.add_playlist({"name":sp_playlist[1],"art_location":"nothing","date":datetime.today().strftime('%Y-%m-%d')})
@@ -1123,20 +1187,25 @@ def import_from_spotify_2(playlist):
     print("all songs imported to a new playlist")
    
 def import_sp_playlist_to_new_playlist():
-    # Import the necessary module
+    """
+    fn that runs the target import fn in a new thread
+    """
     import app.widgets as widgets
     # Get the url from the import entry
     url = widgets.import_entry.get()
     # Create an Event object to signal the completion of the import process
     done_event = threading.Event()
     # Create a new thread to handle the import process
-    import_thread = threading.Thread(target=run_import, args=[url,import_from_spotify_2])
+    import_thread = threading.Thread(target=run_import, args=[url,import_from_spotify])
     # Start the import progress bar
     widgets.import_progress.start()
     # Start the import thread
     import_thread.start()
 
 def run_import(url,fn):
+    """
+    wrapper fn for import
+    """
     import app.widgets as widgets
     fn(url)
     widgets.import_progress.stop()
@@ -1182,6 +1251,9 @@ def on_single_mouse_click(_event=None):
 
 
 def on_double_mouse_click(_event):
+    """
+    handles double mouse click event in queue tab
+    """
     import app.widgets as widgets
 
     global songs_paths
