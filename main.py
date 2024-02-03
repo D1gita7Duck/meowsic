@@ -1,4 +1,3 @@
-import os
 import pygame.mixer
 import remote.server as server
 from app.widgets import app, _kill_all
