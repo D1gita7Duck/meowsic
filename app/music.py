@@ -169,7 +169,7 @@ def search(event=None):
             for song,artist in results:
                 details=song+" by "+artist
                 print("DETAILS",details)
-                widgets.search_listbox.insert("END",details,onclick=download_selected)
+                widgets.search_listbox.insert("END", details,onclick=download_selected)
             widgets.search_progress.stop()
             # Download the song in a separate thread
             # download_thread = threading.Thread(target=download_and_load, args=(temp_res,))
@@ -187,7 +187,7 @@ def search(event=None):
             for song,artist in results:
                 details=song+" by "+artist
                 print("DETAILS",details)
-                widgets.search_listbox.insert("END",details,onclick=download_selected)
+                widgets.search_listbox.insert("END", details,onclick=download_selected)
             widgets.search_progress.stop()
             # Download the song in a separate thread
             # download_thread = threading.Thread(target=download_and_load, args=(temp_res,))
@@ -989,18 +989,18 @@ def show_playlist(value):
             playlist_frame.pack()
             playlist_listbox = widgets.CTkListbox.CTkListbox(
                 master=playlist_frame,
-                width=700//widgets.scale_factor,
-                height=250//widgets.scale_factor,
+                width=700//widgets.initialized_items['scale_factor'],
+                height=250//widgets.initialized_items['scale_factor'],
                 border_width=2,
                 corner_radius=10,
                 label_text='Playlists',
                 label_anchor='center',
-                border_color=widgets.current_theme["color2"],
-                fg_color=widgets.current_theme["color3"],
-                text_color=widgets.current_theme["color6"],
-                hightlight_color=widgets.current_theme["color2"],
-                hover_color=widgets.current_theme["color4"],
-                select_color=widgets.current_theme["color5"],
+                border_color=widgets.initialized_items['current_theme']["color2"],
+                fg_color=widgets.initialized_items['current_theme']["color3"],
+                text_color=widgets.initialized_items['current_theme']["color6"],
+                hightlight_color=widgets.initialized_items['current_theme']["color2"],
+                hover_color=widgets.initialized_items['current_theme']["color4"],
+                select_color=widgets.initialized_items['current_theme']["color5"],
             )
 
             # widgets.playlist_listbox.configure(master=playlist_frame)
@@ -1017,11 +1017,11 @@ def show_playlist(value):
                 image=widgets.queue_all_songs_button_icon,
                 compound='left',
                 command=lambda name=value: add_all_playlist_songs_to_queue(name),
-                fg_color=widgets.current_theme["color4"],
-                hover_color=widgets.current_theme["color4"],
-                border_color=widgets.current_theme["color3"],
+                fg_color=widgets.initialized_items['current_theme']["color4"],
+                hover_color=widgets.initialized_items['current_theme']["color4"],
+                border_color=widgets.initialized_items['current_theme']["color3"],
                 border_width=1,
-                text_color=widgets.current_theme["color6"],
+                text_color=widgets.initialized_items['current_theme']["color6"],
             )  
             all_songs_button.pack(fill='x', expand=True, padx=(10,10), pady=(10,10),)
 
@@ -1032,11 +1032,11 @@ def show_playlist(value):
                 image=widgets.delete_playlist_button_icon,
                 compound='left',
                 command=lambda name=value['value']: delete_playlist(playlist_name=name),
-                fg_color=widgets.current_theme["color4"],
-                hover_color=widgets.current_theme["color4"],
-                border_color=widgets.current_theme["color3"],
+                fg_color=widgets.initialized_items['current_theme']["color4"],
+                hover_color=widgets.initialized_items['current_theme']["color4"],
+                border_color=widgets.initialized_items['current_theme']["color3"],
                 border_width=1,
-                text_color=widgets.current_theme["color6"],
+                text_color=widgets.initialized_items['current_theme']["color6"],
             )
             delete_playlist_button.pack(fill='x', expand=True, padx=(10,10), pady=(10,10))
 
@@ -1126,18 +1126,18 @@ def show_discover_playlist(value):
         discover_playlist_frame.pack()
         discover_playlist_listbox = widgets.CTkListbox.CTkListbox(
             master=discover_playlist_frame,
-            width=700//widgets.scale_factor,
-            height=250//widgets.scale_factor,
+            width=700//widgets.initialized_items['scale_factor'],
+            height=250//widgets.initialized_items['scale_factor'],
             border_width=2,
             corner_radius=10,
             label_text='Recommended Playlist',
             label_anchor='center',
-            border_color=widgets.current_theme["color2"],
-            fg_color=widgets.current_theme["color3"],
-            text_color=widgets.current_theme["color6"],
-            hightlight_color=widgets.current_theme["color2"],
-            hover_color=widgets.current_theme["color4"],
-            select_color=widgets.current_theme["color5"],
+            border_color=widgets.initialized_items['current_theme']["color2"],
+            fg_color=widgets.initialized_items['current_theme']["color3"],
+            text_color=widgets.initialized_items['current_theme']["color6"],
+            hightlight_color=widgets.initialized_items['current_theme']["color2"],
+            hover_color=widgets.initialized_items['current_theme']["color4"],
+            select_color=widgets.initialized_items['current_theme']["color5"],
         )
 
         # widgets.playlist_listbox.configure(master=playlist_frame)
@@ -1150,11 +1150,11 @@ def show_discover_playlist(value):
         #     discover_playlist_frame, 
         #     text="Play All Songs", 
         #     command=lambda name=value: add_all_playlist_songs_to_queue(name),
-        #     fg_color=widgets.current_theme["color4"],
-        #     hover_color=widgets.current_theme["color4"],
-        #     border_color=widgets.current_theme["color3"],
+        #     fg_color=widgets.initialized_items['current_theme']["color4"],
+        #     hover_color=widgets.initialized_items['current_theme']["color4"],
+        #     border_color=widgets.initialized_items['current_theme']["color3"],
         #     border_width=1,
-        #     text_color=widgets.current_theme["color6"],)  
+        #     text_color=widgets.initialized_items['current_theme']["color6"],)  
         # all_songs_button.pack(fill='x', expand=True, padx=10, pady=10)
         
         # display the playlist tab

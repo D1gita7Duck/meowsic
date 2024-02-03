@@ -25,7 +25,7 @@ if os.path.exists("data/settings.dat"):
 else:
     with open("data/settings.dat","wb") as settings:
         current_theme="dark"
-        transparency=1
+        transparency=0.88
         pickle.dump([current_theme,transparency],settings)
 
 #ytdlp args
