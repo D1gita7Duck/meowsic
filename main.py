@@ -1,11 +1,7 @@
 import os
 import pygame.mixer
 import remote.server as server
-from app.widgets import app,_kill_all
-
-app.geometry(f'{str(app.winfo_screenwidth())}x{str(app.winfo_screenheight())}')
-app.title("meowsic")
-app.iconbitmap(os.path.join(os.getcwd(),"app","assets", "icons", "app_icon.ico"))
+from app.widgets import app, _kill_all
 
 pygame.mixer.init()
 server.start()
