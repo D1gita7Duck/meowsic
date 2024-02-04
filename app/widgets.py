@@ -42,7 +42,13 @@ def initialize_app():
         current_theme=theme.light_mode
     
     # make dictionary of items to return
-    d={'transparency': transparency, 'scale_factor': scale_factor, 'current_time': current_time, 'current_theme': current_theme, 'master_theme': master_theme}
+    d={'transparency': transparency, 
+       'scale_factor': scale_factor, 
+       'current_time': current_time, 
+       'current_theme': current_theme, 
+       'master_theme': master_theme, 
+       'first_time_startup': functions.first_time_startup
+       }
     return d
 
 initialized_items=initialize_app()
@@ -153,14 +159,16 @@ def adjust_transparency(value):
     app.attributes('-alpha', value)
     initialized_items['transparency']=value
 
-def show_manual():
+def show_manual(_from = None):
     '''
     Creates a TopLevel to display Manual
+    Accepts arg _from to check if function is called on startup or during runtime
     '''
-    manual_win=ctk.CTkToplevel(master=app, fg_color=initialized_items['current_theme']["color1"])
+    manual_win=ctk.CTkToplevel(master=app, fg_color=initialized_items['current_theme']["color1"], takefocus=True,)
     # hide window until everything is placed and centered
     manual_win.attributes('-alpha', 0)
-    manual_win.title('Keyboard Shortcuts')
+    # Title
+    manual_win.title('Application Manual')
     manual_win.resizable(False, False)
     # centering the window
     manual_win_width=550
@@ -178,12 +186,16 @@ def show_manual():
         text_color='white',
         fg_color = initialized_items['current_theme']["color2"],
         wrap='word',
+        font= ('Helvetica', 14),
     )
+    manual_textbox.tag_config('important', foreground=initialized_items['current_theme']["color3"])
     manual_textbox.tag_config('center', justify='center')
     manual_textbox.tag_config('underline', underline=1)
     manual_textbox.tag_config('heading', justify='center', relief='raised', underline=1, foreground=initialized_items['current_theme']["color3"])
     # general instructions
-    manual_textbox.insert('end', 'Instructions are tab specific.\n', ('center','underline'))
+    manual_textbox.insert('end', 'The application may freeze or not respond at times, please be patient.\n', ('center','important'))
+    manual_textbox.insert('end', 'Please do not spam any button or any widget. It may cause the application to behave abnormally.\n', ('center','important'))
+    manual_textbox.insert('end', '\nThe following instructions are tab specific.\n', ('center','underline'))
     # home tab instructions
     manual_textbox.insert('end', '\nHome Tab\n\n', 'heading')
     manual_textbox.insert('end', 'The buttons Your Library, Liked Songs and Discover navigate to their respective tabs.\n', 'center')
@@ -195,6 +207,7 @@ def show_manual():
     # search instructions
     manual_textbox.insert('end', '\nSearch Tab\n\n', 'heading')
     manual_textbox.insert('end', 'Search for any song on the internet. Hit Enter or the Search button to search.\n', 'center')
+    manual_textbox.insert('end', 'Click ONCE on any of the search results and the respective song will be added to the queue.\n', 'center')
     manual_textbox.insert('end', 'Do not spam the button please\n', 'center')
     # liked songs tab instructions
     manual_textbox.insert('end', '\nLiked Songs Tab\n\n', 'heading')
@@ -203,7 +216,7 @@ def show_manual():
     # your library tab instructions
     manual_textbox.insert('end', '\nYour Library Tab\n\n', 'heading')
     manual_textbox.insert('end', 'View all playlists. Click on playlist name to open it.\n', 'center')
-    manual_textbox.insert('end', "In a playlist's tab, click once on any song to load it into the queue.\n", 'center')
+    manual_textbox.insert('end', "In a playlist's tab, click ONCE on any song to load it into the queue.\n", 'center')
     # discover tab instructions
     manual_textbox.insert('end', '\nDiscover Tab\n\n', 'heading')
     manual_textbox.insert('end', 'Find curated playlists with currently trending songs all over the world.\n', 'center') 
@@ -218,28 +231,41 @@ def show_manual():
     manual_textbox.pack(padx=(20,20), pady=(20,20))
     # make window opaque
     manual_win.attributes('-alpha', 1)
-    # put the window on top
-    manual_win.attributes('-topmost', True)
-    manual_win.focus_set()
+    # put the window on top if function is triggered within application
+    if _from is None:
+        manual_win.attributes('-topmost', True)
+        manual_win.focus_set()
 
-def show_about_page():
+def show_about_page(_from = None):
     '''
     Creates a Toplevel to display About page
+    Accepts arg _from to check if function is called on startup or during runtime
     '''
-    about_win=ctk.CTkToplevel(master=app, fg_color=initialized_items['current_theme']["color1"])
+    about_win=ctk.CTkToplevel(master=app, fg_color=initialized_items['current_theme']["color1"], takefocus=True,)
+    # hide window until everything is placed and centered
+    about_win.attributes('-alpha', 0)
+    # Title
     about_win.title('About')
-    about_win.geometry('550x450')
+    about_win.resizable(False, False)
+    # centering
+    about_win_width=550
+    about_win_height=550
+    screen_width=app.winfo_screenwidth()
+    screen_height=app.winfo_screenheight()
+    x_coordinate=int((screen_width/2)-(about_win_width/2))
+    y_coordinate = int((screen_height/2) - (about_win_height/2))
+    about_win.geometry("{}x{}+{}+{}".format(about_win_width, about_win_height, x_coordinate, y_coordinate))
     about_textbox=ctk.CTkTextbox(
         master=about_win,
         text_color='white',
         fg_color = initialized_items['current_theme']["color2"],
-        width=400,
-        height=450,
+        width=500,
+        height=500,
         wrap='word',
         font=('Helvetica', 20)
     )
     about_textbox.tag_config('center', justify='center')
-    about_textbox.tag_config('heading', justify='center', relief='raised', underline=1, foreground=initialized_items['current_theme']["color3"])
+    about_textbox.tag_config('heading', justify='center', relief='raised', underline=1, foreground=initialized_items['current_theme']["color3"], background=initialized_items['current_theme']['color2'], bgstipple='gray50')
     about_textbox.insert('end', 'Meowsic\n', 'heading')
     about_textbox.insert('end', '\nA Free, Open-Source, and Feature-Rich Music Streaming App built in Python\n', 'center')
     about_textbox.insert('end', '\nDisclaimer!\n', 'heading')
@@ -252,10 +278,12 @@ def show_about_page():
     about_textbox.configure(state='disabled')
 
     about_textbox.pack(pady=(20,20), padx=(20,20))
-
-    # put the window on top
-    about_win.attributes('-topmost', True)
-    about_win.focus_set()
+    # make window visible
+    about_win.attributes('-alpha', 1)
+    # put the window on top if function is triggered within application
+    if _from is None:
+        about_win.attributes('-topmost', True)
+        about_win.focus_set()
 
 def open_playlist(value):
     #value is dictionary of kwargs of CTkTable

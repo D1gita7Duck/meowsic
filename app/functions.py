@@ -22,10 +22,12 @@ if os.path.exists("data/settings.dat"):
         temp_sett=pickle.load(settings)
         current_theme=temp_sett[0]
         transparency=temp_sett[1]
+        first_time_startup=False
 else:
     with open("data/settings.dat","wb") as settings:
         current_theme="dark"
         transparency=0.88
+        first_time_startup=True
         pickle.dump([current_theme,transparency],settings)
 
 #ytdlp args
