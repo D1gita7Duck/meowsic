@@ -284,8 +284,8 @@ def load_local(name):
             text=time.strftime("%M:%S", time.gmtime(0)))
         widgets.total_time_label.configure(text=f'{formatted_total_song_time}')
         # update metadata
-        widgets.song_metadata_image_label.configure(image=widgets.garfield_icon)
-        widgets.song_metadata_artist_label.configure(text='Miscellaneous')
+        widgets.song_metadata_image_label.configure(image=widgets.app_icon225)
+        widgets.song_metadata_artist_label.configure(text='Artist: Miscellaneous')
         widgets.song_metadata_image_label.grid(row=0, columnspan=3, sticky='new')
         widgets.like_button.configure(state='normal')
         widgets.previous_button.configure(state='normal')
@@ -404,8 +404,8 @@ def add_songs():
                 text=time.strftime("%M:%S", time.gmtime(0)))
             widgets.total_time_label.configure(text=f'{formatted_total_song_time}')
             # update metadata
-            widgets.song_metadata_image_label.configure(image=widgets.garfield_icon)
-            widgets.song_metadata_artist_label.configure(text='Miscellaneous')
+            widgets.song_metadata_image_label.configure(image=widgets.app_icon225)
+            widgets.song_metadata_artist_label.configure(text='Artist: Miscellaneous')
             widgets.song_metadata_image_label.grid(row=0, columnspan=3, sticky='new')
     
     else:
@@ -552,11 +552,11 @@ def song_previous(_event=None):
                 text=f'Artist: {functions.artist_search(widgets.song_list.get())["artists"].split(",")[0]}')
         except KeyError:
             print(f'No artist given')
-            widgets.song_metadata_artist_label.configure(text='Miscellaneous')
+            widgets.song_metadata_artist_label.configure(text='Artist: Miscellaneous')
         except:
             print(f'no album art')
-            widgets.song_metadata_image_label.configure(image=widgets.garfield_icon)
-            widgets.song_metadata_artist_label.configure(text='Miscellaneous')
+            widgets.song_metadata_image_label.configure(image=widgets.app_icon225)
+            widgets.song_metadata_artist_label.configure(text='Artist: Miscellaneous')
             widgets.song_metadata_image_label.grid(row=0, columnspan=3, sticky='new', )
         else:
             widgets.song_metadata_image_label.configure(image=album_art)
@@ -669,11 +669,11 @@ def song_next(_event=None):
                 text=f'Artist: {functions.artist_search(widgets.song_list.get())["artists"].split(",")[0]}')
         except KeyError:
             print(f'No artist given')
-            widgets.song_metadata_artist_label.configure(text='Miscellaneous')
+            widgets.song_metadata_artist_label.configure(text='Artist: Miscellaneous')
         except:
             print(f'no album art')
-            widgets.song_metadata_image_label.configure(image=widgets.garfield_icon)
-            widgets.song_metadata_artist_label.configure(text='Miscellaneous')
+            widgets.song_metadata_image_label.configure(image=widgets.app_icon225)
+            widgets.song_metadata_artist_label.configure(text='Artist: Miscellaneous')
             widgets.song_metadata_image_label.grid(row=0, columnspan=3, sticky='new', )
         else:
             widgets.song_metadata_image_label.configure(image=album_art)
@@ -1291,7 +1291,7 @@ def on_double_mouse_click(_event):
             # update playing and play button
             playing = 1
             widgets.play_button.configure(image=widgets.pause_button_icon)
-            
+
         else:
             # this error is raised as the above if condition was not satisfied but no error was raised.
             # if program is allowed to run, it will raise errors in the execution of 
@@ -1354,11 +1354,11 @@ def on_double_mouse_click(_event):
                 text=f'Artist: {functions.artist_search(widgets.song_list.get())["artists"].split(",")[0]}')
         except KeyError:
             print(f'No artist given')
-            widgets.song_metadata_artist_label.configure(text='Miscellaneous')
+            widgets.song_metadata_artist_label.configure(text='Artist: Miscellaneous')
         except:
             print(f'no album art')
-            widgets.song_metadata_image_label.configure(image=widgets.garfield_icon)
-            widgets.song_metadata_artist_label.configure(text='Miscellaneous')
+            widgets.song_metadata_image_label.configure(image=widgets.app_icon225)
+            widgets.song_metadata_artist_label.configure(text='Artist: Miscellaneous')
             widgets.song_metadata_image_label.grid(row=0, columnspan=3, sticky='new', )
         else:
             widgets.song_metadata_image_label.configure(image=album_art)
