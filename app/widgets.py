@@ -20,8 +20,7 @@ app.grid_columnconfigure((0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10,), weight=1)
 app.grid_rowconfigure((0, 1, 2, 3, 4, 5, 6, 7, 8), weight=1)
 app.geometry(f'{str(app.winfo_screenwidth())}x{str(app.winfo_screenheight())}')
 app.title("Meowsic")
-app.iconbitmap(os.path.join(os.getcwd(),"app","assets", "icons", "app_icon.ico"))
-
+app.iconbitmap(os.path.join(os.getcwd(),"app","assets", "icons", "new_app_icon3.ico"))
 
 '''FUNCTIONS'''
 
@@ -255,17 +254,35 @@ def show_about_page(_from = None):
     x_coordinate=int((screen_width/2)-(about_win_width/2))
     y_coordinate = int((screen_height/2) - (about_win_height/2))
     about_win.geometry("{}x{}+{}+{}".format(about_win_width, about_win_height, x_coordinate, y_coordinate))
-    about_textbox=ctk.CTkTextbox(
+    widgets_frame=ctk.CTkScrollableFrame(
         master=about_win,
+        fg_color = initialized_items['current_theme']["color2"],
+        width=500,
+        height=550,
+    )
+    widgets_frame.pack(padx=(10,10), pady=(10,10), anchor='center',)
+    image_label=ctk.CTkLabel(
+        master=widgets_frame,
+        image=app_icon128,
+        text='',
+        compound='center',
+        anchor='center',
+    )
+    image_label.pack(padx=(10,10), pady=(10,10), anchor='center')
+    about_textbox=ctk.CTkTextbox(
+        master=widgets_frame,
         text_color='white',
         fg_color = initialized_items['current_theme']["color2"],
         width=500,
         height=500,
         wrap='word',
-        font=('Helvetica', 20)
+        font=('Helvetica', 20),
+        activate_scrollbars=False,
     )
+    # create tags
     about_textbox.tag_config('center', justify='center')
     about_textbox.tag_config('heading', justify='center', relief='raised', underline=1, foreground=initialized_items['current_theme']["color3"], background=initialized_items['current_theme']['color2'], bgstipple='gray50')
+    # start adding text
     about_textbox.insert('end', 'Meowsic\n', 'heading')
     about_textbox.insert('end', '\nA Free, Open-Source, and Feature-Rich Music Streaming App built in Python\n', 'center')
     about_textbox.insert('end', '\nDisclaimer!\n', 'heading')
@@ -310,9 +327,14 @@ db_folder_path = os.path.join(
         os.path.realpath(__file__)),)
     ).replace('app','data')
 
-garfield_icon = ctk.CTkImage(
-    Image.open(os.path.join(icon_folder_path, "garfield.png")), size=(225//initialized_items['scale_factor'], 225//initialized_items['scale_factor'])
+app_icon128=ctk.CTkImage(
+    Image.open(os.path.join(icon_folder_path, "new_app_icon2.png")), size=(128, 128)
 )
+
+app_icon225=ctk.CTkImage(
+    Image.open(os.path.join(icon_folder_path, "new_app_icon2.png")), size=(225//initialized_items['scale_factor'], 225//initialized_items['scale_factor'])
+)
+
 library_button_icon=ctk.CTkImage(
     Image.open(os.path.join(icon_folder_path, "library_icon.png")), size=(30//initialized_items['scale_factor'], 30//initialized_items['scale_factor'])
 )
@@ -952,12 +974,12 @@ total_time_label.grid(row=0, column=5, sticky='e', padx=(20, 50))
 
 # album art label
 song_metadata_image_label = ctk.CTkLabel(
-    song_metadata_frame, text='', image=garfield_icon,)
+    song_metadata_frame, text='', image=app_icon225,)
 song_metadata_image_label.grid(row=0, columnspan=3, sticky='new', )
 
 # artist name label
 song_metadata_artist_label = ctk.CTkLabel(
-    song_metadata_frame, text='Artist: Garfield', text_color='white')
+    song_metadata_frame, text='Artist: Unknown', text_color='white')
 song_metadata_artist_label.grid(row=1, columnspan=3, sticky='ew', pady=(20, 10))
 
 # now playing label
