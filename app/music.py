@@ -10,6 +10,10 @@ import app.functions as functions
 import app.lyrics as lyrics
 import app.import_spotify as import_spotify
 
+# define custom exception to handle random errors
+class NotPossibleError(Exception):
+    pass
+
 pygame.mixer.init()
 
 playing = 0
@@ -129,7 +133,7 @@ def download_selected():
     download_thread.start()
 
 
-def search(event=None):
+def search(_event=None):
     """
     Searches from string from search bar contents
     """
@@ -1288,6 +1292,15 @@ def on_double_mouse_click(_event):
             playing = 1
             widgets.play_button.configure(image=widgets.pause_button_icon)
             
+        else:
+            # this error is raised as the above if condition was not satisfied but no error was raised.
+            # if program is allowed to run, it will raise errors in the execution of 
+            # finding song duration, slider setting, status bar config, etc...
+            raise NotPossibleError('Mouse1 was double clicked outside of Queue Tab')
+
+    except NotPossibleError as error_caught:
+        print(error_caught)
+
     except:
         print('Unknown Error occured while handling double mouse1 click'.upper())
     

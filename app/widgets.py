@@ -1017,13 +1017,13 @@ app.bind_all('<1>', lambda event: music.on_single_mouse_click(_event=event), add
 # bind mouse1 double-click to play a song
 app.bind_all('<Double-Button-1>', lambda event: music.on_double_mouse_click(_event=event), add=True)
 # bind space key to play/pause
-app.bind('<space>', lambda event: music.play_pause(play_button, _event=event) if type(app.focus_get())!=tkinter.Entry else print('Focus in EntryBox'))
+app.bind('<space>', lambda event: music.play_pause(play_button, _event=event) if (type(app.focus_get())!=tkinter.Entry and music.loaded) else print('Focus in EntryBox (or) Music not loaded'))
 # bind f8 to song_next
-app.bind('<F8>', lambda event: music.song_next(_event=event))
+app.bind('<F8>', lambda event: music.song_next(_event=event) if music.loaded else print('Music not loaded'))
 # bind f7 to play_pause
-app.bind('<F7>', lambda event: music.play_pause(play_button, _event=event) if type(app.focus_get())!=tkinter.Entry else print('Focus in EntryBox'))
+app.bind('<F7>', lambda event: music.play_pause(play_button, _event=event) if music.loaded else print('Music not loaded'))
 # bind f6 to song_previous
-app.bind('<F6>', lambda event: music.song_previous(_event=event))
+app.bind('<F6>', lambda event: music.song_previous(_event=event) if music.loaded else print('Music not loaded'))
 # bind enter key to search the song
 app.bind('<Return>', lambda event: music.search())
 # bind mouserightclick to popup the context menu
