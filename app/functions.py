@@ -27,6 +27,9 @@ else:
         current_theme="dark"
         transparency=0.88
         pickle.dump([current_theme,transparency],settings)
+if not(os.path.exists("Audio/")) and not(os.path.exists("thumbs/")):
+    os.system("mkdir Audio")
+    os.system("mkdir thumbs")
 
 #ytdlp args
 ydl_opts = {
