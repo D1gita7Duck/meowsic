@@ -1,25 +1,20 @@
-import os
-import customtkinter as ctk
 import pygame.mixer
 import remote.server as server
-from app.widgets import app
-
-app.geometry(f'{str(app.winfo_screenwidth())}x{str(app.winfo_screenheight())}')
-app.title("meowsic")
-app.iconbitmap(os.path.join(os.getcwd(),"app","assets", "icons", "app_icon.ico"))
+from app.widgets import app, _kill_all, show_about_page, show_manual, initialized_items
 
 pygame.mixer.init()
 server.start()
 
-def kill_all():
-    """
-    destroys app and kills flask
-    """
-    app.destroy()
-    server.kill_app()
+# define protocol on killing application
+app.protocol("WM_DELETE_WINDOW", _kill_all)
 
+# check whether to display manual and about pages on startup or not
+if initialized_items['first_time_startup'] == True:
+    app.after(0, show_about_page(_from = 'startup'))
+    app.after(5, show_manual(_from = 'startup'))
 
-app.protocol("WM_DELETE_WINDOW", kill_all)
-app.after(0, lambda: app.state('zoomed'))
+# make application fullscreen
+app.after(5, lambda: app.state('zoomed'))
+
 
 app.mainloop()

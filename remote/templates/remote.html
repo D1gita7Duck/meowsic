@@ -14,8 +14,8 @@
             <img src="{{ url_for('static',filename='previous_btn.png') }}" alt="Previous">
         </button>
         <button id="playPauseButton">
-            <img src="{{ url_for('static',filename='play_btn.png') }}" alt="Play/Pause">
-        </button>
+            <img id="playPauseIcon" src="{{ url_for('static',filename='play_btn.png') }}" alt="Play">
+        </button>        
         <button id="nextButton">
             <img src="{{ url_for('static',filename='next_btn.png') }}" alt="Next">
         </button>
@@ -35,10 +35,25 @@
             .then(result => console.log(result))
             .catch(error => console.error(error));
         }
-
+        var playing = 0;  // replace this with your actual logic to determine the state
         // Attach click event handlers to the buttons
-        document.getElementById('playPauseButton').addEventListener('click', () => {
-            sendControlAction('play_pause');
+        document.getElementById('playPauseButton').addEventListener('click', function() {
+            sendControlAction("play_pause")
+            console.log(playing)
+            // Get the play/pause button and icon elements
+            var playPauseButton = document.getElementById('playPauseButton');
+            var playPauseIcon = document.getElementById('playPauseIcon');
+
+            // Toggle between play and pause icons
+            if (playing === 0) {
+                playPauseIcon.src = "{{ url_for('static',filename='pause_btn.png') }}";
+                playing=1
+                // Add logic for pausing the music
+            } else {
+                playPauseIcon.src = "{{ url_for('static',filename='play_btn.png') }}";
+                playing=0
+                // Add logic for playing the music
+            }
         });
 
         document.getElementById('previousButton').addEventListener('click', () => {

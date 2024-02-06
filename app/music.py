@@ -1,4 +1,3 @@
-from multiprocessing import dummy
 import os
 import time
 from datetime import datetime
@@ -7,10 +6,13 @@ import pygame.mixer
 import customtkinter as ctk
 from PIL import Image
 import audioread
-from urllib.parse import quote
 import app.functions as functions
 import app.lyrics as lyrics
 import app.import_spotify as import_spotify
+
+# define custom exception to handle random errors
+class NotPossibleError(Exception):
+    pass
 
 pygame.mixer.init()
 
@@ -22,7 +24,9 @@ songs_paths = list()
 liked_songs_paths = dict()
 liked = False
 loaded=False
+playlist_listbox=None
 #open_playlist=None
+
 def load_music(t,pretty_name,event=None,index=None):
     """
     Loads music into queue. Accepts filename, pretty_name of song.
@@ -98,10 +102,10 @@ def load_music(t,pretty_name,event=None,index=None):
 
     master_playing=True
     # inserting into list_box
-    if index==None:widgets.song_list.insert(f"END{len(songs_paths)-1}", pretty_name)
+    if index==None:widgets.song_list.insert("END", pretty_name)
     else:
         print("inserting",f"{index}", pretty_name)
-        widgets.song_list.insert(f"{index}", pretty_name)
+        widgets.song_list.insert('END', pretty_name)
         if index=="END0":
             widgets.song_list.selection_clear()
             widgets.song_list.activate(0)
@@ -119,11 +123,17 @@ def load_music(t,pretty_name,event=None,index=None):
     print("now playing", now_playing)
 
     
+def download_selected():
+    import app.widgets as widgets
+    res=widgets.search_listbox.get()
+    temp_res=functions.search(res)
+#   Download the song in a separate thread
+    widgets.search_progress.start()
+    download_thread = threading.Thread(target=download_and_load, args=(temp_res,))
+    download_thread.start()
 
 
-
-
-def search(event=None):
+def search(_event=None):
     """
     Searches from string from search bar contents
     """
@@ -135,11 +145,12 @@ def search(event=None):
     # check if user gave query or not
     if widgets.search_bar.get().isspace() or widgets.search_bar.get()=='' or widgets.master_tab.get()!='Search':
         incorrect_operation_win=ctk.CTkToplevel(widgets.app)
+        incorrect_operation_win.title('Warning')
         incorrect_operation_win.resizable(False,False)
         widgets.app.eval(f'tk::PlaceWindow {str(incorrect_operation_win)} center')
         incorrect_operation_win.geometry('200x100')
         text_label=ctk.CTkLabel(master=incorrect_operation_win,
-                                text='Incorrect Operation',
+                                text='  Incorrect Operation',
                                 image=widgets.information_icon,
                                 compound='left',
                                 anchor='center',)
@@ -151,16 +162,22 @@ def search(event=None):
 
     else:
         widgets.search_progress.set(0)
-
+        widgets.search_listbox.delete("all")
         if songs_paths:
             search_text = widgets.search_bar.get()
             print(search_text)
             widgets.search_progress.start()
-            temp_res = functions.search(search_text)
-
+            # temp_res = functions.search(search_text)
+            results=functions.search_results(search_text)
+            widgets.search_listbox.pack(fill='x', expand=True, padx=10, pady=10)
+            for song,artist in results:
+                details=song+" by "+artist
+                print("DETAILS",details)
+                widgets.search_listbox.insert("END", details,onclick=download_selected)
+            widgets.search_progress.stop()
             # Download the song in a separate thread
-            download_thread = threading.Thread(target=download_and_load, args=(temp_res,))
-            download_thread.start()
+            # download_thread = threading.Thread(target=download_and_load, args=(temp_res,))
+            # download_thread.start()
 
         else:
             # Reset the songs_paths tuple
@@ -168,11 +185,17 @@ def search(event=None):
             search_text = widgets.search_bar.get()
             print(search_text)
             widgets.search_progress.start()
-            temp_res = functions.search(search_text)
-
+            # temp_res = functions.search(search_text)
+            results=functions.search_results(search_text)
+            widgets.search_listbox.pack(fill='x', expand=True, padx=10, pady=10)
+            for song,artist in results:
+                details=song+" by "+artist
+                print("DETAILS",details)
+                widgets.search_listbox.insert("END", details,onclick=download_selected)
+            widgets.search_progress.stop()
             # Download the song in a separate thread
-            download_thread = threading.Thread(target=download_and_load, args=(temp_res,))
-            download_thread.start()
+            # download_thread = threading.Thread(target=download_and_load, args=(temp_res,))
+            # download_thread.start()
 
 def load_playlist_song(event=None,index=None,listbox=1):
     """
@@ -221,6 +244,9 @@ def load_recents():
     download_thread.start()
 
 def load_local(name):
+    """
+    load fn for local songs
+    """
     import app.widgets as widgets
     global loaded
     global songs_paths
@@ -258,8 +284,8 @@ def load_local(name):
             text=time.strftime("%M:%S", time.gmtime(0)))
         widgets.total_time_label.configure(text=f'{formatted_total_song_time}')
         # update metadata
-        widgets.song_metadata_image_label.configure(image=widgets.garfield_icon)
-        widgets.song_metadata_artist_label.configure(text='Miscellaneous')
+        widgets.song_metadata_image_label.configure(image=widgets.app_icon225)
+        widgets.song_metadata_artist_label.configure(text='Artist: Miscellaneous')
         widgets.song_metadata_image_label.grid(row=0, columnspan=3, sticky='new')
         widgets.like_button.configure(state='normal')
         widgets.previous_button.configure(state='normal')
@@ -291,7 +317,8 @@ def download_and_load(temp_res,event=None,index=None):
     print("songs paths",songs_paths)
     # Stop the search progress bar
     widgets.search_progress.stop()
-
+    widgets.search_listbox.delete("all")
+    widgets.search_listbox.pack_forget()
     # Load the downloaded song
     load_music(temp_paths, temp_res["pretty_name"],event=event,index=index)
     widgets.search_bar.delete(0, 'end')
@@ -338,8 +365,6 @@ def add_songs():
             widgets.song_list.insert("END", os.path.basename(i))
             functions.store_local(os.path.basename(i))
 
-        print(pygame.mixer.music.get_busy())
-
         if pygame.mixer.music.get_busy() or loaded:
             songs_paths = (songs_paths) + list(og_songs_paths)
 
@@ -379,17 +404,18 @@ def add_songs():
                 text=time.strftime("%M:%S", time.gmtime(0)))
             widgets.total_time_label.configure(text=f'{formatted_total_song_time}')
             # update metadata
-            widgets.song_metadata_image_label.configure(image=widgets.garfield_icon)
-            widgets.song_metadata_artist_label.configure(text='Miscellaneous')
+            widgets.song_metadata_image_label.configure(image=widgets.app_icon225)
+            widgets.song_metadata_artist_label.configure(text='Artist: Miscellaneous')
             widgets.song_metadata_image_label.grid(row=0, columnspan=3, sticky='new')
     
     else:
         incorrect_operation_win=ctk.CTkToplevel(widgets.app)
+        incorrect_operation_win.title('Warning')
         incorrect_operation_win.resizable(False,False)
         widgets.app.eval(f'tk::PlaceWindow {str(incorrect_operation_win)} center')
         incorrect_operation_win.geometry('200x100')
         text_label=ctk.CTkLabel(master=incorrect_operation_win,
-                                text='Incorrect Operation',
+                                text='  Incorrect Operation',
                                 image=widgets.information_icon,
                                 compound='left',
                                 anchor='center',)
@@ -481,18 +507,19 @@ def song_previous(_event=None):
         playing = 1
         widgets.play_button.configure(image=widgets.pause_button_icon)
 
+        # change the highlight to current song
+        widgets.song_list.selection_clear()
+        widgets.song_list.activate(now_playing)
+        widgets.song_list.select(f"END{now_playing % len(songs_paths)}")
+        functions.store_recents(widgets.song_list.get())
+
         # total length of song
         with audioread.audio_open(songs_paths[now_playing]) as song_file:
             total_song_time = song_file.duration
             formatted_total_song_time = time.strftime(
                 "%M:%S", time.gmtime(total_song_time)
             )
-
-        # change the highlight to current song
-        widgets.song_list.selection_clear()
-        widgets.song_list.activate(now_playing)
-        widgets.song_list.select(f"END{now_playing % len(songs_paths)}")
-        functions.store_recents(widgets.song_list.get())
+        
         # slider position
         widgets.song_slider.configure(to=total_song_time)
         widgets.song_slider.set(0)
@@ -506,26 +533,7 @@ def song_previous(_event=None):
         widgets.status_bar.configure(state='normal')
         widgets.status_bar.delete('0.0', 'end')
         widgets.status_bar.insert('0.0',f'Now playing: {widgets.song_list.get()}')
-        widgets.status_bar.configure(state='disabled')
-    
-        # update metadata
-        try:
-            # update album art
-            album_art = widgets.ctk.CTkImage(Image.open("thumbs/"+ f'{songs_paths[now_playing][5:-4]+".png"}'), size=(225, 225))
-            # artist name
-            widgets.song_metadata_artist_label.configure(
-                text=f'Artist: {functions.artist_search(widgets.song_list.get())["artists"].split(",")[0]}')
-        except KeyError:
-            print(f'No artist given')
-            widgets.song_metadata_artist_label.configure(text='Miscellaneous')
-        except:
-            print(f'no album art')
-            widgets.song_metadata_image_label.configure(image=widgets.garfield_icon)
-            widgets.song_metadata_artist_label.configure(text='Miscellaneous')
-            widgets.song_metadata_image_label.grid(row=0, columnspan=3, sticky='new', )
-        else:
-            widgets.song_metadata_image_label.configure(image=album_art)
-            widgets.song_metadata_image_label.grid(row=0, columnspan=3, sticky='new', )
+        widgets.status_bar.configure(state='disabled') 
             
         if functions.if_liked(widgets.song_list.get()):
             liked=True
@@ -535,6 +543,25 @@ def song_previous(_event=None):
             liked=False
             widgets.like_button.configure(image=widgets.disliked_button_icon)
 
+        # update metadata
+        try:
+            # update album art
+            album_art = widgets.ctk.CTkImage(Image.open("thumbs/"+ f'{songs_paths[now_playing][5:-4]+".png"}'), size=(225, 225))
+            # artist name
+            widgets.song_metadata_artist_label.configure(
+                text=f'Artist: {functions.artist_search(widgets.song_list.get())["artists"].split(",")[0]}')
+        except KeyError:
+            print(f'No artist given')
+            widgets.song_metadata_artist_label.configure(text='Artist: Miscellaneous')
+        except:
+            print(f'no album art')
+            widgets.song_metadata_image_label.configure(image=widgets.app_icon225)
+            widgets.song_metadata_artist_label.configure(text='Artist: Miscellaneous')
+            widgets.song_metadata_image_label.grid(row=0, columnspan=3, sticky='new', )
+        else:
+            widgets.song_metadata_image_label.configure(image=album_art)
+            widgets.song_metadata_image_label.grid(row=0, columnspan=3, sticky='new', )
+
 
     else:
         song = songs_paths[now_playing]
@@ -543,17 +570,18 @@ def song_previous(_event=None):
         playing = 1
         widgets.play_button.configure(image=widgets.pause_button_icon)
 
+
+        # change the highlight to current song
+        widgets.song_list.selection_clear()
+        widgets.song_list.activate(now_playing)
+        widgets.song_list.select(f"END{now_playing % len(songs_paths)}")
+
         # total length of song
         with audioread.audio_open(songs_paths[now_playing]) as song_file:
             total_song_time = song_file.duration
             formatted_total_song_time = time.strftime(
                 "%M:%S", time.gmtime(total_song_time)
             )
-
-        # change the highlight to current song
-        widgets.song_list.selection_clear()
-        widgets.song_list.activate(now_playing)
-        widgets.song_list.select(f"END{now_playing % len(songs_paths)}")
 
         # slider position
         widgets.song_slider.configure(to=total_song_time)
@@ -576,7 +604,6 @@ def song_next(_event=None):
     global formatted_total_song_time
     global songs_paths
     global total_song_time
-    global liked_songs_paths
     global liked
 
     try:
@@ -593,19 +620,20 @@ def song_next(_event=None):
         playing = 1
         widgets.play_button.configure(image=widgets.pause_button_icon)
 
-        # total length of song
-        with audioread.audio_open(songs_paths[now_playing]) as song_file:
-            total_song_time = song_file.duration
-            formatted_total_song_time = time.strftime(
-                "%M:%S", time.gmtime(total_song_time)
-            )
-
         # change the highlight to current song
         widgets.song_list.selection_clear()
         widgets.song_list.activate(now_playing)
         widgets.song_list.select(f"END{now_playing % len(songs_paths)}")
         print("nEXT SELEcting",f"END{now_playing % len(songs_paths)}")
         functions.store_recents(widgets.song_list.get())
+
+        # total length of song
+        with audioread.audio_open(songs_paths[now_playing]) as song_file:
+            total_song_time = song_file.duration
+            formatted_total_song_time = time.strftime(
+                "%M:%S", time.gmtime(total_song_time)
+            )
+        
         # slider position
         widgets.song_slider.configure(to=total_song_time)
         widgets.song_slider.set(0)
@@ -641,11 +669,11 @@ def song_next(_event=None):
                 text=f'Artist: {functions.artist_search(widgets.song_list.get())["artists"].split(",")[0]}')
         except KeyError:
             print(f'No artist given')
-            widgets.song_metadata_artist_label.configure(text='Miscellaneous')
+            widgets.song_metadata_artist_label.configure(text='Artist: Miscellaneous')
         except:
             print(f'no album art')
-            widgets.song_metadata_image_label.configure(image=widgets.garfield_icon)
-            widgets.song_metadata_artist_label.configure(text='Miscellaneous')
+            widgets.song_metadata_image_label.configure(image=widgets.app_icon225)
+            widgets.song_metadata_artist_label.configure(text='Artist: Miscellaneous')
             widgets.song_metadata_image_label.grid(row=0, columnspan=3, sticky='new', )
         else:
             widgets.song_metadata_image_label.configure(image=album_art)
@@ -674,6 +702,9 @@ def play_pause(btn: ctk.CTkButton, _event=None):
         widgets.status_bar.insert('0.0',f"Paused: {widgets.song_list.get()}")
         widgets.status_bar.configure(state='disabled')
 
+        # change tooltip text
+        widgets.play_tooltip.configure(message='Play')
+
         playing = 2
 
     elif playing == 2:
@@ -688,6 +719,9 @@ def play_pause(btn: ctk.CTkButton, _event=None):
         widgets.status_bar.delete('0.0', 'end')
         widgets.status_bar.insert('0.0',f"Now playing: {widgets.song_list.get()}")
         widgets.status_bar.configure(state='disabled')
+
+        # change tooltip text
+        widgets.play_tooltip.configure(message='Pause')
 
         # change the highlight to current song
         widgets.song_list.selection_clear()
@@ -708,6 +742,9 @@ def play_pause(btn: ctk.CTkButton, _event=None):
         widgets.status_bar.delete('0.0', 'end')
         widgets.status_bar.insert('0.0',f"Now playing: {widgets.song_list.get()}")
         widgets.status_bar.configure(state='disabled')
+
+        # change tooltip text
+        widgets.play_tooltip.configure(message='Pause')
 
         # change the highlight to current song
         widgets.song_list.selection_clear()
@@ -744,6 +781,8 @@ def like(btn: ctk.CTkButton):
             "END", widgets.song_list.get())
 
         print(f'liked')
+        # change tooltip text
+        widgets.like_button_tooltip.configure(message='Dislike Song')
     else:
         # change button image
         btn.configure(image=widgets.disliked_button_icon)
@@ -755,10 +794,16 @@ def like(btn: ctk.CTkButton):
         for i in functions.get_liked_songs():
             widgets.liked_songs_listbox.insert("END",i["pretty_name"])
 
+        # change tooltip text
+        widgets.like_button_tooltip.configure(message='Like Song')
+
         print(f'disliked')
 
 def show_liked_songs():
-    #called from liked songs btn on homepage of application
+    '''
+    called from liked songs btn on homepage of application
+    '''
+
     import app.widgets as widgets
     widgets.master_tab.set('Liked Songs')
 
@@ -769,6 +814,10 @@ def volume(value):
     '''
     import app.widgets as widgets
     pygame.mixer.music.set_volume(value/100)
+    
+    # change tooltip text
+    widgets.volume_slider_tooltip.configure(message=f'{int(value)}')
+    
     if widgets.volume_slider.get()>66:
         widgets.volume_button.configure(image=widgets.volume_full_icon)
     elif widgets.volume_slider.get()>33:
@@ -777,12 +826,19 @@ def volume(value):
         widgets.volume_button.configure(image=widgets.volume_1bar_icon)
 
 def mute_unmute():
+    '''
+    fn that unmutes/mutes playback based on current state
+    '''
     import app.widgets as widgets
     if pygame.mixer.music.get_volume()!=0:
-        pygame.mixer.music.set_volume(0)
+        pygame.mixer.music.set_volume(0)        
+        # change tooltip text
+        widgets.volume_button_tooltip.configure(message='Unmute')
         widgets.volume_button.configure(image=widgets.mute_icon)
     else:
         pygame.mixer.music.set_volume(widgets.volume_slider.get())
+        # change tooltip text
+        widgets.volume_button_tooltip.configure(message='Mute')
         if widgets.volume_slider.get()>66:
             widgets.volume_button.configure(image=widgets.volume_full_icon)
         elif widgets.volume_slider.get()>33:
@@ -795,33 +851,99 @@ def main_lyrics():
     Searches for and Displays lyrics
     """
     import app.widgets as widgets
-    res=functions.search(widgets.song_list.get())
-    lyrics.show_lyrics(res["pretty_name"],res["artists"].split(",")[0],widgets.app)
+    res=[widgets.song_list.get(),widgets.song_metadata_artist_label.cget('text')[8:]]
+    print(res)
+    lyrics.show_lyrics(res[0],res[1],widgets.app)
 
 def add_to_playlist(choice):
+    """
+    fn to add a selected song to a playlist.
+    accepts choice (new playlist/name of existing playlist) as argument.
+    """
     import app.widgets as widgets
     print(choice)
-    add_to_playlist_var=ctk.StringVar(value='Add to Playlist')
+    add_to_playlist_var = ctk.StringVar(value='Add to Playlist')
     widgets.add_to_playlist_menu.configure(variable=add_to_playlist_var)
-    if choice=='Create New Playlist':
-        create_playlist_dialog=ctk.CTkInputDialog(text='Give Playlist Name:', title = 'Creating a Playlist')
-        playlist_name=create_playlist_dialog.get_input()
-       # print(playlist_name)
-        functions.add_playlist({"name":playlist_name,"art_location":"nothing","date":datetime.today().strftime('%Y-%m-%d')})
-        widgets.add_to_playlist_menu.configure(values=widgets.add_to_playlist_options)
-        functions.add_to_playlist(widgets.song_list.get(),playlist_name)
-       #print("TUPLE",(playlist_name,))
-        widgets.add_to_playlist_options.append(playlist_name)
-        widgets.add_to_playlist_submenu.add_command(label=playlist_name,command= lambda name=playlist_name:add_to_playlist(name))
-        widgets.playlist_table_values.append(functions.get_playlist_details((playlist_name,)))
-        widgets.playlists_table.configure(values=widgets.playlist_table_values)
-        widgets.playlists_table.add_row(values='abcd')
-        widgets.playlists_table.update_values(widgets.playlist_table_values)
-       # print("valuessss",widgets.playlist_table_values)
-    else:
-        functions.add_to_playlist(widgets.song_list.get(),choice)
 
+    if choice == 'Create New Playlist':
+        playlist_name = create_new_playlist()
+        if playlist_name:
+            update_playlist_menu(playlist_name)
+            update_playlist_table(playlist_name)
+
+    else:
+        playlist_name = choice
+        update_existing_playlist(playlist_name)
+
+    update_playlists_table()
+
+def create_new_playlist():
+    """
+    fn to create a new playlist.
+    opens a pop up window
+    """
+    import app.widgets as widgets
+    create_playlist_dialog = ctk.CTkInputDialog(text='Give Playlist Name:', title='Creating a Playlist')
+    playlist_name = create_playlist_dialog.get_input()
+    
+    if playlist_name:
+        functions.add_playlist({"name": playlist_name, "art_location": "nothing", "date": datetime.today().strftime('%Y-%m-%d')})
+        return playlist_name
+    return None
+
+def update_playlist_menu(playlist_name):
+    import app.widgets as widgets
+    widgets.add_to_playlist_menu.configure(values=widgets.add_to_playlist_options)
+    widgets.add_to_playlist_options.append(playlist_name)
+    widgets.add_to_playlist_submenu.add_command(label=playlist_name, command=lambda name=playlist_name: add_to_playlist(name))
+
+def update_playlist_table(playlist_name):
+    '''
+    Adds playlist name and required data into table and db.
+    '''
+    import app.widgets as widgets
+    if widgets.master_tab.get() == 'Queue':
+        functions.add_to_playlist(widgets.song_list.get(), playlist_name)
+        update_playlist_listbox(widgets.song_list.get())
+    elif widgets.master_tab.get() == 'Liked Songs':
+        functions.add_to_playlist(widgets.liked_songs_listbox.get(), playlist_name)
+        update_playlist_listbox(widgets.liked_songs_listbox.get())
+    
+    widgets.playlist_table_values.append(functions.get_playlist_details((playlist_name,)))
+    widgets.playlists_table.add_row(values='abcd')
+
+def update_existing_playlist(playlist_name):
+    import app.widgets as widgets
+    old_details = functions.get_playlist_details((playlist_name,))
+    
+    if widgets.master_tab.get() == 'Queue':
+        functions.add_to_playlist(widgets.song_list.get(), playlist_name)
+        update_playlist_listbox(widgets.song_list.get())
+    elif widgets.master_tab.get() == 'Liked Songs':
+        functions.add_to_playlist(widgets.liked_songs_listbox.get(), playlist_name)
+        update_playlist_listbox(widgets.liked_songs_listbox.get())
+    
+    widgets.playlist_table_values[widgets.playlist_table_values.index(old_details)] = functions.get_playlist_details((playlist_name,))
+
+def update_playlist_listbox(song):
+    if playlist_listbox:
+        playlist_listbox.insert("END", song)
+
+def update_playlists_table():
+    '''
+    Updates playlist table values the table
+    '''
+    import app.widgets as widgets
+    widgets.playlists_table.configure(values=widgets.playlist_table_values)
+    widgets.playlists_table.update_values(widgets.playlist_table_values)
+
+        
 def delete_from_queue():
+    """
+    fn to delete a selected song from queue
+    gives warning to user if selected song==currently playing song
+    """
+
     import app.widgets as widgets
     global now_playing
     global songs_paths
@@ -836,11 +958,12 @@ def delete_from_queue():
         widgets.song_list.select(f"END{now_playing % len(songs_paths)}")
     else:
         incorrect_operation_win=ctk.CTkToplevel(widgets.app)
+        incorrect_operation_win.title('Warning')
         incorrect_operation_win.resizable(False,False)
         widgets.app.eval(f'tk::PlaceWindow {str(incorrect_operation_win)} center')
         incorrect_operation_win.geometry('200x100')
         text_label=ctk.CTkLabel(master=incorrect_operation_win,
-                                text='Incorrect Operation',
+                                text='  Incorrect Operation',
                                 image=widgets.information_icon,
                                 compound='left',
                                 anchor='center',)
@@ -851,6 +974,10 @@ def delete_from_queue():
         incorrect_operation_win.focus()
 
 def show_playlist(value):
+    """
+    fn to show a selected playlist
+    opens a new tab with a listbox
+    """
     import app.widgets as widgets
     global playlist_frame
     global playlist_listbox
@@ -866,19 +993,19 @@ def show_playlist(value):
             playlist_frame.pack()
             playlist_listbox = widgets.CTkListbox.CTkListbox(
                 master=playlist_frame,
-                width=700,
-                height=250,
+                width=700//widgets.initialized_items['scale_factor'],
+                height=250//widgets.initialized_items['scale_factor'],
                 border_width=2,
                 corner_radius=10,
                 label_text='Playlists',
                 label_anchor='center',
-                border_color=widgets.current_theme["color2"],
-                fg_color=widgets.current_theme["color3"],
-                text_color=widgets.current_theme["color6"],
-                hightlight_color=widgets.current_theme["color2"],
-                hover_color=widgets.current_theme["color4"],
-                select_color=widgets.current_theme["color5"],
-    )
+                border_color=widgets.initialized_items['current_theme']["color2"],
+                fg_color=widgets.initialized_items['current_theme']["color3"],
+                text_color=widgets.initialized_items['current_theme']["color6"],
+                hightlight_color=widgets.initialized_items['current_theme']["color2"],
+                hover_color=widgets.initialized_items['current_theme']["color4"],
+                select_color=widgets.initialized_items['current_theme']["color5"],
+            )
 
             # widgets.playlist_listbox.configure(master=playlist_frame)
             playlist_listbox.pack()
@@ -886,27 +1013,80 @@ def show_playlist(value):
             for i in playlist_songs:
                 print("ADDING TO PLAYLIST LIST",i,f"END{playlist_songs.index(i)%len(playlist_songs)}")
                 playlist_listbox.insert(f"END{playlist_songs.index(i)%len(playlist_songs)}",i,onclick=load_playlist_song)
+            
+            # load all songs into queue
             all_songs_button = ctk.CTkButton(
                 playlist_frame, 
-                text="Play All Songs", 
+                text="Play All Songs",
+                image=widgets.queue_all_songs_button_icon,
+                compound='left',
                 command=lambda name=value: add_all_playlist_songs_to_queue(name),
-                fg_color=widgets.current_theme["color4"],
-                hover_color=widgets.current_theme["color4"],
-                border_color=widgets.current_theme["color3"],
+                fg_color=widgets.initialized_items['current_theme']["color4"],
+                hover_color=widgets.initialized_items['current_theme']["color4"],
+                border_color=widgets.initialized_items['current_theme']["color3"],
                 border_width=1,
-                text_color=widgets.current_theme["color6"],)  
-            all_songs_button.pack(fill='x', expand=True, padx=10, pady=10)
+                text_color=widgets.initialized_items['current_theme']["color6"],
+            )  
+            all_songs_button.pack(fill='x', expand=True, padx=(10,10), pady=(10,10),)
+
+            # delete playlist button
+            delete_playlist_button=ctk.CTkButton(
+                playlist_frame,
+                text='Delete Playlist',
+                image=widgets.delete_playlist_button_icon,
+                compound='left',
+                command=lambda name=value['value']: delete_playlist(playlist_name=name),
+                fg_color=widgets.initialized_items['current_theme']["color4"],
+                hover_color=widgets.initialized_items['current_theme']["color4"],
+                border_color=widgets.initialized_items['current_theme']["color3"],
+                border_width=1,
+                text_color=widgets.initialized_items['current_theme']["color6"],
+            )
+            delete_playlist_button.pack(fill='x', expand=True, padx=(10,10), pady=(10,10))
+
             # display the playlist tab
             widgets.master_tab.set(value['value'])
         except ValueError:
             widgets.master_tab.set(value['value'])
 
+def delete_playlist(playlist_name):
+    """
+    fn to delete a playlist from db.
+    also deletes the playlist tab if open.
+    accepts playlist_name as argument
+    """
+    import app.widgets as widgets
+    # delete the playlist tab
+    try:
+        widgets.master_tab._name_list.remove(playlist_name)
+        widgets.master_tab._tab_dict[playlist_name].grid_forget()
+        widgets.master_tab._tab_dict.pop(playlist_name)
+        widgets.master_tab._segmented_button.delete(playlist_name)
+        # delete from table values
+        for i in widgets.playlist_table_values[::]:
+            if i[0]==playlist_name:
+                widgets.playlist_table_values.remove(i)
+                break
+        update_playlists_table()
+        widgets.playlists_table.delete_row(-1)
+        functions.delete_playlist(playlist_name)
+    except:
+        print('Error handled while deleting playlist')
+    finally:
+        widgets.master_tab.set('Your Library')
+
 def add_all_playlist_songs_to_queue(name):
+    """
+    fn to run the target fn in a new thread
+    """
     import app.widgets as widgets
     download_thread = threading.Thread(target=add_all_playlist_songs_to_queue_in_diff_thread, args=(name,))
     download_thread.start()
  
 def add_all_playlist_songs_to_queue_in_diff_thread(name):
+    """
+    target thread fn to add all songs to queue
+    """
     import app.widgets as widgets
     global songs_paths
    # print("ALL SONGS",functions.get_playlist_songs(name["value"]))
@@ -932,6 +1112,9 @@ def show_discover():
 
 
 def show_discover_playlist(value):
+    """
+    shows songs from a recommended playlist from the discover tab.
+    """
     import app.widgets as widgets
     global discover_playlist_frame
     global discover_playlist_listbox
@@ -947,19 +1130,19 @@ def show_discover_playlist(value):
         discover_playlist_frame.pack()
         discover_playlist_listbox = widgets.CTkListbox.CTkListbox(
             master=discover_playlist_frame,
-            width=700,
-            height=250,
+            width=700//widgets.initialized_items['scale_factor'],
+            height=250//widgets.initialized_items['scale_factor'],
             border_width=2,
             corner_radius=10,
             label_text='Recommended Playlist',
             label_anchor='center',
-            border_color=widgets.current_theme["color2"],
-            fg_color=widgets.current_theme["color3"],
-            text_color=widgets.current_theme["color6"],
-            hightlight_color=widgets.current_theme["color2"],
-            hover_color=widgets.current_theme["color4"],
-            select_color=widgets.current_theme["color5"],
-)
+            border_color=widgets.initialized_items['current_theme']["color2"],
+            fg_color=widgets.initialized_items['current_theme']["color3"],
+            text_color=widgets.initialized_items['current_theme']["color6"],
+            hightlight_color=widgets.initialized_items['current_theme']["color2"],
+            hover_color=widgets.initialized_items['current_theme']["color4"],
+            select_color=widgets.initialized_items['current_theme']["color5"],
+        )
 
         # widgets.playlist_listbox.configure(master=playlist_frame)
         discover_playlist_listbox.pack()
@@ -971,11 +1154,11 @@ def show_discover_playlist(value):
         #     discover_playlist_frame, 
         #     text="Play All Songs", 
         #     command=lambda name=value: add_all_playlist_songs_to_queue(name),
-        #     fg_color=widgets.current_theme["color4"],
-        #     hover_color=widgets.current_theme["color4"],
-        #     border_color=widgets.current_theme["color3"],
+        #     fg_color=widgets.initialized_items['current_theme']["color4"],
+        #     hover_color=widgets.initialized_items['current_theme']["color4"],
+        #     border_color=widgets.initialized_items['current_theme']["color3"],
         #     border_width=1,
-        #     text_color=widgets.current_theme["color6"],)  
+        #     text_color=widgets.initialized_items['current_theme']["color6"],)  
         # all_songs_button.pack(fill='x', expand=True, padx=10, pady=10)
         
         # display the playlist tab
@@ -986,20 +1169,9 @@ def show_discover_playlist(value):
 
 
 def import_from_spotify(playlist):
-    import app.widgets as widgets
-    L=import_spotify.get_spotify_playlist_tracks(playlist)[0]
-    for j in L:
-        i=j[0]
-        i=i.lstrip("123456789. ")
-        print("syncing",i)
-        temp_res=functions.search(i)
-        functions.like_song(temp_res["pretty_name"])
-        widgets.liked_songs_listbox.insert(
-            "END", temp_res["pretty_name"],onclick=load_liked)
-        print("liked",i)
-    print("all songs imported to liked songs")
-
-def import_from_spotify_2(playlist):
+    """
+    target fn to import songs from spotify and add to a new playlust
+    """
     import app.widgets as widgets
     sp_playlist=import_spotify.get_spotify_playlist_tracks(playlist)
     functions.add_playlist({"name":sp_playlist[1],"art_location":"nothing","date":datetime.today().strftime('%Y-%m-%d')})
@@ -1017,10 +1189,11 @@ def import_from_spotify_2(playlist):
     widgets.playlists_table.add_row(values='abcd')
     widgets.playlists_table.update_values(widgets.playlist_table_values)
     print("all songs imported to a new playlist")
-
-
-def import_sp_playlist():
-    # Import the necessary module
+   
+def import_sp_playlist_to_new_playlist():
+    """
+    fn that runs the target import fn in a new thread
+    """
     import app.widgets as widgets
     # Get the url from the import entry
     url = widgets.import_entry.get()
@@ -1032,22 +1205,11 @@ def import_sp_playlist():
     widgets.import_progress.start()
     # Start the import thread
     import_thread.start()
-    
-def import_sp_playlist_to_new_playlist():
-    # Import the necessary module
-    import app.widgets as widgets
-    # Get the url from the import entry
-    url = widgets.import_entry.get()
-    # Create an Event object to signal the completion of the import process
-    done_event = threading.Event()
-    # Create a new thread to handle the import process
-    import_thread = threading.Thread(target=run_import, args=[url,import_from_spotify_2])
-    # Start the import progress bar
-    widgets.import_progress.start()
-    # Start the import thread
-    import_thread.start()
 
 def run_import(url,fn):
+    """
+    wrapper fn for import
+    """
     import app.widgets as widgets
     fn(url)
     widgets.import_progress.stop()
@@ -1060,3 +1222,144 @@ icon_folder_path = os.path.join(
     os.path.join(os.path.dirname(
         os.path.realpath(__file__)), "assets", "icons")
 )
+
+# mouse bindings
+def on_single_mouse_click(_event=None):
+    '''
+    Focusses the widget that is clicked (mouse1). 
+    Deletes all playlist tabs (if open)
+    '''
+    import app.widgets as widgets
+    try:
+        _event.widget.focus_set()
+
+        current_focus=(str(widgets.app.focus_get()).split('.'))
+
+        # check if currently focussed widget is not a playlist tab
+        if current_focus[-3]=='!ctksegmentedbutton' and current_focus[-2] in ['!ctkbutton6','!ctkbutton5','!ctkbutton4','!ctkbutton3','!ctkbutton2','!ctkbutton']:
+            # try to delete the playlist tab
+            for name in widgets.master_tab._tab_dict:
+                if name not in ['Home', 'Queue', 'Search', 'Your Library', 'Liked Songs',"Discover"]:
+                    widgets.master_tab._name_list.remove(name)
+                    widgets.master_tab._tab_dict[name].grid_forget()
+                    widgets.master_tab._tab_dict.pop(name)
+                    widgets.master_tab._segmented_button.delete(name)
+    except RuntimeError: 
+        # runtime error is flashed as the master_tab._tab_dict changes size while the function is called
+        pass
+    except IndexError:
+        # index error is flashed when list index of current_focus is out of range
+        pass
+    except:
+        print('Unknown Error while handling mouse_click1')
+
+
+def on_double_mouse_click(_event):
+    """
+    handles double mouse click event in queue tab
+    """
+    import app.widgets as widgets
+
+    global songs_paths
+    global now_playing
+    global playing
+    global liked
+    global total_song_time
+    global formatted_total_song_time
+
+    _event.widget.focus_set()
+
+    current_focus=(str(widgets.app.focus_get()).split('.'))
+    print(current_focus)
+
+    try:
+        if widgets.master_tab.get()=='Queue' and '!ctklistbox' in current_focus:
+            selected_song=widgets.song_list.get()
+            selected_song_index=widgets.song_list.curselection()
+            print('PRINTING IMPORTTANT',selected_song, selected_song_index)
+            # change now_playing to selected_song_index
+            now_playing=(selected_song_index) % len(songs_paths)
+            # change current song to selected song
+            song = songs_paths[(now_playing) % len(songs_paths)]
+
+            # change song in pygame mixer
+            pygame.mixer.music.stop()
+            pygame.mixer.music.unload()
+            pygame.mixer.music.load(song)
+            pygame.mixer.music.play(loops=0)
+
+            # update playing and play button
+            playing = 1
+            widgets.play_button.configure(image=widgets.pause_button_icon)
+
+        else:
+            # this error is raised as the above if condition was not satisfied but no error was raised.
+            # if program is allowed to run, it will raise errors in the execution of 
+            # finding song duration, slider setting, status bar config, etc...
+            raise NotPossibleError('Mouse1 was double clicked outside of Queue Tab')
+
+    except NotPossibleError as error_caught:
+        print(error_caught)
+
+    except:
+        print('Unknown Error occured while handling double mouse1 click'.upper())
+    
+    else:
+        # alter other widgets
+        # change the highlight to current song
+        # widgets.song_list.selection_clear()
+        # widgets.song_list.activate(now_playing)
+        # widgets.song_list.select(now_playing)
+        # functions.store_recents(widgets.song_list.get())
+        
+        # total length of song
+        with audioread.audio_open(songs_paths[now_playing]) as song_file:
+            total_song_time = song_file.duration
+            formatted_total_song_time = time.strftime(
+                "%M:%S", time.gmtime(total_song_time)
+            )
+        
+        # slider position
+        widgets.song_slider.configure(to=total_song_time)
+        widgets.song_slider.set(0)
+
+        # update time labels
+        widgets.time_elapsed_label.configure(
+            text=f'{time.strftime("%M:%S", time.gmtime(0))}')
+        widgets.total_time_label.configure(text=f'{formatted_total_song_time}')
+
+        # change status bar to current song name
+        widgets.status_bar.configure(state='normal')
+        widgets.status_bar.delete('0.0', 'end')
+        widgets.status_bar.insert('0.0',f'Now playing: {widgets.song_list.get()}')
+        widgets.status_bar.configure(state='disabled')
+
+        if functions.if_liked(widgets.song_list.get()):
+            liked=True
+            widgets.like_button.configure(image=widgets.like_button_icon)
+
+        else:
+            liked=False
+            widgets.like_button.configure(image=widgets.disliked_button_icon)
+
+        # update metadata
+        try:
+            # update album art
+            #print("album art dir",os.path.join("thumbs/", f'{songs_paths[now_playing][5:-4]+".png"}'))
+            album_art = widgets.ctk.CTkImage(Image.open("thumbs/"+ f'{songs_paths[now_playing][5:-4]+".png"}'), size=(225, 225))
+            
+            # artist name
+            print("song list artist get",f'Artist: {functions.artist_search(widgets.song_list.get())["artists"].split(",")[0]}')
+            widgets.song_metadata_artist_label.configure(
+                text=f'Artist: {functions.artist_search(widgets.song_list.get())["artists"].split(",")[0]}')
+        except KeyError:
+            print(f'No artist given')
+            widgets.song_metadata_artist_label.configure(text='Artist: Miscellaneous')
+        except:
+            print(f'no album art')
+            widgets.song_metadata_image_label.configure(image=widgets.app_icon225)
+            widgets.song_metadata_artist_label.configure(text='Artist: Miscellaneous')
+            widgets.song_metadata_image_label.grid(row=0, columnspan=3, sticky='new', )
+        else:
+            widgets.song_metadata_image_label.configure(image=album_art)
+            widgets.song_metadata_image_label.grid(row=0, columnspan=3, sticky='new', )
