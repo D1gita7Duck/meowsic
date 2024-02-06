@@ -1,6 +1,6 @@
 # Meowsic  
 
-A Free, Open-Source, and Feature-Rich Local Music Streaming App built in Python.
+A Free, Open-Source, and Feature-Rich Music Streaming App built in Python.
   
 ![image](https://github.com/D1gita7Duck/meowsic/assets/84835176/023e1935-52fa-4708-af71-fd26fc6e73a4)
   

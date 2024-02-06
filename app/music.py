@@ -10,6 +10,10 @@ import app.functions as functions
 import app.lyrics as lyrics
 import app.import_spotify as import_spotify
 
+# define custom exception to handle random errors
+class NotPossibleError(Exception):
+    pass
+
 pygame.mixer.init()
 
 playing = 0
@@ -129,7 +133,7 @@ def download_selected():
     download_thread.start()
 
 
-def search(event=None):
+def search(_event=None):
     """
     Searches from string from search bar contents
     """
@@ -280,8 +284,8 @@ def load_local(name):
             text=time.strftime("%M:%S", time.gmtime(0)))
         widgets.total_time_label.configure(text=f'{formatted_total_song_time}')
         # update metadata
-        widgets.song_metadata_image_label.configure(image=widgets.garfield_icon)
-        widgets.song_metadata_artist_label.configure(text='Miscellaneous')
+        widgets.song_metadata_image_label.configure(image=widgets.app_icon225)
+        widgets.song_metadata_artist_label.configure(text='Artist: Miscellaneous')
         widgets.song_metadata_image_label.grid(row=0, columnspan=3, sticky='new')
         widgets.like_button.configure(state='normal')
         widgets.previous_button.configure(state='normal')
@@ -400,8 +404,8 @@ def add_songs():
                 text=time.strftime("%M:%S", time.gmtime(0)))
             widgets.total_time_label.configure(text=f'{formatted_total_song_time}')
             # update metadata
-            widgets.song_metadata_image_label.configure(image=widgets.garfield_icon)
-            widgets.song_metadata_artist_label.configure(text='Miscellaneous')
+            widgets.song_metadata_image_label.configure(image=widgets.app_icon225)
+            widgets.song_metadata_artist_label.configure(text='Artist: Miscellaneous')
             widgets.song_metadata_image_label.grid(row=0, columnspan=3, sticky='new')
     
     else:
@@ -548,11 +552,11 @@ def song_previous(_event=None):
                 text=f'Artist: {functions.artist_search(widgets.song_list.get())["artists"].split(",")[0]}')
         except KeyError:
             print(f'No artist given')
-            widgets.song_metadata_artist_label.configure(text='Miscellaneous')
+            widgets.song_metadata_artist_label.configure(text='Artist: Miscellaneous')
         except:
             print(f'no album art')
-            widgets.song_metadata_image_label.configure(image=widgets.garfield_icon)
-            widgets.song_metadata_artist_label.configure(text='Miscellaneous')
+            widgets.song_metadata_image_label.configure(image=widgets.app_icon225)
+            widgets.song_metadata_artist_label.configure(text='Artist: Miscellaneous')
             widgets.song_metadata_image_label.grid(row=0, columnspan=3, sticky='new', )
         else:
             widgets.song_metadata_image_label.configure(image=album_art)
@@ -665,11 +669,11 @@ def song_next(_event=None):
                 text=f'Artist: {functions.artist_search(widgets.song_list.get())["artists"].split(",")[0]}')
         except KeyError:
             print(f'No artist given')
-            widgets.song_metadata_artist_label.configure(text='Miscellaneous')
+            widgets.song_metadata_artist_label.configure(text='Artist: Miscellaneous')
         except:
             print(f'no album art')
-            widgets.song_metadata_image_label.configure(image=widgets.garfield_icon)
-            widgets.song_metadata_artist_label.configure(text='Miscellaneous')
+            widgets.song_metadata_image_label.configure(image=widgets.app_icon225)
+            widgets.song_metadata_artist_label.configure(text='Artist: Miscellaneous')
             widgets.song_metadata_image_label.grid(row=0, columnspan=3, sticky='new', )
         else:
             widgets.song_metadata_image_label.configure(image=album_art)
@@ -1287,7 +1291,16 @@ def on_double_mouse_click(_event):
             # update playing and play button
             playing = 1
             widgets.play_button.configure(image=widgets.pause_button_icon)
-            
+
+        else:
+            # this error is raised as the above if condition was not satisfied but no error was raised.
+            # if program is allowed to run, it will raise errors in the execution of 
+            # finding song duration, slider setting, status bar config, etc...
+            raise NotPossibleError('Mouse1 was double clicked outside of Queue Tab')
+
+    except NotPossibleError as error_caught:
+        print(error_caught)
+
     except:
         print('Unknown Error occured while handling double mouse1 click'.upper())
     
@@ -1341,11 +1354,11 @@ def on_double_mouse_click(_event):
                 text=f'Artist: {functions.artist_search(widgets.song_list.get())["artists"].split(",")[0]}')
         except KeyError:
             print(f'No artist given')
-            widgets.song_metadata_artist_label.configure(text='Miscellaneous')
+            widgets.song_metadata_artist_label.configure(text='Artist: Miscellaneous')
         except:
             print(f'no album art')
-            widgets.song_metadata_image_label.configure(image=widgets.garfield_icon)
-            widgets.song_metadata_artist_label.configure(text='Miscellaneous')
+            widgets.song_metadata_image_label.configure(image=widgets.app_icon225)
+            widgets.song_metadata_artist_label.configure(text='Artist: Miscellaneous')
             widgets.song_metadata_image_label.grid(row=0, columnspan=3, sticky='new', )
         else:
             widgets.song_metadata_image_label.configure(image=album_art)
